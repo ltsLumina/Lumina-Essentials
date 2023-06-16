@@ -5,9 +5,6 @@
   "description": "A collection of scripts to make life with Unity a little more bearable.",
   "documentationUrl": "https://github.com/ltsLumina/Unity-Essentials",
   "changelogUrl": "https://github.com/ltsLumina/Unity-Essentials/releases",
-  "dependencies": {
-    "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask"
-  },
   "keywords": [
     "lumina",
     "essentials",

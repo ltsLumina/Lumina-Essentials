@@ -20,7 +20,4 @@
     "url": "https://github.com/ltsLumina/Unity-Essentials"
   },
   "unity": "2019.2",
-  "dependencies": {
-    "com.cysharp.unitask": "2.3.3"
-  }
 }

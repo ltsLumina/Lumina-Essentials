@@ -1,6 +1,10 @@
 // Uncomment the following line to enable the use of deprecated features or plugin-related features.
 //#define USING_DEPRECATED
 
+// !! WARNING !!
+// THIS SCRIPT IS DEPRECATED. IT WILL REMAIN IN THE PROJECT FOR LEGACY PURPOSES, BUT WILL NOT BE UPDATED.
+// YOU MUST USED "UniTask" FOR THIS TO EVEN WORK.
+
 #region
 using System;
 using System.Threading;

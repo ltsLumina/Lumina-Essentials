@@ -4,16 +4,17 @@ using static UnityEngine.Object;
 namespace Lumina.Essentials
 {
     /// <summary>
-    /// General helper methods that don't fit into any other category.
+    ///     General helper methods that don't fit into any other category.
     /// </summary>
     public static class Helpers
     {
         // -- Camera --
         
         static Camera cameraMain;
-        
+
         /// <summary>
-        /// Allows you to call camera.main without it being expensive, as we cache it here after the first call.
+        ///     Allows you to call camera.main without it being expensive, as we cache it here after the first call.
+        ///     <example>Helpers.Camera.transform.position.etc </example>
         /// </summary>
         public static Camera Camera
         {
@@ -44,8 +45,12 @@ namespace Lumina.Essentials
         
         
         // -- Miscellaneous --
-        
-        
+
+        /// <summary>
+        ///     Destroys all children of the given transform.
+        ///     Can be used as extension method.
+        /// </summary>
+        /// <param name="parent"></param>
         public static void DeleteAllChildren(this Transform parent)
         {
             foreach (Transform child in parent) Destroy(child.gameObject);

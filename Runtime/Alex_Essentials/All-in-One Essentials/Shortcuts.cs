@@ -1,8 +1,10 @@
 ﻿#region
 using System;
 using System.Reflection;
+#if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.ShortcutManagement;
+#endif
 using UnityEngine;
 #endregion
 

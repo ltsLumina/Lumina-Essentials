@@ -101,7 +101,8 @@ namespace Lumina.Essentials
         /// <summary>
         ///     A simple coroutine that introduces a delay in the execution flow for a specified duration in seconds.
         /// </summary>
-        /// <example>StartCoroutine(DelayedAction(() => action, 2,5f); </example>
+        /// <example>StartCoroutine(DelayedAction(() => action, 2,5f);</example>
+        /// <example>IEnumerator delayedAction = DelayedAction(() => action, 2.5f);</example> // Alternate syntax.
         /// <param name="action">The action or method to run. </param>
         /// <param name="delayInSeconds">The delay before running the method.</param>
         /// <param name="useRealtime">Waits the delayInSeconds using unscaled time. </param>

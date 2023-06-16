@@ -6,7 +6,7 @@
   "documentationUrl": "https://github.com/ltsLumina/Unity-Essentials",
   "changelogUrl": "https://github.com/ltsLumina/Unity-Essentials/releases",
   "dependencies": {
-    "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git#v2.3.3",
+    "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
   },
   "keywords": [
     "lumina",

@@ -6,7 +6,6 @@
   "documentationUrl": "https://github.com/ltsLumina/Unity-Essentials",
   "changelogUrl": "https://github.com/ltsLumina/Unity-Essentials/releases",
   "dependencies": {
-    "com.cysharp.unitask": "latest",
   },
   "keywords": [
     "lumina",

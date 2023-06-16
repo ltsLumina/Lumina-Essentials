@@ -9,13 +9,15 @@ using static UnityEngine.Object;
 
 /// <summary>
 /// Simple class to initialize the game.
-/// Instantiates the Systems prefab that includes every manager in your game.
-/// Make sure to create a Resources folder in your Assets folder and place the Systems prefab in there (or just use the one provided).
-/// The Systems prefab should be the parent of all the managers in your game.
-/// Each manager script should be its own child GameObject of the Systems prefab.
+/// Instantiates the 'Systems' prefab that includes every manager in your game.
+/// You must create a folder by name 'Resources' (CaSe SeNsItIvE) and place/create the 'Systems' prefab inside it.
+/// Alternatively, you can use the Resources folder and Systems prefab provided in this package.
+/// HOWEVER, if you are not using the provided Systems prefab, you should DELETE the 'Systems' folder from the package.
 /// 
 /// Check GitHub for more information:
 /// https://github.com/ltsLumina/Unity-Essentials
+/// or watch this video:
+/// https://www.youtube.com/watch?v=zJOxWmVveXU
 /// </summary>
 public static class Initialization
 {

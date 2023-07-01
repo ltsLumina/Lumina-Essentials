@@ -6,7 +6,8 @@ between two float values.*
 > for creating this attribute and the drawers. I simply added them to my essentials package for easy access.
 
 **End Result:**
-gif goes here
+![Ranged Float](https://github.com/ltsLumina/Unity-Essentials/assets/119983088/4b8f4090-a486-4821-b75d-a5c4fb15f010)
+
 
 If any doubt on how to use the attribute arises, please see the provided examples for reference.
 

@@ -2,7 +2,7 @@
 *The RangedFloat attribute, drawers and class collection is a set of tools intended to easily draw in inspector a range
 between two float values.*
 
-> All credit goes to [**@heisarzola**] (https://github.com/heisarzola) 
+> All credit goes to [**@heisarzola**] on GitHub (https://github.com/heisarzola) 
 > for creating this attribute and the drawers. I simply added them to my essentials package for easy access.
 
 **End Result:**
@@ -12,7 +12,7 @@ between two float values.*
 
 If any doubt on how to use the attribute arises, please see the provided examples for reference.
 
-### General Notes
+## General Notes
 
 - The RangedFloatAttribute (what is between brackets) will only work on the provided RangedFloat class.
 - The RangedFloat comes with a built in random within range method. If you use a RangedFloat instance as a float, it will

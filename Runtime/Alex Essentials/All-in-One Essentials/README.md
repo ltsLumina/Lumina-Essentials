@@ -21,3 +21,23 @@ automatically fetch a random value between min and max.
   - Likewise, you can call it explicitly if you want to: i.e. myFloat = myRangedFloat.GetRandomValue();// Same result as
 above.
 - You can download this folder only instead of the whole project if you want to.
+
+## Example:
+>
+
+    [Header("Ranged Float Without Attribute")]
+    [SerializeField] RangedFloat exampleOne;
+
+    [Header("Ranged Float With Locked Limits")]
+    [RangedFloat(2, 25, RangedFloatAttribute.RangeDisplayType.LockedRanges)]
+    [SerializeField] RangedFloat exampleTwo;
+
+    [Header("Ranged Float With Editable Limits")]
+    [RangedFloat(0, 1, RangedFloatAttribute.RangeDisplayType.EditableRanges)]
+    [SerializeField] RangedFloat exampleThree;
+
+    [Header("Ranged Float With Hidden (But Locked) Limits")]
+    [RangedFloat(5, 10, RangedFloatAttribute.RangeDisplayType.HideRanges)]
+    [SerializeField] RangedFloat exampleFour;
+    
+Try using any of these code snippets to see what works best for you.

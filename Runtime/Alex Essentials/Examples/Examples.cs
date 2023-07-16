@@ -1,9 +1,10 @@
 ﻿#region
+using System;
 using System.Collections;
 using UnityEngine;
 using Lumina.Essentials;
-using Lumina.Essentials.Attributes;
 using Lumina.Essentials.Sequencer;
+using Lumina.Essentials.Attributes;
 #endregion
 
 // Disables the warning from the use of the Deprecated class.
@@ -61,33 +62,28 @@ public sealed class Examples : MonoBehaviour
 
     #region Sequencer
     // Sequencing Examples //
-    void Start()
+    void Example()
     { 
 
         // Example 1 -- This is the recommended way to use Sequencing.
-        // Sequence sequenceOne = Sequencing.CreateSequence(this);
-        // sequenceOne.Execute(FirstExample).WaitForSeconds(2f).Execute(SecondExample);
+        Sequence sequenceOne = Sequencing.CreateSequence(this);
+        sequenceOne.Execute(FirstExample).WaitForSeconds(2f).Execute(SecondExample);
 
 
         // Example 2 -- An example of how to create longer sequences.
         Sequence sequenceTwo = Sequencing.CreateSequence(this);
-        sequenceTwo.WaitThenExecute(5f, ExampleMethod3).ContinueWith(() => Debug.Log("Finished!")).WaitForSeconds(2f).Execute(FirstExample);
+        sequenceTwo.WaitThenExecute(5f, ThirdExample).ContinueWith(() => Debug.Log("Finished!")).WaitForSeconds(2f).Execute(FirstExample);
 
 
         // Example 3 -- An example of how you can make a more readable sequence.
-        // Sequencing.CreateSequence(this)
-        //           .Execute(() => Debug.Log("Hello World!"))
-        //           .WaitForSeconds(3f)
-        //           .ContinueWith(() => Debug.Log("Goodbye World!"));
+        Sequencing.CreateSequence(this)
+                  .Execute(() => Debug.Log("Hello World!"))
+                  .WaitForSeconds(3f)
+                  .ContinueWith(() => Debug.Log("Goodbye World!"));
     }
 
     // End of Sequencing Examples //
     #endregion
-
-    
-    
-    
-    
     
     #region Helpers
 
@@ -247,13 +243,14 @@ public sealed class Examples : MonoBehaviour
 
     void SecondExample() => Debug.Log("Example Method 2!");
 
-    void ExampleMethod3()
+    void ThirdExample()
     { 
         Debug.Log("Example Method 3!");
 
         // Throws an exception to test the exception handling.
-        //throw new Exception("Example Exception!");
+        throw new Exception("Example Exception!");
     }
+    
     // End of Example Methods //
     #endregion
 }

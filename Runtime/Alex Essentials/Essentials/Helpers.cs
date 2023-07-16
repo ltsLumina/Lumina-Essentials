@@ -1,5 +1,4 @@
 #region
-using System;
 using UnityEngine;
 using static UnityEngine.Object;
 using Random = UnityEngine.Random;

@@ -7,8 +7,8 @@ inspector.*
 > > All credit goes to [**@heisarzola**] on GitHub (https://github.com/heisarzola)
 > for creating the RangedFloat attribute and the drawers. I simply added them to my essentials package for easy access.
 
-**Attributes:**
-![attribute example.gif](..%2F..%2F..%2FEditor%2FImgs%2Fattribute%20example.gif)
+**Attributes Class:**
+![Attributes Class](https://gyazo.com/3d6f460822eeff95ab53f301af5952f7)
 
 ## General Notes
 
@@ -52,7 +52,7 @@ If any doubt on how to use the attributes arises, please see the provided exampl
 > Designed, created and maintained by [**@ltsLumina**] on GitHub (https://github.com/ltsLumina)
 
 **End Result:**
-![sequencing example.gif](..%2F..%2F..%2FEditor%2FImgs%2Fsequencing%20example.gif)
+![Sequencer](link)
 
 ## General Notes
 
@@ -60,7 +60,7 @@ If any doubt on how to use the attributes arises, please see the provided exampl
 - Don't forget to make use of anonymous methods and lambda expressions to make your code more readable.
 - All methods are executed in the same order they are called.
   - i.e. Execute(First).Execute(Second).Execute(Third) will execute First, then Second, then Third.
-  - or:  Execute(First).WaitForSeconds(2f).Execute(Second) will execute First, then wait 2 seconds, then execute Second.
+  - i.e. Execute(First).WaitForSeconds(2f).Execute(Second) will execute First, then wait 2 seconds, then execute Second.
 - Take a look at the provided examples script for reference. (Examples.cs)
 
 ## Example:
@@ -82,4 +82,6 @@ If any doubt on how to use the attributes arises, please see the provided exampl
                   .WaitForSeconds(3f)
                   .ContinueWith(() => Debug.Log("Goodbye World!"));
 ```
+
+![Ranged Float](https://github.com/ltsLumina/Unity-Essentials/assets/119983088/4b8f4090-a486-4821-b75d-a5c4fb15f010)
 

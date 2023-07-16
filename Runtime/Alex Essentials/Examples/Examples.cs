@@ -60,30 +60,35 @@ public sealed class Examples : MonoBehaviour
     #endregion
 
     #region Sequencer
-    // Examples of how to use the Sequencing class.
+    // Sequencing Examples //
     void Start()
-    { // Sequencing Examples
+    { 
 
         // Example 1 -- This is the recommended way to use Sequencing.
-        Sequence sequenceOne = Sequencing.CreateSequence(this);
-        sequenceOne.Execute(FirstExample).WaitForSeconds(2f).Execute(SecondExample);
+        // Sequence sequenceOne = Sequencing.CreateSequence(this);
+        // sequenceOne.Execute(FirstExample).WaitForSeconds(2f).Execute(SecondExample);
 
 
-        // Example 2 -- A longer example of how to create longer sequences.
+        // Example 2 -- An example of how to create longer sequences.
         Sequence sequenceTwo = Sequencing.CreateSequence(this);
         sequenceTwo.WaitThenExecute(5f, ExampleMethod3).ContinueWith(() => Debug.Log("Finished!")).WaitForSeconds(2f).Execute(FirstExample);
 
 
         // Example 3 -- An example of how you can make a more readable sequence.
-        Sequencing.CreateSequence(this)
-                  .Execute(() => Debug.Log("Hello World!"))
-                  .WaitForSeconds(3f)
-                  .ContinueWith(() => Debug.Log("Goodbye World!"));
+        // Sequencing.CreateSequence(this)
+        //           .Execute(() => Debug.Log("Hello World!"))
+        //           .WaitForSeconds(3f)
+        //           .ContinueWith(() => Debug.Log("Goodbye World!"));
     }
 
     // End of Sequencing Examples //
     #endregion
 
+    
+    
+    
+    
+    
     #region Helpers
 
     ////////////////////////////

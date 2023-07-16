@@ -1,6 +1,6 @@
 {
 	"name": "Lumina.Essentials",
-	"rootNamespace": "",
+	"rootNamespace": "Lumina.Essentials",
 	"references": [],
 	"includePlatforms": [],
 	"excludePlatforms": [],

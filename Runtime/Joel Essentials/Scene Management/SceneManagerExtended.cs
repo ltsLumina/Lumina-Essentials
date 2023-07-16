@@ -23,8 +23,9 @@ public static class SceneManagerExtended
     /// <summary>
     ///     Reloads the currently active scene.
     /// </summary>
-    public static void ReloadScene() =>
-        SceneManager.LoadScene(ClampBuildIndex(SceneManager.GetActiveScene().buildIndex));
+    public static void ReloadScene() {
+        if (Application.isPlaying) SceneManager.LoadScene(ClampBuildIndex(SceneManager.GetActiveScene().buildIndex));
+    }
 
     /// <summary>
     ///     Loads the next scene according to build index order.

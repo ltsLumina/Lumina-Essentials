@@ -1,7 +1,7 @@
 {
   "name": "Lumina.Essentials.Editor",
   "references": [
-    "Lumina.Essentials"
+    "GUID:3a7ae6877f705cc4586446264c396e32"
   ],
   "includePlatforms": [
     "Editor"

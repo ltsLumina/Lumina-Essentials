@@ -8,7 +8,7 @@ inspector.*
 > for creating the RangedFloat attribute and the drawers. I simply added them to my essentials package for easy access.
 
 **Attributes Class:**
-![Attributes Class](https://gyazo.com/3d6f460822eeff95ab53f301af5952f7)
+![attribute example.gif](..%2F..%2FEditor%2FImgs%2Fattribute%20example.gif)
 
 ## General Notes
 
@@ -52,7 +52,7 @@ If any doubt on how to use the attributes arises, please see the provided exampl
 > Designed, created and maintained by [**@ltsLumina**] on GitHub (https://github.com/ltsLumina)
 
 **End Result:**
-![Sequencer](link)
+![sequencing example.gif](..%2F..%2FEditor%2FImgs%2Fsequencing%20example.gif)
 
 ## General Notes
 
@@ -82,6 +82,4 @@ If any doubt on how to use the attributes arises, please see the provided exampl
                   .WaitForSeconds(3f)
                   .ContinueWith(() => Debug.Log("Goodbye World!"));
 ```
-
-![Ranged Float](https://github.com/ltsLumina/Unity-Essentials/assets/119983088/4b8f4090-a486-4821-b75d-a5c4fb15f010)
 

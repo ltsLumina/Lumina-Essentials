@@ -1,3 +1,6 @@
+# exludes all
+/*
+
 # Exclude all files and folders in the Assets folder
 /Assets/*
 

@@ -1,11 +1,16 @@
 # This .gitignore file should be placed at the root of your Unity project directory
 
-# Ignore all files and folders in the Assets folder
+# Ignore all files and folders in the root folder
 /*
 
-# Include the specified folder
+# Include the Assets folder
+!/Assets/
+
+# Exclude all files and folders in the Assets folder
+/Assets/*
+
+# Include the specified folder within the Assets folder
 !/Assets/Lumina's Essentials/
 
-# Builds
-*.apk
-*.unitypackage
+
+# TODO: include unitypackages, potentially

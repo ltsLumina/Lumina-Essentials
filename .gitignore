@@ -1,0 +1,8 @@
+# Exclude all files and folders in the Assets folder
+/Assets/*
+
+# Include the specified folder within the Assets folder
+!/Assets/Lumina's Essentials/
+
+
+# Include Unity packages maybe

@@ -16,7 +16,7 @@ namespace Lumina.Essentials.Editor
     public static class EssentialsUpdater
     {
         /// <summary> Whether or not the current version is the latest version. </summary>
-        public static string LastUpdateCheck => TimeSinceLastUpdate();
+        public static string LastUpdateCheck => StartupChecks.TimeSinceLastUpdate();
         
         readonly static Queue<IEnumerator> coroutineQueue = new ();
 

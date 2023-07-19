@@ -11,7 +11,7 @@ namespace Lumina.Essentials.Editor
         internal static Texture2D headerImg, footerImg;
 
         // Styles for the title and the buttons.
-        internal static GUIStyle defaultStyle, mainLabelStyle, buttonStyle, buttonSetup, toolbarButtonStyle, centerLabelStyle, subLabelStyle, buttonBigStyle;
+        internal static GUIStyle middleStyle, mainLabelStyle, buttonStyle, buttonSetup, toolbarButtonStyle, centerLabelStyle, subLabelStyle, buttonBigStyle;
         internal static GUIStyle wrapCenterLabelStyle;
         internal static GUIStyle wordWrapRichTextLabelStyle;
         internal static GUIStyle btImgStyle;
@@ -26,7 +26,7 @@ namespace Lumina.Essentials.Editor
         {
             #region Styles
             // Default style
-            defaultStyle = new ()
+            middleStyle = new ()
             { richText  = true,
               alignment = TextAnchor.MiddleCenter,
               fontSize  = 12,

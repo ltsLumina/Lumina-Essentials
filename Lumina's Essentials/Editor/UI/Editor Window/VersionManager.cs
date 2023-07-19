@@ -3,12 +3,12 @@ using System;
 using UnityEditor;
 #endregion
 
-namespace Lumina.Essentials.Editor
+namespace Lumina.Essentials.Editor.UI
 {
     public static class VersionManager
     {
         /// <summary> The current version of Lumina's Essentials. </summary>
-        public static string CurrentVersion => "1.0.0 Debug";
+        public static string CurrentVersion => "1.0.0";
         /// <summary> The latest version of Lumina's Essentials available on GitHub. </summary>
         public static string LatestVersion => EditorPrefs.GetString("LatestVersion", "Unknown");
         /// <summary> The version of the package that was last opened. </summary>
@@ -18,9 +18,12 @@ namespace Lumina.Essentials.Editor
             set => EditorPrefs.SetString("LastOpenVersion", value);
         }
         /// <summary> Whether or not the current version is a debug version. </summary>
-        public static bool DebugVersion => CurrentVersion.Contains("Debug") || CompareVersions(CurrentVersion, LatestVersion);
-
-        internal static bool dontShowDebugWarningAgain;
+        public static bool DebugVersion => CurrentVersion.Contains("Debug", StringComparison.OrdinalIgnoreCase) || CompareVersions(CurrentVersion, LatestVersion);
+        internal static bool DontShow_DebugBuildWarning
+        {
+            get => EditorPrefs.GetBool("DontShow_DebugBuildWarning");
+            set => EditorPrefs.SetBool("DontShow_DebugBuildWarning", value);
+        }
 
         public static void UpdateStatistics(string version)
         { // Update EditorPrefs

@@ -2,14 +2,14 @@
 using System;
 using System.IO;
 using System.Linq;
+using Microsoft.Win32;
 using UnityEngine;
 using UnityEditor;
-using static Lumina.Essentials.Editor.EditorGUIUtils;
-using static Lumina.Essentials.Editor.VersionManager;
-using Object = UnityEngine.Object;
+using static Lumina.Essentials.Editor.UI.EditorGUIUtils;
+using static Lumina.Essentials.Editor.UI.VersionManager;
 #endregion
 
-namespace Lumina.Essentials.Editor //TODO: Make the installer a git UPM package
+namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM package
 {
     public sealed class UtilityWindow : EditorWindow
     {
@@ -54,24 +54,18 @@ namespace Lumina.Essentials.Editor //TODO: Make the installer a git UPM package
         /// <summary> Used to ensure that the user is aware of the consequences of disabling Safe mode. </summary>
         bool iUnderstand;
         
-        
-
-        // Safe mode bool (used to prevent the user from accidentally deleting their files).
-        bool safeMode;
-        
         /// <summary> Enabled by default. Prevents the user from accidentally doing something they didn't intend to do. </summary>
         bool SafeMode
         {
-            get => safeMode;
+            get => EditorPrefs.GetBool("SafeMode", true);
             set
             {
-                safeMode = value;
-                EditorPrefs.SetBool("SafeMode", safeMode);
+                EditorPrefs.SetBool("SafeMode", value);
 
                 // Ensures that the user is aware of the consequences of replacing files by displaying a warning message if the checkbox is checked
-                if (iUnderstand && !safeMode)
+                if (iUnderstand && !SafeMode)
                 {
-                    DebugHelper.LogWarning($"Safe mode is now {(safeMode ? "enabled" : "disabled")}.");
+                    DebugHelper.LogWarning($"Safe mode is now {(SafeMode ? "enabled" : "disabled")}.");
                 }
             }
         }
@@ -82,14 +76,16 @@ namespace Lumina.Essentials.Editor //TODO: Make the installer a git UPM package
         #region Utilities variables
 
         /// <summary> Opens the configure images options. </summary>
-        bool configureImages;
-        const SpriteImportMode spriteImportMode = SpriteImportMode.Single;
-        const FilterMode filterMode = FilterMode.Point;
-        const TextureImporterCompression compression = TextureImporterCompression.Uncompressed;
+        bool configuringImages;
+        static SpriteImportMode spriteImportMode = SpriteImportMode.Single;
+        static FilterMode filterMode = FilterMode.Point;
+        static TextureImporterCompression compression = TextureImporterCompression.Uncompressed;
         /// <summary> Quick toggle to set the sprite import mode to the recommended settings for importing sprites. </summary>
-        bool isSprite;
+        bool isSpriteSheet;
+        bool dragAndDropFolder;
+        bool isCorrectDirectory;
         /// <summary> Shows the path of the selected object. </summary>
-        string imageConverterPath;
+        string imageConverterPath = "";
         
         // End of utilities variables //
         #endregion
@@ -109,7 +105,7 @@ namespace Lumina.Essentials.Editor //TODO: Make the installer a git UPM package
             
             // Set the last open version to the current version
             LastOpenVersion = CurrentVersion;
-            //SafeMode = true;
+            SafeMode = true;
 
             // Enable the Toolbar.
             currentPanel = DisplayToolbar;
@@ -168,20 +164,20 @@ namespace Lumina.Essentials.Editor //TODO: Make the installer a git UPM package
             switch (selectedTab)
             {
                 case 1:
-                    SettingsPanel();
+                    DrawSettingsGUI();
                     break;
 
                 case 2:
-                    UtilitiesPanel();
+                    DrawUtilitiesGUI();
                     break;
 
                 default:
-                    MainPanel();
+                    DrawSetupGUI();
                     break;
             }
         }
 
-        void MainPanel()
+        void DrawSetupGUI()
         {
             var areaRect = new Rect(0, 30, 370, 118);
             GUI.DrawTexture(areaRect, headerImg, ScaleMode.StretchToFill, false);
@@ -222,7 +218,7 @@ namespace Lumina.Essentials.Editor //TODO: Make the installer a git UPM package
                 if (GUILayout.Button("<b>Setup Essentials...</b>\n(add/remove Modules)", buttonSetup, GUILayout.Width(200)))
                 {
                     // Select Setup Panel (not main panel)
-                    currentPanel = SetupPanel;
+                    currentPanel = DrawModuleGUI;
                 }
                 GUILayout.FlexibleSpace();
             }
@@ -301,7 +297,7 @@ namespace Lumina.Essentials.Editor //TODO: Make the installer a git UPM package
         /// <summary>
         ///    Displays the setup panel that allows the user to replace the old files with the new ones.
         /// </summary>
-        void SetupPanel() // Not to be confused with the SetupWindow
+        void DrawModuleGUI() // Not to be confused with the SetupWindow
         {
             GUILayout.Label("   Add/Remove Modules", mainLabelStyle);
             
@@ -316,7 +312,7 @@ namespace Lumina.Essentials.Editor //TODO: Make the installer a git UPM package
             
             #region Apply/Cancel Buttons (For the Setup Panel)
             GUILayout.BeginHorizontal();
-            // "Apply" button
+            
             if (GUILayout.Button("Apply"))
             {
                 if (installEssentials && !SafeMode)
@@ -373,7 +369,7 @@ namespace Lumina.Essentials.Editor //TODO: Make the installer a git UPM package
             #endregion
         }
         
-        void SettingsPanel()
+        void DrawSettingsGUI()
         {
             GUILayout.Space(6);
             GUILayout.Label("Settings", centerLabelStyle);
@@ -396,11 +392,16 @@ namespace Lumina.Essentials.Editor //TODO: Make the installer a git UPM package
                         EditorPrefs.DeleteAll();
                         
                         // Reset any necessary flags or variables
-                        SafeMode      = true;
-                        iUnderstand   = false;
-                        dontShowDebugWarningAgain = false;
+                        SafeMode                   = true;
+                        iUnderstand                = false;
+                        imageConverterPath         = "";
+                        DontShow_DebugBuildWarning = false;
+                        DebugHelper.LogBehaviour   = DebugHelper.LogLevel.Verbose;
                         
                         DebugHelper.LogWarning("Settings and EditorPrefs have been reset.");
+
+                        // Display a warning if the user is in a debug build
+                        StartupChecks.DebugBuildWarning();
                         
                         // Check for updates to set up everything again.
                         EssentialsUpdater.CheckForUpdates();
@@ -421,8 +422,15 @@ namespace Lumina.Essentials.Editor //TODO: Make the installer a git UPM package
             // Display the value of SafeMode as a readonly checkbox and tooltip
             SafeMode = EditorGUILayout.Toggle 
             (new GUIContent
-             ("Safe Mode","If disabled, the user is not protected from performing unsafe actions that may perform unintended actions."                             +
+             ("Safe Mode","If disabled, the user is not protected from performing unsafe actions that may perform unintended actions." +
               " \n Namely, this is used to ensure the user doesn't accidentally delete their old Essentials install when upgrading to a new version."), SafeMode);
+            
+            // The user can choose the logging level. This is used to determine what is logged to the console.
+            if (!SafeMode)
+                DebugHelper.LogBehaviour = (DebugHelper.LogLevel) EditorGUILayout.EnumPopup
+                    (new GUIContent("└  Logging Behaviour", "Determines what (how much) is logged to the console."), DebugHelper.LogBehaviour);
+
+            GUILayout.Space(3);
             
             // Displays the last version of the Essentials package that was opened
             EditorGUILayout.LabelField("Last Open Version", EditorPrefs.GetString("LastOpenVersion"));
@@ -439,6 +447,18 @@ namespace Lumina.Essentials.Editor //TODO: Make the installer a git UPM package
             
             if (!SafeMode)
             {
+                GUILayout.Label("Debug Options", centerLabelStyle);
+                GUILayout.Label("Various buttons and settings for debugging.", subLabelStyle);
+                GUILayout.Space(5);
+
+                if (GUILayout.Button("Show All EditorPrefs", GUILayout.Height(30)))
+                {
+                    ShowAllEditorPrefs();
+                }
+                
+                // Draw a horizontal line (separator)
+                EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+                
                 // Display the image configuration options
                 GUILayout.Label("Read-only values", centerLabelStyle);
                 GUILayout.Label("These are only here for debugging purposes.", subLabelStyle);
@@ -451,9 +471,8 @@ namespace Lumina.Essentials.Editor //TODO: Make the installer a git UPM package
                 EditorGUI.BeginDisabledGroup(true);
                 // Box view the SetupRequired bool
                 SetupRequired = EditorGUILayout.Toggle("Setup Required", SetupRequired);
-                dontShowDebugWarningAgain = EditorGUILayout.Toggle("Don't Show Debug Alert", dontShowDebugWarningAgain);
-                
-                
+                DontShow_DebugBuildWarning = EditorGUILayout.Toggle("Don't Show Debug Alert", DontShow_DebugBuildWarning);
+
                 EditorGUI.EndDisabledGroup();
             }
             
@@ -461,7 +480,7 @@ namespace Lumina.Essentials.Editor //TODO: Make the installer a git UPM package
             #endregion
         }
 
-        void UtilitiesPanel()
+        void DrawUtilitiesGUI()
         {
             GUILayout.Space(6);
             GUILayout.Label("Utilities", centerLabelStyle);
@@ -471,11 +490,13 @@ namespace Lumina.Essentials.Editor //TODO: Make the installer a git UPM package
             EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
             
             #region Utilities Panel
+
+            #region Buttons and Toggles
             // Checkbox to enable or disable the enter playmode options
             EditorSettings.enterPlayModeOptionsEnabled = EditorGUILayout.Toggle
             (new GUIContent
-            ("Enter Playmode Options",
-            "Enabling \"Enter Playmode Options\" improves Unity's workflow by significantly reducing the time it takes to enter play mode."),
+             ("Enter Playmode Options",
+              "Enabling \"Enter Playmode Options\" improves Unity's workflow by significantly reducing the time it takes to enter play mode."),
              EditorSettings.enterPlayModeOptionsEnabled);
             
             //TODO: option for what input system to use (advanced)
@@ -486,60 +507,66 @@ namespace Lumina.Essentials.Editor //TODO: Make the installer a git UPM package
 
             GUILayout.Space(10);
             
-            // Button that creates a default project directory structure
-            if (GUILayout.Button("Create Default Project \nDirectory Structure", GUILayout.Height(35)))
-            {
-                CreateProjectStructure();
-            }
+            // Button that creates a default project directory structure //TODO: allow for selecting a custom directory structure through enum popups
+            if (GUILayout.Button("Create Default Project \nDirectory Structure", GUILayout.Height(35))) CreateProjectStructure();
 
-            GUI.backgroundColor = configureImages ? new Color(0.76f, 0.76f, 0.76f) : Color.white;
+            GUILayout.Space(3);
+            
+            GUI.backgroundColor = configuringImages ? new Color(0.76f, 0.76f, 0.76f) : Color.white;
             if (GUILayout.Button(configureImagesContent, GUILayout.Height(35)))
             {
-                configureImages = !configureImages;
+                configuringImages = !configuringImages;
+
+                // Reset the image converter path if the user stops configuring the configure images settings.
+                if (!configuringImages) imageConverterPath = "";
             }
             GUI.backgroundColor = Color.white;
+            
+            GUILayout.Space(3);
             
             if (GUILayout.Button("Placeholder Button", GUILayout.Height(35)))
             {
                 DebugHelper.Log("This does nothing as it's a placeholder.");
-                //TODO: if this shows new things like configuring images, make sure to disable configureImages before continuing
+                //TODO: if this shows new things like configuring images, make sure to disable configuringImages before continuing
             }
 
-            if (configureImages)
+            #endregion
+            
+            GUILayout.Space(3);
+            
+            // Draw a horizontal line (separator)
+            EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+
+            #region Image Converter
+            // Display the image configuration options //TODO: add an advanced button to show more options (allows for a default folder that automatically configures images) //Also add a button to reset the image converter directory.
+            GUILayout.Label("Image Configuration", centerLabelStyle); 
+            GUILayout.Label("Configure the default settings for images.", subLabelStyle);
+            GUILayout.Space(10);
+
+            // Enum popups for the image configuration
+            spriteImportMode = (SpriteImportMode) EditorGUILayout.EnumPopup("Sprite Mode", spriteImportMode);
+            filterMode       = (FilterMode) EditorGUILayout.EnumPopup("Filter Mode", filterMode);
+            compression      = (TextureImporterCompression) EditorGUILayout.EnumPopup("Compression", compression);
+
+            // Quick toggle to set the recommended settings for sprites (multiple)
+            var spriteModeContent = new GUIContent
+            ("Sprite-Sheet",
+             "Sets the recommended settings for sprite-sheets \n" + "This will set the sprite mode to multiple, filter mode to point, and compression to uncompressed.");
+
+            isSpriteSheet = EditorGUILayout.Toggle(spriteModeContent, isSpriteSheet);
+
+            if (isSpriteSheet)
             {
-                TESTING_ImageDragAndDrop();
-                
-                // // Draw a horizontal line (separator)
-                // EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
-                //
-                // // Display the image configuration options
-                // GUILayout.Label("Image Configuration", centerLabelStyle);
-                // GUILayout.Label("Configure the default settings for images.", subLabelStyle);
-                // GUILayout.Space(5);
-                //
-                // // Enum popups for the image configuration
-                // spriteImportMode = (SpriteImportMode) EditorGUILayout.EnumPopup("Sprite Mode", spriteImportMode);
-                // filterMode = (FilterMode) EditorGUILayout.EnumPopup("Filter Mode", filterMode);
-                // compression = (TextureImporterCompression) EditorGUILayout.EnumPopup("Compression", compression);
-                //
-                // // Quick toggle to set the recommended settings for sprites (multiple)
-                // GUIContent spriteModeContent = new GUIContent
-                // ("Is Sprite", "Sets the recommended settings for sprites. \n" +
-                // "This will set the sprite mode to multiple, filter mode to point, and compression to uncompressed.");
-                //
-                // isSprite = EditorGUILayout.Toggle(spriteModeContent, isSprite);
-                //
-                // if (isSprite)
-                // {
-                //     filterMode = FilterMode.Point;
-                //     compression = TextureImporterCompression.Uncompressed;
-                //     spriteImportMode = SpriteImportMode.Multiple;
-                // }
-                //
-                // // Apply button
-                // if (GUILayout.Button("Apply")) ConfigureImages();
+                filterMode       = FilterMode.Point;
+                compression      = TextureImporterCompression.Uncompressed;
+                spriteImportMode = SpriteImportMode.Multiple;
             }
             
+            GUILayout.Space(5);
+
+            DrawConfigureImagesGUI();
+            
+            #endregion
             
             #endregion
             GUILayout.Space(10);
@@ -562,59 +589,30 @@ namespace Lumina.Essentials.Editor //TODO: Make the installer a git UPM package
             else { DebugHelper.LogAbort(SafeMode); }
         }
 
-        void ConfigureImages()
+        void DrawConfigureImagesGUI()
         {
-            const string imageMsg  = "Are you sure you want to configure the images?";
-            const string spriteMsg = "Are you sure you want to configure the sprites?";
-            string confirmationMessage = isSprite 
-                ? imageMsg + "\nThis will set the sprite mode to multiple, filter mode to point, and compression to uncompressed." 
-                : spriteMsg + "\nThis will set the filter mode to point and compression to uncompressed."
-                + " Keep in mind that the 'multiple' sprite mode is used for sprite-sheets and is not recommended for single sprites.";
-            
-            if (!SafeMode)
-            {
-                if (EditorUtility.DisplayDialog("Confirmation", confirmationMessage, "Yes", "No"))
-                {
-                    // Get all files in /Lumina Essentials/Editor/Utilities/Image Converter/
-                    string relativePath = "Lumina's Essentials/Editor/Utilities/Image Converter";
-                    string fullPath     = Path.Combine(Application.dataPath, relativePath);
-
-                    // Get the search patterns for the files (png, jpg, jpeg)
-                    string[] searchPatterns ={ "*.png", "*.jpg", "*.jpeg" };
-
-                    string[] files = searchPatterns.SelectMany(pattern => Directory.GetFiles(fullPath, pattern)).ToArray();
-
-                    // Loop through each file
-                    foreach (string file in files)
-                    {
-                        // Get the asset path and texture importer
-                        string assetPath       = "Assets/" + Path.Combine(relativePath, Path.GetFileName(file)).Replace('\\', '/');
-                        var    textureImporter = AssetImporter.GetAtPath(assetPath) as TextureImporter;
-
-                        if (textureImporter != null)
-                        {
-                            // Set the filter mode and compression to point and no compression at the path
-                            textureImporter.spriteImportMode   = spriteImportMode;
-                            textureImporter.filterMode         = filterMode;
-                            textureImporter.textureCompression = compression;
-                            textureImporter.SaveAndReimport();
-                        }
-                    }
-                }
-                else { DebugHelper.LogAbort(SafeMode); }
-            }
-            else { DebugHelper.LogAbort(SafeMode); }
+            if (configuringImages) DrawDragAndDropConfig();
         }
-
-        void TESTING_ImageDragAndDrop()
+        
+        void DrawDragAndDropConfig()
         {
             GUILayout.Label("Drag a folder here:", middleStyle);
             GUILayout.Label("The selected folder will be used to convert the images.", subLabelStyle);
+            GUILayout.Space(10);
 
-            float dropAreaHeight = imageConverterPath.Length > 80 ? 60 : 30;
+            var dropAreaStyle = new GUIStyle(GUI.skin.box)
+            { normal =
+              { textColor = new (0.87f, 0.87f, 0.87f) },
+              alignment = TextAnchor.MiddleCenter,
+              fontStyle = FontStyle.Bold,
+              fontSize  = 12,
+              richText  = true,
+              wordWrap  = true };
+            
+            float dropAreaHeight = imageConverterPath.Length > 60 ? 45 : 30;
             
             Rect dropArea = GUILayoutUtility.GetRect(0, dropAreaHeight, GUILayout.ExpandWidth(true));
-            GUI.Box(dropArea, imageConverterPath);
+            GUI.Box(dropArea, imageConverterPath, dropAreaStyle);
 
             if (Event.current.type == EventType.DragUpdated && dropArea.Contains(Event.current.mousePosition))
             {
@@ -637,6 +635,124 @@ namespace Lumina.Essentials.Editor //TODO: Make the installer a git UPM package
                     }
                 }
             }
+
+            GUILayout.Space(10);
+
+            string       folderSelectedMsg   = $"The folder: \"{GetFolderNameFromString(imageConverterPath)}\" will be used to convert all images.";
+            const string noFolderSelectedMsg = "No folder selected. \nPlease drag and drop a folder to use.";
+
+            if (!string.IsNullOrEmpty(imageConverterPath))
+            {
+                GUILayout.Label(folderSelectedMsg, middleStyle);
+                GUILayout.Label("Please put any images you wish to convert in said folder.", subLabelStyle);
+                GUILayout.Space(4);
+
+                var correctDirectoryContent = new GUIContent("Is this directory correct?", "This will disable safe mode. \nPlease proceed with caution.");
+                isCorrectDirectory = EditorGUILayout.Toggle(correctDirectoryContent, isCorrectDirectory);
+
+                if (isCorrectDirectory)
+                {
+                    SafeMode = !SafeMode;
+                    DebugHelper.LogWarning("Safe mode disabled.");
+                }
+
+                GUILayout.Space(5);
+                
+                if (GUILayout.Button("Apply"))
+                {
+                    if (isCorrectDirectory) ConfigureImages();
+                    else DebugHelper.LogWarning("The action was aborted. \nYou haven't checked the confirmation box!");
+                }
+            }
+            else
+            {
+                GUILayout.Label(noFolderSelectedMsg, middleStyle);
+            }
+        }
+
+        void ConfigureImages()
+        {
+            const string imageMsg  = "Are you sure you want to configure the images?";
+            const string spriteMsg = "Are you sure you want to configure the sprites?";
+            string confirmationMessage = isSpriteSheet
+                ? $"{imageMsg}\nThis will set the sprite mode to multiple, filter mode to point, and compression to uncompressed."
+                : $"{spriteMsg}\nThis will set the filter mode to point and compression to uncompressed." +
+                  " Keep in mind that the 'multiple' sprite mode is used for sprite-sheets and is not recommended for single sprites.";
+            
+            if (!SafeMode)
+            {
+                if (EditorUtility.DisplayDialog("Confirmation", confirmationMessage, "Yes", "No"))
+                {
+                    // Get all files in /Lumina Essentials/Editor/Utilities/Image Converter/
+                    string folderPath = imageConverterPath;
+
+                    // Get the search patterns for the files (png, jpg, jpeg)
+                    string[] searchPatterns ={ "*.png", "*.jpg", "*.jpeg" };
+
+                    string[] images = searchPatterns.SelectMany(pattern => Directory.GetFiles(folderPath, pattern)).ToArray();
+
+                    // Loop through each file
+                    foreach (string image in images)
+                    {
+                        // Get the asset path and texture importer
+                        string assetPath       = Path.Combine(folderPath, Path.GetFileName(image)).Replace('\\', '/');
+                        var    textureImporter = AssetImporter.GetAtPath(assetPath) as TextureImporter;
+
+                        if (textureImporter != null)
+                        {
+                            // Set the filter mode and compression to point and no compression at the path
+                            textureImporter.spriteImportMode   = spriteImportMode;
+                            textureImporter.filterMode         = filterMode;
+                            textureImporter.textureCompression = compression;
+                            textureImporter.SaveAndReimport();
+
+                            foreach (string configuredImage in images)
+                            {
+                                DebugHelper.Log($"Configured {Path.GetFileName(configuredImage)}");
+                            }
+                        }
+                    }
+                }
+                else { DebugHelper.LogAbort(false); }
+            }
+            else { DebugHelper.LogAbort(SafeMode); }
+        }
+    }
+    
+    // window to display editor prefs
+    public class EditorPrefsWindow : EditorWindow
+    {
+        [MenuItem("Lumina's Essentials/Editor Preferences")]
+        public static void ShowWindow() => GetWindow<EditorPrefsWindow>("Editor Preferences");
+
+        Vector2 scrollPos;
+        
+        void OnGUI()
+        {
+            using var key = Registry.CurrentUser.OpenSubKey(@"Software\Unity Technologies\Unity Editor 5.x\");
+
+            if (key == null)
+            {
+                EditorGUILayout.LabelField("No EditorPrefs found.");
+                return;
+            }
+
+            EditorGUILayout.LabelField("All EditorPrefs:");
+
+            // Begin a scroll view. Note the use of the field to store the scroll position.
+            scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
+
+            foreach (var valueName in key.GetValueNames())
+            {
+                var value = key.GetValue(valueName);
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField(valueName);
+                EditorGUILayout.LabelField(value.ToString(), GUILayout.Width(100));
+                EditorGUILayout.EndHorizontal();
+            }
+
+            // Always do a `EndScrollView` when you do a `BeginScrollView`
+            EditorGUILayout.EndScrollView();
         }
     }
 }

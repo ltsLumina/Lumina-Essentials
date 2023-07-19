@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEditor;
 
-namespace Lumina.Essentials.Editor
+namespace Lumina.Essentials.Editor.UI
 {
     public static class StartupChecks
     {
@@ -32,7 +32,7 @@ namespace Lumina.Essentials.Editor
         /// </summary>
         /// <param name="latestVersion"> The latest version of Lumina's Essentials. </param>
         static void DisplayNewVersionAlert(string latestVersion) => 
-            DebugHelper.LogWarning($"A new version of Lumina's Essentials is available! (v{latestVersion})\nYou can download it from the GitHub repository.");
+            DebugHelper.Log($"A new version of Lumina's Essentials is available! (v{latestVersion})\nYou can download it from the GitHub repository.");
         /// <summary>
         /// Checks if a major update is available by comparing the current version with the latest version.
         /// </summary>
@@ -64,17 +64,16 @@ namespace Lumina.Essentials.Editor
                 }
             }
         }
-        static void DebugBuildWarning()
+        
+        internal static void DebugBuildWarning()
         {
-            VersionManager.dontShowDebugWarningAgain = EditorPrefs.GetBool("DontShowAgain");
-            
-            if (!VersionManager.dontShowDebugWarningAgain && VersionManager.DebugVersion) 
+            if (!VersionManager.DontShow_DebugBuildWarning && VersionManager.DebugVersion) 
             { 
                 if (EditorUtility.DisplayDialog
                     ("Debug Version", "You are currently using a Debug Version of Lumina's Essentials. " + "\nThis means the application might not work as intended.", "OK"))
                 {
-                    VersionManager.dontShowDebugWarningAgain = true;
-                    EditorPrefs.SetBool("DontShowAgain", VersionManager.dontShowDebugWarningAgain); 
+                    VersionManager.DontShow_DebugBuildWarning = true;
+                    EditorPrefs.SetBool("DontShowAgain", VersionManager.DontShow_DebugBuildWarning); 
                 }
             }
         }
@@ -121,7 +120,7 @@ namespace Lumina.Essentials.Editor
         }
         public static bool MajorUpdateAvailable()
         {
-            EssentialsUpdater.CheckForUpdates();
+            EssentialsUpdater.CheckForUpdates(); //TODO: reconsider this.
 
             return !VersionManager.CompareVersions(VersionManager.CurrentVersion, VersionManager.LatestVersion);
         }

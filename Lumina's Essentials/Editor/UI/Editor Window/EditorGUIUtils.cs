@@ -3,7 +3,7 @@ using Lumina.Essentials.Sequencer;
 using UnityEditor;
 using UnityEngine;
 
-namespace Lumina.Essentials.Editor
+namespace Lumina.Essentials.Editor.UI
 {
     public static class EditorGUIUtils
     {
@@ -11,7 +11,15 @@ namespace Lumina.Essentials.Editor
         internal static Texture2D headerImg, footerImg;
 
         // Styles for the title and the buttons.
-        internal static GUIStyle middleStyle, mainLabelStyle, buttonStyle, buttonSetup, toolbarButtonStyle, centerLabelStyle, subLabelStyle, buttonBigStyle;
+        internal static GUIStyle middleStyle;
+        internal static GUIStyle leftStyle;
+        internal static GUIStyle mainLabelStyle;
+        internal static GUIStyle buttonStyle;
+        internal static GUIStyle buttonSetup;
+        internal static GUIStyle toolbarButtonStyle;
+        internal static GUIStyle centerLabelStyle;
+        internal static GUIStyle subLabelStyle;
+        internal static GUIStyle buttonBigStyle; 
         internal static GUIStyle wrapCenterLabelStyle;
         internal static GUIStyle wordWrapRichTextLabelStyle;
         internal static GUIStyle btImgStyle;
@@ -31,6 +39,17 @@ namespace Lumina.Essentials.Editor
               alignment = TextAnchor.MiddleCenter,
               fontSize  = 12,
               fontStyle = FontStyle.Bold,
+              wordWrap  = true,
+              normal = new ()
+              { textColor = new (0.86f, 0.86f, 0.86f) } };
+            
+            // copy of middle style
+            leftStyle = new ()
+            { richText  = true,
+              alignment = TextAnchor.MiddleLeft,
+              fontSize  = 12,
+              fontStyle = FontStyle.Bold,
+              wordWrap  = true,
               normal = new ()
               { textColor = new (0.86f, 0.86f, 0.86f) } };
 
@@ -137,5 +156,16 @@ namespace Lumina.Essentials.Editor
                 }
             }
         }
+
+        internal static string GetFolderNameFromString(string str)
+        {
+            // Assign a default string in case directoryInfo.Name returns an empty string.
+            if (string.IsNullOrEmpty(str)) str = "New Folder";
+
+            var directoryInfo = new DirectoryInfo(str);
+            return directoryInfo.Name;
+        }
+
+        internal static void ShowAllEditorPrefs() => EditorPrefsWindow.ShowWindow();
     }
 }

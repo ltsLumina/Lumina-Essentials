@@ -4,14 +4,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
-using Lumina.Essentials.Sequencer;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Networking;
-using static Lumina.Essentials.Editor.VersionManager;
+using static Lumina.Essentials.Editor.UI.VersionManager;
 #endregion
 
-namespace Lumina.Essentials.Editor
+namespace Lumina.Essentials.Editor.UI
 {
     public static class EssentialsUpdater
     {
@@ -58,7 +57,7 @@ namespace Lumina.Essentials.Editor
                 string tag        = JsonUtility.FromJson<Release>(jsonResult).tag_name;
 
                 // Compare tag with CurrentVersion
-                if (!EditorPrefs.GetBool("UpToDate") && !DebugVersion)
+                if (!EditorPrefs.GetBool("UpToDate"))
                 {
                     // Warn user that they are using an outdated version.
                     DebugHelper.Log("You are using an outdated version. \n Latest Version: v" + tag + "\n" + "You are using version: v" + CurrentVersion);

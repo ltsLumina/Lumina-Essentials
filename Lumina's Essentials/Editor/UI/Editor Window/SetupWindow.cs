@@ -1,9 +1,9 @@
+using System;
 using UnityEditor;
 using UnityEngine;
-using static Lumina.Essentials.Editor.EditorGUIUtils;
-using static Lumina.Essentials.Editor.VersionManager;
+using static Lumina.Essentials.Editor.UI.EditorGUIUtils;
 
-namespace Lumina.Essentials.Editor
+namespace Lumina.Essentials.Editor.UI
 {
     /// <summary>
     /// A window that launches upon project launch to help the user get started with Lumina's Essentials.
@@ -28,13 +28,17 @@ namespace Lumina.Essentials.Editor
 
             if (!updateOccured) return;
             
-            Debug.Log("Update Occured");
+            DebugHelper.Log("Update Occured");
 
             // Close the utility window if it is open.
             var utilityWindow = GetWindow<UtilityWindow>();
-            if (utilityWindow != null) utilityWindow.Close();
-        }
 
+            if (utilityWindow != null)
+            {
+                utilityWindow.Close();
+            }
+        }
+        
         void OnGUI()
         {
             // // Top label with the title of the window in large rose gold text

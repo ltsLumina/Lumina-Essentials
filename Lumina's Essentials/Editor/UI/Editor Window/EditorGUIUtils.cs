@@ -1,5 +1,5 @@
 using System.IO;
-using Lumina.Essentials.Sequencer;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -125,7 +125,13 @@ namespace Lumina.Essentials.Editor.UI
         internal static void ReplaceOldPackage()
         {
             string essentialsFolderInAssets = "Assets/EXAMPLE_FOLDER"; //TODO: Replace with the actual path
-            if (AssetDatabase.IsValidFolder(essentialsFolderInAssets)) AssetDatabase.DeleteAsset(essentialsFolderInAssets);
+
+            if (AssetDatabase.IsValidFolder(essentialsFolderInAssets)) { AssetDatabase.DeleteAsset(essentialsFolderInAssets); }
+            else //TODO: doesnt work. idk why
+            {
+                DebugHelper.LogError("Essentials folder not found at: " + essentialsFolderInAssets);
+                return;
+            }
 
             string newEssentialsPackagePath = "Assets/Lumina's Essentials/Editor/Package/test package.unitypackage"; //TODO: Replace with the actual path
 
@@ -167,5 +173,22 @@ namespace Lumina.Essentials.Editor.UI
         }
 
         internal static void ShowAllEditorPrefs() => EditorPrefsWindow.ShowWindow();
+        
+        internal static void SelectAllModules()
+        {
+            // Get the state of "Full Package", which is always the first one
+            bool isFullPackageSelected = UtilityWindow.AvailableModules.First().Value;
+
+            // Go through each module. If "Full Package" is selected, select all modules, otherwise unselect them.
+            foreach (var module in UtilityWindow.AvailableModules.Keys.ToList())
+            {
+                UtilityWindow.AvailableModules[module] = isFullPackageSelected;
+            }
+        }
+
+        internal static void ClearSelectedModules()
+        {
+            foreach (var module in UtilityWindow.AvailableModules.ToList()) { UtilityWindow.AvailableModules[module.Key] = false; }
+        }
     }
 }

@@ -1,6 +1,9 @@
 #region
 using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEditor;
+using UnityEngine;
 #endregion
 
 namespace Lumina.Essentials.Editor.UI
@@ -8,7 +11,7 @@ namespace Lumina.Essentials.Editor.UI
     public static class VersionManager
     {
         /// <summary> The current version of Lumina's Essentials. </summary>
-        public static string CurrentVersion => "1.0.0";
+        public static string CurrentVersion => "3.0.0";
         /// <summary> The latest version of Lumina's Essentials available on GitHub. </summary>
         public static string LatestVersion => EditorPrefs.GetString("LatestVersion", "Unknown");
         /// <summary> The version of the package that was last opened. </summary>
@@ -24,7 +27,7 @@ namespace Lumina.Essentials.Editor.UI
             get => EditorPrefs.GetBool("DontShow_DebugBuildWarning");
             set => EditorPrefs.SetBool("DontShow_DebugBuildWarning", value);
         }
-
+        
         public static void UpdateStatistics(string version)
         { // Update EditorPrefs
             EditorPrefs.SetString
@@ -68,10 +71,23 @@ namespace Lumina.Essentials.Editor.UI
         /// <returns> Whether or not the current version is newer than the last opened version. </returns>
         public static bool CompareVersions(string v1, string v2, Action action = default)
         {
-            bool versionsDifferent = string.Compare(v1, v2, StringComparison.Ordinal) > 0;
+            // extract the numeric parts of the versions
+            var regex   = new Regex(@"(\d+(\.\d+){0,3})");
+            Match matchV1 = regex.Match(v1);
+            Match matchV2 = regex.Match(v2);
+
+            // if either version string doesn't contain a valid version number, return false
+            if (!matchV1.Success || !matchV2.Success) return false;
+
+            // convert the numeric parts of the versions to Version objects
+            var version1 = new Version(matchV1.Value);
+            var version2 = new Version(matchV2.Value);
+
+            // compare the versions
+            bool versionsDifferent = version1.CompareTo(version2) > 0;
 
             if (versionsDifferent) action?.Invoke();
-
+            
             return versionsDifferent;
         }
     }

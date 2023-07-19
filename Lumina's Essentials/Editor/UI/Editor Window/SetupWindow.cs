@@ -1,4 +1,3 @@
-using System;
 using UnityEditor;
 using UnityEngine;
 using static Lumina.Essentials.Editor.UI.EditorGUIUtils;
@@ -28,19 +27,19 @@ namespace Lumina.Essentials.Editor.UI
 
             if (!updateOccured) return;
             
-            DebugHelper.Log("Update Occured");
+            DebugHelper.Log("An update has occured. Please setup the new version of Lumina's Essentials.");
+            UtilityWindow.SetupRequired = true;
 
             // Close the utility window if it is open.
             var utilityWindow = GetWindow<UtilityWindow>();
-
-            if (utilityWindow != null)
-            {
-                utilityWindow.Close();
-            }
+            if (utilityWindow != null) utilityWindow.Close();
         }
         
         void OnGUI()
         {
+            // Initialize GUIStyles
+            SetGUIStyles();
+            
             // // Top label with the title of the window in large rose gold text
             // GUILayout.Label
             // ("Lumina's Essentials", new GUIStyle

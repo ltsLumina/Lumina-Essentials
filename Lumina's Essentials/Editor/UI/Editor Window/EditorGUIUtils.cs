@@ -26,9 +26,11 @@ namespace Lumina.Essentials.Editor.UI
         internal static GUIStyle boldLabelStyle;
         internal static GUIStyle setupLabelStyle;
         internal static GUIStyle setupWindowStyle;
+        internal static GUIStyle dropAreaStyle;
 
-        // GUIContent
+        // -- GUIContent -- //
         internal static GUIContent configureImagesContent;
+        internal static GUIContent createSubfolderContent;
 
         internal static void SetGUIStyles()
         {
@@ -115,11 +117,22 @@ namespace Lumina.Essentials.Editor.UI
               fontStyle = FontStyle.Bold,
               normal = new ()
               { textColor = new (0.86f, 0.86f, 0.86f) } };
+
+            dropAreaStyle = new (GUI.skin.box)
+            { normal =
+              { textColor = new (0.87f, 0.87f, 0.87f) },
+              alignment = TextAnchor.MiddleCenter,
+              fontStyle = FontStyle.Bold,
+              fontSize  = 12,
+              richText  = true,
+              wordWrap  = true };
             
             // GUIContent
             configureImagesContent = new("Configure Images",
                 "Configures the default settings for images. \n" + 
                 "This is useful for when you want to import images with the same settings every time.");
+            
+            createSubfolderContent = new ("Create Subfolder", "Creates a subfolder in the selected folder.");
         }
 
         internal static void ReplaceOldPackage()

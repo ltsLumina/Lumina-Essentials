@@ -93,6 +93,26 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
 
         #region Utilities variables
 
+        /// <summary> Opens the project creation window. </summary>
+        bool createProject;
+
+        enum DragAndDropType // TODO: get better name
+        {
+            CreateProject,
+            ConvertImages
+        }
+        
+        DragAndDropType createProjectEnum = DragAndDropType.CreateProject; // TODO: rename
+        DragAndDropType convertImagesEnum = DragAndDropType.ConvertImages; // TODO: rename
+
+        internal static string ProjectPath = "";
+
+        float dropAreaHeight;
+        Rect dropArea;
+
+        string folderSelectedMsg = $"The folder: \"{GetFolderNameFromString(ProjectPath)}\" will be used as root project.";
+        static string noFolderSelectedMsg = "No folder selected. \nPlease drag and drop a folder to use.";
+        
         /// <summary> Opens the configure images options. </summary>
         bool configuringImages;
         static SpriteImportMode spriteImportMode = SpriteImportMode.Single;
@@ -554,11 +574,17 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
             
             GUILayout.Space(3);
             
+            // Create Project Directory Structure
+            DrawCreateProjectStructureGUI();
+            
             // Image Converter GUI
             DrawConfigureImagesGUI();
             
             #endregion
             GUILayout.Space(10);
+
+            // Draw a horizontal line (separator)
+            EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
         }
         
         void DrawUtilitiesButtonsGUI()
@@ -574,7 +600,18 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
             GUILayout.Space(10);
 
             // Button that creates a default project directory structure //TODO: allow for selecting a custom directory structure through enum popups
-            if (GUILayout.Button("Create Default Project \nDirectory Structure", GUILayout.Height(35))) CreateProjectStructure();
+            if (GUILayout.Button("Create Project \nDirectory Structure", GUILayout.Height(35)))
+            {
+                createProject     = !createProject;
+                configuringImages = false;
+                
+                // Reset the default project path if the user stops configuring the create project settings.
+                if (!createProject)
+                {
+                    ProjectPath = "";
+                    isCorrectDirectory = false;
+                }
+            } 
 
             GUILayout.Space(3);
 
@@ -583,9 +620,14 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
             if (GUILayout.Button(configureImagesContent, GUILayout.Height(35)))
             {
                 configuringImages = !configuringImages;
+                createProject     = false;
 
                 // Reset the image converter path if the user stops configuring the configure images settings.
-                if (!configuringImages) imageConverterPath = "";
+                if (!configuringImages)
+                {
+                    imageConverterPath = "";
+                    isCorrectDirectory = false;
+                }
             }
 
             GUI.backgroundColor = Color.white;
@@ -600,24 +642,59 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
             }
         }
 
-        void CreateProjectStructure() //TODO: rework this to allow for custom directory structures
+        void DrawCreateProjectStructureGUI()
         {
-            if (!SafeMode)
+            if (createProject)
             {
-                // Confirmation pop-up
-                if (EditorUtility.DisplayDialog("Confirmation", "Are you sure you want to create the default project structure?", "Yes", "No"))
-                {
-                    // Create the default folders in the root of the project 
-                    CreateDirectories("_Project", "Scripts", "Art", "Audio", "Scenes", "PREFABS", "Materials", "Plugins"); // "DEL" to put it at the bottom.
-                    CreateDirectories("Art", "Animations");
-                    CreateDirectories("Audio", "SFX", "Music");
-                    AssetDatabase.Refresh();
-                }
+                DrawCreateProjectStructureConfig();
+                
+                GUILayout.Space(5);
+
+                //CreateProjectStructure();
             }
-            else { DebugHelper.LogAbort(SafeMode); }
+        }
+        
+        void DrawCreateProjectStructureConfig()
+        {
+            GUILayout.Label("Create Project Structure", centerLabelStyle);
+            GUILayout.Label("Creates the default project structure.", subLabelStyle);
+            GUILayout.Space(10);
+            
+            // Drag and drop for folder to use
+            
+            DrawDragAndDropConfig(createProjectEnum);
         }
 
-        void ImageSettingsConfig()
+        void CreateProjectStructure()
+        {
+            // if (!SafeMode)
+            // {
+            //     // Confirmation pop-up
+            //     if (EditorUtility.DisplayDialog("Confirmation", "Are you sure you want to create the default project structure?", "Yes", "No"))
+            //     {
+            //         // Create the default folders in the root of the project 
+            //         CreateDirectories("_Project", "Scripts", "Art", "Audio", "Scenes", "PREFABS", "Materials", "Plugins"); // "DEL" to put it at the bottom.
+            //         CreateDirectories("Art", "Animations");
+            //         CreateDirectories("Audio", "SFX", "Music");
+            //         AssetDatabase.Refresh();
+            //     }
+            // }
+            // else { DebugHelper.LogAbort(SafeMode); }
+        }
+
+        void DrawConfigureImagesGUI()
+        {
+            if (configuringImages)
+            {
+                DrawImageSettingsConfig();
+
+                GUILayout.Space(5);
+
+                DrawDragAndDropConfig(convertImagesEnum);
+            }
+        }
+        
+        void DrawImageSettingsConfig()
         { // Display the image configuration options //TODO: add an advanced button to show more options (allows for a default folder that automatically configures images) //Also add a button to reset the image converter directory.
             GUILayout.Label("Image Configuration", centerLabelStyle);
             GUILayout.Label("Configure the default settings for images.", subLabelStyle);
@@ -642,103 +719,146 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
                 spriteImportMode = SpriteImportMode.Multiple;
             }
         }
-
-        void DrawConfigureImagesGUI()
-        {
-            if (configuringImages)
-            {
-                ImageSettingsConfig();
-                
-                GUILayout.Space(5);
-                
-                DrawDragAndDropConfig();
-            }
-            else
-            {
-                // Draw a horizontal line (separator)
-                EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
-            }
-        }
         
-        void DrawDragAndDropConfig()
+        void DrawDragAndDropConfig(DragAndDropType type)
         {
-            GUILayout.Label("Drag a folder here:", middleStyle);
-            GUILayout.Label("The selected folder will be used to convert the images.", subLabelStyle);
-            GUILayout.Space(10);
-
-            var dropAreaStyle = new GUIStyle(GUI.skin.box)
-            { normal =
-              { textColor = new (0.87f, 0.87f, 0.87f) },
-              alignment = TextAnchor.MiddleCenter,
-              fontStyle = FontStyle.Bold,
-              fontSize  = 12,
-              richText  = true,
-              wordWrap  = true };
-            
-            float dropAreaHeight = imageConverterPath.Length > 60 ? 45 : 30;
-            
-            Rect dropArea = GUILayoutUtility.GetRect(0, dropAreaHeight, GUILayout.ExpandWidth(true));
-            GUI.Box(dropArea, imageConverterPath, dropAreaStyle);
-
-            if (Event.current.type == EventType.DragUpdated && dropArea.Contains(Event.current.mousePosition))
+            switch (type)
             {
-                DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
-                Event.current.Use();
-            }
+                case DragAndDropType.CreateProject:
+                    GUILayout.Label("Drag a folder here:", middleStyle);
+                    GUILayout.Label("The selected folder will be used as the root folder.", subLabelStyle);
+                    GUILayout.Label("\"/Assets/\" is the default folder if nothing is selected.", subLabelStyle);
+                    GUILayout.Space(10);
 
-            if (Event.current.type == EventType.DragPerform && dropArea.Contains(Event.current.mousePosition))
-            {
-                DragAndDrop.AcceptDrag();
+                    dropAreaHeight = ProjectPath.Length > 60 ? 45 : 30;
 
-                foreach (var path in DragAndDrop.paths)
-                {
-                    // check if the path is directory (folder)
-                    if (Directory.Exists(path))
+                    dropArea = GUILayoutUtility.GetRect(0, dropAreaHeight, GUILayout.ExpandWidth(true));
+                    GUI.Box(dropArea, ProjectPath, dropAreaStyle);
+
+                    if (Event.current.type == EventType.DragUpdated && dropArea.Contains(Event.current.mousePosition))
                     {
-                        imageConverterPath = path;
+                        DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
                         Event.current.Use();
-                        break;
                     }
+
+                    if (Event.current.type == EventType.DragPerform && dropArea.Contains(Event.current.mousePosition))
+                    {
+                        DragAndDrop.AcceptDrag();
+
+                        foreach (string path in DragAndDrop.paths)
+                        {
+                            // check if the path is directory (folder)
+                            if (Directory.Exists(path))
+                            {
+                                ProjectPath = path;
+                                Event.current.Use();
+                                break;
+                            }
+                        }
+                    }
+
+                    GUILayout.Space(8);
+
+                    folderSelectedMsg   = $"The folder: \"{GetFolderNameFromString(ProjectPath)}\" will be used as root project.";
+                    noFolderSelectedMsg = "No folder selected. \nPlease drag and drop a folder to use.";
+
+                    if (!string.IsNullOrEmpty(ProjectPath))
+                    {
+                        GUILayout.Label(folderSelectedMsg, middleStyle);
+                        GUILayout.Space(4);
+
+                        var correctDirectoryContent = new GUIContent("Is this directory correct?", "This will disable safe mode. \nPlease proceed with caution.");
+                        isCorrectDirectory = EditorGUILayout.Toggle(correctDirectoryContent, isCorrectDirectory);
+
+                        if (isCorrectDirectory)
+                        {
+                            ProjectStructureWindow.ShowWindow();
+                        }
+
+                        GUILayout.Space(5);
+
+                        if (GUILayout.Button("Apply"))
+                        {
+                            if (isCorrectDirectory) ProjectStructureGUI.ApplyChanges();
+                            else DebugHelper.LogWarning("The action was aborted. \nYou haven't checked the confirmation box!");
+                        }
+                    }
+                    else
+                    {
+                        GUILayout.Label(noFolderSelectedMsg, middleStyle);
+                    }
+                    break;
+
+                case DragAndDropType.ConvertImages: {
+                    GUILayout.Label("Drag a folder here:", middleStyle);
+                    GUILayout.Label("The selected folder will be used to convert the images.", subLabelStyle);
+                    GUILayout.Space(10);
+
+                    dropAreaHeight = imageConverterPath.Length > 60 ? 45 : 30;
+
+                    dropArea = GUILayoutUtility.GetRect(0, dropAreaHeight, GUILayout.ExpandWidth(true));
+                    GUI.Box(dropArea, imageConverterPath, dropAreaStyle);
+
+                    if (Event.current.type == EventType.DragUpdated && dropArea.Contains(Event.current.mousePosition))
+                    {
+                        DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+                        Event.current.Use();
+                    }
+
+                    if (Event.current.type == EventType.DragPerform && dropArea.Contains(Event.current.mousePosition))
+                    {
+                        DragAndDrop.AcceptDrag();
+
+                        foreach (string path in DragAndDrop.paths)
+                        {
+                            // check if the path is directory (folder)
+                            if (Directory.Exists(path))
+                            {
+                                imageConverterPath = path;
+                                Event.current.Use();
+                                break;
+                            }
+                        }
+                    }
+
+                    GUILayout.Space(8);
+
+                    folderSelectedMsg   = $"The folder: \"{GetFolderNameFromString(imageConverterPath)}\" will be used to convert all images.";
+                    noFolderSelectedMsg = "No folder selected. \nPlease drag and drop a folder to use.";
+
+                    if (!string.IsNullOrEmpty(imageConverterPath))
+                    {
+                        GUILayout.Label(folderSelectedMsg, middleStyle);
+                        GUILayout.Label("Please put any images you wish to convert in said folder.", subLabelStyle);
+                        GUILayout.Space(4);
+
+                        var correctDirectoryContent = new GUIContent("Is this directory correct?", "This will disable safe mode. \nPlease proceed with caution.");
+                        isCorrectDirectory = EditorGUILayout.Toggle(correctDirectoryContent, isCorrectDirectory);
+
+                        if (isCorrectDirectory)
+                        {
+                            SafeMode = !SafeMode;
+                            DebugHelper.LogWarning("Safe mode disabled.");
+                        }
+
+                        GUILayout.Space(5);
+
+                        if (GUILayout.Button("Apply"))
+                        {
+                            if (isCorrectDirectory) ConfigureImages();
+                            else DebugHelper.LogWarning("The action was aborted. \nYou haven't checked the confirmation box!");
+                        }
+
+                        // Draw a horizontal line (separator)
+                        EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+                    }
+                    else
+                    {
+                        GUILayout.Label(noFolderSelectedMsg, middleStyle);
+                    }
+
+                    break;
                 }
-            }
-
-            GUILayout.Space(8);
-
-            string       folderSelectedMsg   = $"The folder: \"{GetFolderNameFromString(imageConverterPath)}\" will be used to convert all images.";
-            const string noFolderSelectedMsg = "No folder selected. \nPlease drag and drop a folder to use.";
-
-            if (!string.IsNullOrEmpty(imageConverterPath))
-            {
-                GUILayout.Label(folderSelectedMsg, middleStyle);
-                GUILayout.Label("Please put any images you wish to convert in said folder.", subLabelStyle);
-                GUILayout.Space(4);
-
-                var correctDirectoryContent = new GUIContent("Is this directory correct?", "This will disable safe mode. \nPlease proceed with caution.");
-                isCorrectDirectory = EditorGUILayout.Toggle(correctDirectoryContent, isCorrectDirectory);
-
-                if (isCorrectDirectory)
-                {
-                    SafeMode = !SafeMode;
-                    DebugHelper.LogWarning("Safe mode disabled.");
-                }
-
-                GUILayout.Space(5);
-                
-                if (GUILayout.Button("Apply"))
-                {
-                    if (isCorrectDirectory) ConfigureImages();
-                    else DebugHelper.LogWarning("The action was aborted. \nYou haven't checked the confirmation box!");
-                }
-
-                // Draw a horizontal line (separator)
-                EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
-            }
-            else
-            {
-                GUILayout.Label(noFolderSelectedMsg, middleStyle);
-
-                // Draw a horizontal line (separator)
-                EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
             }
         }
 
@@ -827,4 +947,26 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
             EditorGUILayout.EndScrollView();
         }
     }
+    
+    // window to display the project structure
+public class ProjectStructureWindow : EditorWindow
+{
+    [MenuItem("Lumina's Essentials/Show Project Structure Window")]
+    public static void ShowWindow()
+    {
+        var window = GetWindow<ProjectStructureWindow>("Project Structure");
+        window.minSize = new Vector2(350, 500);
+        window.Show();
+    }
+
+    void OnGUI()
+    {
+        ProjectStructureGUI.Create();
+    }
+
+    void OnDestroy()
+    {
+        ProjectStructureGUI.ClearAllChanges();
+    }
+}
 }

@@ -12,30 +12,18 @@ namespace Lumina.Essentials.Editor.UI
 {
 public sealed class ProjectStructureGUI : EditorWindow
 {
-    static bool loadDir;
-    
     static Vector2 _scrollPosition;
     static Dictionary<string, bool> folderToggleStates = new ();
     static Dictionary<string, string> folderChanges = new ();
 
     static string selectedFolder;
+    static string renamedFolder;
 
     internal static void Create()
     {
         GUILayout.Space(8);
 
-        if (GUILayout.Button("Load Directory"))
-        {
-            loadDir = !loadDir;
-
-            if (loadDir)
-            {
-                folderToggleStates.Clear();
-
-                // If the project path is valid, use it. Otherwise, use the Assets folder.
-                AddFolderToStates(Directory.Exists(ProjectPath) ? ProjectPath : Application.dataPath);
-            }
-        }
+        if (GUILayout.Button("Load Directory")) { LoadDirectory(); }
 
         _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition, GUILayout.ExpandHeight(true));
         foreach (string folder in folderToggleStates.Keys.ToArray())
@@ -52,7 +40,7 @@ public sealed class ProjectStructureGUI : EditorWindow
             {
                 string newFolderPath = Path.Combine(selectedFolder, "New Folder");
 
-                // if the string already exists, add a number to the end of it
+                // if the name "New Folder" already exists, add a number to the end of the name.
                 if (Directory.Exists(newFolderPath))
                 {
                     int i = 1;
@@ -61,10 +49,63 @@ public sealed class ProjectStructureGUI : EditorWindow
                 }
                 
                 folderChanges.Add(newFolderPath, selectedFolder);
+                
+                ApplyChanges();
             }
+            else { DebugHelper.LogWarning("Selected folder does not exist."); }
+        }
+        else { DebugHelper.LogWarning("No folder is selected."); }
+
+        if (GUILayout.Button("Delete Selected"))
+        {
+            selectedFolder = GetSelectedFolder();
+
+            if (selectedFolder != null)
+            {
+                string relativePath = selectedFolder.Replace(Application.dataPath, "Assets"); // Convert absolute path to a relative path
+
+                if (AssetDatabase.IsValidFolder(relativePath))
+                {
+                    // Delete the folder in Unity's Project panel.
+                    AssetDatabase.DeleteAsset(relativePath);
+                    AssetDatabase.Refresh();
+
+                    // Delete the folder from your Dictionary if it exists.
+                    if (folderToggleStates.ContainsKey(selectedFolder)) { folderToggleStates.Remove(selectedFolder); }
+                }
+                else { DebugHelper.LogWarning("Selected folder does not exist."); }
+            }
+            else { DebugHelper.LogWarning("No folder is selected."); }
+        }
+        
+        // Text field to rename the folder.
+        renamedFolder = GUILayout.TextField(renamedFolder); 
+
+        if (GUILayout.Button("Rename Selected"))
+        {
+            selectedFolder = GetSelectedFolder();
+            
+            if (selectedFolder != null)
+            {
+                if (Directory.Exists(selectedFolder))
+                {
+                    // Delete the folder physically.
+                    AssetDatabase.RenameAsset(selectedFolder, renamedFolder);
+                    AssetDatabase.Refresh();
+                    
+                    
+
+                    // Delete the folder from your Dictionary if exists.
+                    if (folderToggleStates.ContainsKey(selectedFolder)) { folderToggleStates.Remove(selectedFolder); }
+                    
+                    ApplyChanges();
+                }
+                else { DebugHelper.LogWarning("Selected folder does not exist."); }
+            }
+            else { DebugHelper.LogWarning("No folder is selected."); }
         }
 
-        // GUILayout.Label //TODO: I can make this remind the user of the utilities panel.
+        // GUILayout.Label
         // ($"{ProjectPath} \n"           +
         //  $"L {subFolderArt}"           +
         //  $"   L {subFolderAnimations}" +
@@ -86,6 +127,14 @@ public sealed class ProjectStructureGUI : EditorWindow
         // }
 
         if (GUILayout.Button("Apply Changes")) ApplyChanges();
+    }
+    
+    static void LoadDirectory()
+    {
+        folderToggleStates.Clear();
+
+        // If the project path is valid, use it. Otherwise, use the Assets folder.
+        AddFolderToStates(Directory.Exists(ProjectPath) ? ProjectPath : Application.dataPath);
     }
 
     static void AddFolderToStates(string folderPath)
@@ -113,13 +162,19 @@ public sealed class ProjectStructureGUI : EditorWindow
         foreach (KeyValuePair<string, string> change in folderChanges)
         {
             // Check if the directory already exists before creating it.
-            if (!Directory.Exists(change.Key)) { Directory.CreateDirectory(change.Key); }
-
+            if (!Directory.Exists(change.Key))
+            {
+                Directory.CreateDirectory(change.Key);
+                AssetDatabase.Refresh();
+            }
+            
             // Reflect these changes to folderToggleStates
             folderToggleStates.TryAdd(change.Key, false);
         }
 
         folderChanges.Clear();
+
+        LoadDirectory();
     }
 
     internal static void ClearAllChanges()

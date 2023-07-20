@@ -62,6 +62,7 @@ public sealed class ProjectStructureGUI : EditorWindow
 
             if (selectedFolder != null)
             {
+                // This is a test for Rider's VCS integration.
                 string relativePath = selectedFolder.Replace(Application.dataPath, "Assets"); // Convert absolute path to a relative path
 
                 if (AssetDatabase.IsValidFolder(relativePath))

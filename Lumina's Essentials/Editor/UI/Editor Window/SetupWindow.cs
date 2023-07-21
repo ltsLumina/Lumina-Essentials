@@ -25,6 +25,9 @@ namespace Lumina.Essentials.Editor.UI
             window.minSize = new (400, 300);
             window.maxSize = window.minSize;
             window.Show();
+            
+            // Disable auto-save
+            AutoSaveConfig.Enabled = false;
 
             if (!updateOccured) return;
             

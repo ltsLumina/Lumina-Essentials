@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Lumina.Essentials.Editor.UI.Management;
+using Tarodev;
 using UnityEngine;
 using UnityEditor;
 using static Lumina.Essentials.Editor.UI.Management.EditorGUIUtils;
@@ -61,6 +62,9 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
         
         #region Settings variables
         // The variables to be shown under the settings tab.
+
+        /// <summary> Shows the more advanced settings. </summary>
+        bool advancedSettings;
         
         /// <summary> Whether or not the user has to set up Lumina's Essentials to the latest version. </summary>
         public static bool SetupRequired
@@ -92,19 +96,19 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
         #endregion
 
         #region Utilities variables
-
-        /// <summary> Opens the project creation window. </summary>
-        bool createProject;
-
         enum DragAndDropType // TODO: get better name
         {
             CreateProject,
             ConvertImages
         }
         
-#pragma warning disable CS0414                                                      // Field is assigned but its value is never used
+        // Deprecated. Kept here for reference.
+        #region Deprecated
+#pragma warning disable CS0414 // Field is assigned but its value is never used
         readonly DragAndDropType createProjectEnum = DragAndDropType.CreateProject;        
-#pragma warning restore CS0414                                                      // Field is assigned but its value is never used
+#pragma warning restore CS0414 // Field is assigned but its value is never used
+        #endregion
+        
         readonly DragAndDropType convertImagesEnum = DragAndDropType.ConvertImages; // TODO: rename
 
         internal static string ProjectPath = "";
@@ -144,8 +148,8 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
         { // Repaint the window every frame
             
             // Set the last open version to the current version
-            LastOpenVersion = CurrentVersion;
-            SafeMode = true;
+            LastOpenVersion        = CurrentVersion;
+            SafeMode               = true;
 
             SetupRequired = !isFullPackageSelected; //TODO make a method bool that includes every module.
 
@@ -433,15 +437,27 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
         
         void DrawSettingsGUI()
         {
-            GUILayout.Space(6);
-            GUILayout.Label("Settings", centerLabelStyle);
-            GUILayout.Label("Various settings for the Lumina Essentials package.", subLabelStyle);
+            GUILayout.Space(5.5f);
+
+            using (new GUILayout.HorizontalScope())
+            {
+                GUILayout.FlexibleSpace();
+                GUILayout.Label("", GUILayout.Width(20));
+                GUILayout.Label("Settings", centerLabelStyle);
+                GUILayout.FlexibleSpace();
+                
+                // Checkbox to show the advanced settings
+                GUIContent advancedSettingsContent = new GUIContent("", "Shows the advanced settings.");
+                advancedSettings = GUILayout.Toggle(advancedSettings, advancedSettingsContent);
+            }
+
+            GUILayout.Label("Provides useful features to improve your workflow.", subLabelStyle);
 
             // Draw a horizontal line (separator)
             EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
             
             #region Reset Button (Resets the EditorPrefs)
-            GUILayout.Space(10);
+            GUILayout.Space(6);
             
             GUILayout.BeginHorizontal();
 
@@ -503,11 +519,14 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
             // Displays if this is a debug build or not
             EditorGUILayout.LabelField("Debug Version", EditorPrefs.GetBool("DebugVersion").ToString());
 
+            // Displays if the Auto-Save feature is enabled or not
+            EditorGUILayout.LabelField("Auto-Save", AutoSaveConfig.Enabled.ToString());
+
             // Draw a horizontal line (separator)
             EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
             
-            
-            if (!SafeMode)
+            // Displays all the advanced settings.
+            if (advancedSettings)
             {
                 GUILayout.Label("Debug Options", centerLabelStyle);
                 GUILayout.Label("Various buttons and settings for debugging.", subLabelStyle);
@@ -562,10 +581,10 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
 
         void DrawUtilitiesGUI()
         {
-            GUILayout.Space(6);
+            GUILayout.Space(6.5f);
             GUILayout.Label("Utilities", centerLabelStyle);
             GUILayout.Label("Provides useful features to improve your workflow.", subLabelStyle);
-
+            
             // Draw a horizontal line (separator)
             EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
             
@@ -577,12 +596,14 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
             DrawConfigureImagesGUI();
             
             #endregion
+            
             GUILayout.Space(10);
 
             // Draw a horizontal line (separator)
             EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
         }
 
+        [Obsolete] // Deprecated. Kept here for reference.
         void DrawCreateProjectStructureGUI()
         {
             if (GUILayout.Button("Create Default Project Structure"))
@@ -591,13 +612,33 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
             }
         }
         
-        void DrawUtilitiesButtonsGUI()
-        { // Checkbox to enable or disable the enter playmode options
-            EditorSettings.enterPlayModeOptionsEnabled = EditorGUILayout.Toggle
-            (new GUIContent("Enter Playmode Options", "Enabling \"Enter Playmode Options\" improves Unity's workflow by significantly reducing the time it takes to enter play mode."),
-             EditorSettings.enterPlayModeOptionsEnabled);
+        void DrawUtilitiesButtonsGUI() 
+        {
+            // Checkbox to enable or disable the auto save feature
+            AutoSaveConfig.Enabled = EditorGUILayout.Toggle(new GUIContent
+                ("Auto Save",
+                "Automatically saves the scene when entering play mode."
+                ), AutoSaveConfig.Enabled);
 
-            //TODO: option for what input system to use (advanced)
+            if (AutoSaveConfig.Enabled)
+            {
+                using (new GUILayout.HorizontalScope())
+                {
+                    GUILayout.Label("└  Auto Save Interval", GUILayout.Width(200));
+                    AutoSaveConfig.Interval = EditorGUILayout.IntSlider(AutoSaveConfig.Interval, 1, 60);
+                }
+                
+                GUILayout.Space(3);
+                
+                AutoSaveConfig.Logging = EditorGUILayout.Toggle("└  Auto Save Message", AutoSaveConfig.Logging);
+                
+                GUILayout.Space(5);
+            }
+            
+            // Checkbox to enable or disable the enter playmode options
+            EditorSettings.enterPlayModeOptionsEnabled = EditorGUILayout.Toggle(new GUIContent("Enter Playmode Options", 
+            "Enabling \"Enter Playmode Options\" improves Unity's workflow by significantly reducing the time it takes to enter play mode."),
+             EditorSettings.enterPlayModeOptionsEnabled);
 
             //TODO: more options for cleaner look. even if they are pointless
 
@@ -607,8 +648,9 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
             if (GUILayout.Button("Create Project \nDirectory Structure", GUILayout.Height(35)))
             {
                 configuringImages = false;
-                
-                CreateProjectStructure();
+
+                if (!SafeMode) CreateProjectStructure();
+                else DebugHelper.LogAbort(SafeMode);
             } 
 
             GUILayout.Space(3);
@@ -640,7 +682,8 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
             if (GUILayout.Button("Placeholder Button", GUILayout.Height(35)))
             {
                 DebugHelper.Log("This does nothing as it's a placeholder.");
-
+                
+                //TODO: This could be similar to configure images, but for audio instead. (.wav, .mp3, .ogg, etc.)
                 //TODO: if this shows new things like configuring images, make sure to disable configuringImages before continuing
             }
         }
@@ -648,19 +691,18 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
         // Old method for creating the project structure. This was replaced by a new method but that has since been deprecated (for now). 
         void CreateProjectStructure()
         {
-            if (!SafeMode)
+            const string rootName = "_Project";
+            
+            // Confirmation pop-up
+            if (EditorUtility.DisplayDialog("Confirmation", "Are you sure you want to create the default project structure?", "Yes", "No"))
             {
-                // Confirmation pop-up
-                if (EditorUtility.DisplayDialog("Confirmation", "Are you sure you want to create the default project structure?", "Yes", "No"))
-                {
-                    // Create the default folders in the root of the project 
-                    CreateDirectories("_Project", "Scripts", "Art", "Audio", "Scenes", "PREFABS", "Materials", "Plugins"); // "DEL" to put it at the bottom.
-                    CreateDirectories("Art", "Animations");
-                    CreateDirectories("Audio", "SFX", "Music");
-                    AssetDatabase.Refresh();
-                }
+                // Create the default folders in the root of the project 
+                CreateDirectories(rootName, "Scripts", "Art", "Audio", "Scenes", "PREFABS", "Materials", "Plugins"); // "DEL" to put it at the bottom.
+                CreateDirectories(rootName + "/Art", "Animations");
+                CreateDirectories(rootName + "/Audio", "SFX", "Music");
+                AssetDatabase.Refresh();
             }
-            else { DebugHelper.LogAbort(SafeMode); }
+            else { DebugHelper.LogAbort(false); }
         }
 
         void DrawConfigureImagesGUI()
@@ -671,7 +713,14 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
 
                 GUILayout.Space(5);
 
-                DrawDragAndDropConfig(convertImagesEnum);
+                DrawDragAndDropConfig(convertImagesEnum); // The convertImagesEnum is used to determine what the drag and drop GUI will display.
+            }
+            else
+            {
+                // Reset the enums to the default values
+                spriteImportMode = SpriteImportMode.Single;
+                filterMode       = FilterMode.Bilinear;
+                compression      = TextureImporterCompression.Compressed;
             }
         }
         
@@ -680,7 +729,8 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
             GUILayout.Label("Image Configuration", centerLabelStyle);
             GUILayout.Label("Configure the default settings for images.", subLabelStyle);
             GUILayout.Space(10);
-
+            
+            
             // Enum popups for the image configuration
             spriteImportMode = (SpriteImportMode) EditorGUILayout.EnumPopup("Sprite Mode", spriteImportMode);
             filterMode       = (FilterMode) EditorGUILayout.EnumPopup("Filter Mode", filterMode);
@@ -688,16 +738,19 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
 
             // Quick toggle to set the recommended settings for sprites (multiple)
             var spriteModeContent = new GUIContent
-            ("Sprite-Sheet",
-             "Sets the recommended settings for sprite-sheets \n" + "This will set the sprite mode to multiple, filter mode to point, and compression to uncompressed.");
+            (
+            "Sprite-Sheet",
+            "Sets the recommended settings for sprite-sheets \n" + 
+            "This will set the sprite mode to multiple, filter mode to point, and compression to uncompressed."
+             );
 
             isSpriteSheet = EditorGUILayout.Toggle(spriteModeContent, isSpriteSheet);
 
             if (isSpriteSheet)
             {
+                spriteImportMode = SpriteImportMode.Multiple;
                 filterMode       = FilterMode.Point;
                 compression      = TextureImporterCompression.Uncompressed;
-                spriteImportMode = SpriteImportMode.Multiple;
             }
         }
         
@@ -775,7 +828,7 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
                     #endregion
                     break;
 
-                case DragAndDropType.ConvertImages: 
+                case DragAndDropType.ConvertImages:
                 {
                     GUILayout.Label("Drag a folder here:", middleStyle);
                     GUILayout.Label("The selected folder will be used to convert the images.", subLabelStyle);
@@ -835,9 +888,6 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
                             if (isCorrectDirectory) ConfigureImages();
                             else DebugHelper.LogWarning("The action was aborted. \nYou haven't checked the confirmation box!");
                         }
-
-                        // Draw a horizontal line (separator)
-                        EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
                     }
                     else
                     {

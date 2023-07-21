@@ -3,11 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.Win32;
+using Lumina.Essentials.Editor.UI.Management;
 using UnityEngine;
 using UnityEditor;
-using static Lumina.Essentials.Editor.UI.EditorGUIUtils;
-using static Lumina.Essentials.Editor.UI.VersionManager;
+using static Lumina.Essentials.Editor.UI.Management.EditorGUIUtils;
+using static Lumina.Essentials.Editor.UI.Management.VersionManager;
 #endregion
 
 namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM package
@@ -27,8 +27,8 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
         #endregion
         
         #region Modules
-        /// <summary> Toggle to enable or disable the installation of Lumina's Essentials. </summary>
-        static bool installEssentials;
+        // Whether or not the user has selected the full package.
+        bool isFullPackageSelected;
         /// <summary> Toggle to enable or disable the installation of Alex' Essentials. (Half the package) </summary>
         static bool alexEssentials;
         /// <summary> Toggle to enable or disable the installation of Joel's Essentials. (Half the package) </summary>
@@ -102,8 +102,10 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
             ConvertImages
         }
         
-        DragAndDropType createProjectEnum = DragAndDropType.CreateProject; // TODO: rename
-        DragAndDropType convertImagesEnum = DragAndDropType.ConvertImages; // TODO: rename
+#pragma warning disable CS0414                                                      // Field is assigned but its value is never used
+        readonly DragAndDropType createProjectEnum = DragAndDropType.CreateProject;        
+#pragma warning restore CS0414                                                      // Field is assigned but its value is never used
+        readonly DragAndDropType convertImagesEnum = DragAndDropType.ConvertImages; // TODO: rename
 
         internal static string ProjectPath = "";
 
@@ -145,7 +147,7 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
             LastOpenVersion = CurrentVersion;
             SafeMode = true;
 
-            SetupRequired = !installEssentials; //TODO make a method bool that includes every module.
+            SetupRequired = !isFullPackageSelected; //TODO make a method bool that includes every module.
 
             // Enable the Toolbar.
             currentPanel = DisplayToolbar;
@@ -348,7 +350,7 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
             // If the "Full Package" module is selected, select all modules.
             EditorGUI.BeginChangeCheck();
 
-            bool isFullPackageSelected = AvailableModules.First().Value;
+            isFullPackageSelected = AvailableModules.First().Value;
 
             if (EditorGUI.EndChangeCheck() && isFullPackageSelected) { SelectAllModules(); }
             
@@ -374,7 +376,7 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
             
             if (GUILayout.Button("Apply"))
             {
-                if (installEssentials && !SafeMode)
+                if (isFullPackageSelected && !SafeMode)
                 {
                     // Popup to confirm the replacement of the old files
                     if (EditorUtility.DisplayDialog
@@ -572,12 +574,6 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
             // Buttons and Toggles
             DrawUtilitiesButtonsGUI();
             
-            GUILayout.Space(3);
-            
-            // Create Project Directory Structure
-            DrawCreateProjectStructureGUI();
-            
-            // Image Converter GUI
             DrawConfigureImagesGUI();
             
             #endregion
@@ -585,6 +581,14 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
 
             // Draw a horizontal line (separator)
             EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+        }
+
+        void DrawCreateProjectStructureGUI()
+        {
+            if (GUILayout.Button("Create Default Project Structure"))
+            {
+                CreateProjectStructure();
+            }
         }
         
         void DrawUtilitiesButtonsGUI()
@@ -602,32 +606,31 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
             // Button that creates a default project directory structure //TODO: allow for selecting a custom directory structure through enum popups
             if (GUILayout.Button("Create Project \nDirectory Structure", GUILayout.Height(35)))
             {
-                createProject     = !createProject;
                 configuringImages = false;
                 
-                // Reset the default project path if the user stops configuring the create project settings.
-                if (!createProject)
-                {
-                    ProjectPath = "";
-                    isCorrectDirectory = false;
-                }
+                CreateProjectStructure();
             } 
 
             GUILayout.Space(3);
 
             GUI.backgroundColor = configuringImages ? new Color(0.76f, 0.76f, 0.76f) : Color.white;
 
+            GUILayout.Space(3);
+            
             if (GUILayout.Button(configureImagesContent, GUILayout.Height(35)))
             {
                 configuringImages = !configuringImages;
-                createProject     = false;
-
+                
                 // Reset the image converter path if the user stops configuring the configure images settings.
                 if (!configuringImages)
                 {
                     imageConverterPath = "";
                     isCorrectDirectory = false;
                 }
+                else
+                {
+                    DrawConfigureImagesGUI(); 
+                } 
             }
 
             GUI.backgroundColor = Color.white;
@@ -641,45 +644,23 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
                 //TODO: if this shows new things like configuring images, make sure to disable configuringImages before continuing
             }
         }
-
-        void DrawCreateProjectStructureGUI()
-        {
-            if (createProject)
-            {
-                DrawCreateProjectStructureConfig();
-                
-                GUILayout.Space(5);
-
-                //CreateProjectStructure();
-            }
-        }
         
-        void DrawCreateProjectStructureConfig()
-        {
-            GUILayout.Label("Create Project Structure", centerLabelStyle);
-            GUILayout.Label("Creates the default project structure.", subLabelStyle);
-            GUILayout.Space(10);
-            
-            // Drag and drop for folder to use
-            
-            DrawDragAndDropConfig(createProjectEnum);
-        }
-
+        // Old method for creating the project structure. This was replaced by a new method but that has since been deprecated (for now). 
         void CreateProjectStructure()
         {
-            // if (!SafeMode)
-            // {
-            //     // Confirmation pop-up
-            //     if (EditorUtility.DisplayDialog("Confirmation", "Are you sure you want to create the default project structure?", "Yes", "No"))
-            //     {
-            //         // Create the default folders in the root of the project 
-            //         CreateDirectories("_Project", "Scripts", "Art", "Audio", "Scenes", "PREFABS", "Materials", "Plugins"); // "DEL" to put it at the bottom.
-            //         CreateDirectories("Art", "Animations");
-            //         CreateDirectories("Audio", "SFX", "Music");
-            //         AssetDatabase.Refresh();
-            //     }
-            // }
-            // else { DebugHelper.LogAbort(SafeMode); }
+            if (!SafeMode)
+            {
+                // Confirmation pop-up
+                if (EditorUtility.DisplayDialog("Confirmation", "Are you sure you want to create the default project structure?", "Yes", "No"))
+                {
+                    // Create the default folders in the root of the project 
+                    CreateDirectories("_Project", "Scripts", "Art", "Audio", "Scenes", "PREFABS", "Materials", "Plugins"); // "DEL" to put it at the bottom.
+                    CreateDirectories("Art", "Animations");
+                    CreateDirectories("Audio", "SFX", "Music");
+                    AssetDatabase.Refresh();
+                }
+            }
+            else { DebugHelper.LogAbort(SafeMode); }
         }
 
         void DrawConfigureImagesGUI()
@@ -723,73 +704,79 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
         void DrawDragAndDropConfig(DragAndDropType type)
         {
             switch (type)
-            {
+            { // This case has since been deprecated as I figured the way I was designing the project structure was not the best way to do it.
+                // It remains here in case I decide to use it again, or if I want to repurpose it for something else.
+                // I don't like leaving large amounts of code commented, but I want it for reference.
                 case DragAndDropType.CreateProject:
-                    GUILayout.Label("Drag a folder here:", middleStyle);
-                    GUILayout.Label("The selected folder will be used as the root folder.", subLabelStyle);
-                    GUILayout.Label("\"/Assets/\" is the default folder if nothing is selected.", subLabelStyle);
-                    GUILayout.Space(10);
-
-                    dropAreaHeight = ProjectPath.Length > 60 ? 45 : 30;
-
-                    dropArea = GUILayoutUtility.GetRect(0, dropAreaHeight, GUILayout.ExpandWidth(true));
-                    GUI.Box(dropArea, ProjectPath, dropAreaStyle);
-
-                    if (Event.current.type == EventType.DragUpdated && dropArea.Contains(Event.current.mousePosition))
-                    {
-                        DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
-                        Event.current.Use();
-                    }
-
-                    if (Event.current.type == EventType.DragPerform && dropArea.Contains(Event.current.mousePosition))
-                    {
-                        DragAndDrop.AcceptDrag();
-
-                        foreach (string path in DragAndDrop.paths)
-                        {
-                            // check if the path is directory (folder)
-                            if (Directory.Exists(path))
-                            {
-                                ProjectPath = path;
-                                Event.current.Use();
-                                break;
-                            }
-                        }
-                    }
-
-                    GUILayout.Space(8);
-
-                    folderSelectedMsg   = $"The folder: \"{GetFolderNameFromString(ProjectPath)}\" will be used as root project.";
-                    noFolderSelectedMsg = "No folder selected. \nPlease drag and drop a folder to use.";
-
-                    if (!string.IsNullOrEmpty(ProjectPath))
-                    {
-                        GUILayout.Label(folderSelectedMsg, middleStyle);
-                        GUILayout.Space(4);
-
-                        var correctDirectoryContent = new GUIContent("Is this directory correct?", "This will disable safe mode. \nPlease proceed with caution.");
-                        isCorrectDirectory = EditorGUILayout.Toggle(correctDirectoryContent, isCorrectDirectory);
-
-                        if (isCorrectDirectory)
-                        {
-                            ProjectStructureWindow.ShowWindow();
-                        }
-
-                        GUILayout.Space(5);
-
-                        if (GUILayout.Button("Apply"))
-                        {
-                            if (isCorrectDirectory) ProjectStructureGUI.ApplyChanges();
-                            else DebugHelper.LogWarning("The action was aborted. \nYou haven't checked the confirmation box!");
-                        }
-                    }
-                    else
-                    {
-                        GUILayout.Label(noFolderSelectedMsg, middleStyle);
-                    }
+                    DebugHelper.LogError("You are using the deprecated Create Project Structure enum!");
+                    #region Deprecated Create Project Structure Code
+                    // GUILayout.Label("Drag a folder here:", middleStyle);
+                    // GUILayout.Label("The selected folder will be used as the root folder.", subLabelStyle);
+                    // GUILayout.Label("\"/Assets/\" is the default folder if nothing is selected.", subLabelStyle);
+                    // GUILayout.Space(10);
+                    //
+                    // dropAreaHeight = ProjectPath.Length > 60 ? 45 : 30;
+                    //
+                    // dropArea = GUILayoutUtility.GetRect(0, dropAreaHeight, GUILayout.ExpandWidth(true));
+                    // GUI.Box(dropArea, ProjectPath, dropAreaStyle);
+                    //
+                    // if (Event.current.type == EventType.DragUpdated && dropArea.Contains(Event.current.mousePosition))
+                    // {
+                    //     DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+                    //     Event.current.Use();
+                    // }
+                    //
+                    // if (Event.current.type == EventType.DragPerform && dropArea.Contains(Event.current.mousePosition))
+                    // {
+                    //     DragAndDrop.AcceptDrag();
+                    //
+                    //     foreach (string path in DragAndDrop.paths)
+                    //     {
+                    //         // check if the path is directory (folder)
+                    //         if (Directory.Exists(path))
+                    //         {
+                    //             ProjectPath = path;
+                    //             Event.current.Use();
+                    //             break;
+                    //         }
+                    //     }
+                    // }
+                    //
+                    // GUILayout.Space(8);
+                    //
+                    // folderSelectedMsg   = $"The folder: \"{GetFolderNameFromString(ProjectPath)}\" will be used as root project.";
+                    // noFolderSelectedMsg = "No folder selected. \nPlease drag and drop a folder to use.";
+                    //
+                    // if (!string.IsNullOrEmpty(ProjectPath))
+                    // {
+                    //     GUILayout.Label(folderSelectedMsg, middleStyle);
+                    //     GUILayout.Space(4);
+                    //
+                    //     var correctDirectoryContent = new GUIContent("Is this directory correct?", "This will disable safe mode. \nPlease proceed with caution.");
+                    //     isCorrectDirectory = EditorGUILayout.Toggle(correctDirectoryContent, isCorrectDirectory);
+                    //
+                    //     if (isCorrectDirectory)
+                    //     {
+                    //         ProjectStructureWindow.ShowWindow();
+                    //     }
+                    //
+                    //     GUILayout.Space(5);
+                    //
+                    //     if (GUILayout.Button("Apply"))
+                    //     {
+                    //         if (isCorrectDirectory) ProjectStructureGUI.ApplyChanges();
+                    //         else DebugHelper.LogWarning("The action was aborted. \nYou haven't checked the confirmation box!");
+                    //     }
+                    // }
+                    // else
+                    // {
+                    //     GUILayout.Label(noFolderSelectedMsg, middleStyle);
+                    // }
+                    #endregion
                     break;
 
-                case DragAndDropType.ConvertImages: {
+                case DragAndDropType.ConvertImages: 
+                {
                     GUILayout.Label("Drag a folder here:", middleStyle);
                     GUILayout.Label("The selected folder will be used to convert the images.", subLabelStyle);
                     GUILayout.Space(10);
@@ -905,68 +892,9 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
                         }
                     }
                 }
-                else { DebugHelper.LogAbort(false); }
+                else { DebugHelper.LogAbort(SafeMode); }
             }
             else { DebugHelper.LogAbort(SafeMode); }
         }
     }
-    
-    // window to display editor prefs
-    public class EditorPrefsWindow : EditorWindow
-    {
-        [MenuItem("Lumina's Essentials/Editor Preferences")]
-        public static void ShowWindow() => GetWindow<EditorPrefsWindow>("Editor Preferences");
-
-        Vector2 scrollPos;
-        
-        void OnGUI()
-        {
-            using var key = Registry.CurrentUser.OpenSubKey(@"Software\Unity Technologies\Unity Editor 5.x\");
-
-            if (key == null)
-            {
-                EditorGUILayout.LabelField("No EditorPrefs found.");
-                return;
-            }
-
-            EditorGUILayout.LabelField("All EditorPrefs:");
-
-            // Begin a scroll view. Note the use of the field to store the scroll position.
-            scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
-
-            foreach (var valueName in key.GetValueNames())
-            {
-                var value = key.GetValue(valueName);
-                EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField(valueName);
-                EditorGUILayout.LabelField(value.ToString(), GUILayout.Width(100));
-                EditorGUILayout.EndHorizontal();
-            }
-
-            // Always do a `EndScrollView` when you do a `BeginScrollView`
-            EditorGUILayout.EndScrollView();
-        }
-    }
-    
-    // window to display the project structure
-public class ProjectStructureWindow : EditorWindow
-{
-    [MenuItem("Lumina's Essentials/Show Project Structure Window")]
-    public static void ShowWindow()
-    {
-        var window = GetWindow<ProjectStructureWindow>("Project Structure");
-        window.minSize = new Vector2(350, 500);
-        window.Show();
-    }
-
-    void OnGUI()
-    {
-        ProjectStructureGUI.Create();
-    }
-
-    void OnDestroy()
-    {
-        ProjectStructureGUI.ClearAllChanges();
-    }
-}
 }

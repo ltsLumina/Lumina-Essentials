@@ -1,6 +1,7 @@
+using Lumina.Essentials.Editor.UI.Management;
 using UnityEditor;
 using UnityEngine;
-using static Lumina.Essentials.Editor.UI.EditorGUIUtils;
+using static Lumina.Essentials.Editor.UI.Management.EditorGUIUtils;
 
 namespace Lumina.Essentials.Editor.UI
 {

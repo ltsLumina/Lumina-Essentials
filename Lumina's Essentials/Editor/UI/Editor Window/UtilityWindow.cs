@@ -612,7 +612,7 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
             }
         }
         
-        void DrawUtilitiesButtonsGUI() 
+        void DrawUtilitiesButtonsGUI()
         {
             // Checkbox to enable or disable the auto save feature
             AutoSaveConfig.Enabled = EditorGUILayout.Toggle(new GUIContent
@@ -624,13 +624,13 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
             {
                 using (new GUILayout.HorizontalScope())
                 {
-                    GUILayout.Label("└  Auto Save Interval", GUILayout.Width(200));
+                    GUILayout.Label("└  Interval", GUILayout.Width(200));
                     AutoSaveConfig.Interval = EditorGUILayout.IntSlider(AutoSaveConfig.Interval, 1, 60);
                 }
                 
                 GUILayout.Space(3);
                 
-                AutoSaveConfig.Logging = EditorGUILayout.Toggle("└  Auto Save Message", AutoSaveConfig.Logging);
+                AutoSaveConfig.Logging = EditorGUILayout.Toggle("└  Message", AutoSaveConfig.Logging);
                 
                 GUILayout.Space(5);
             }

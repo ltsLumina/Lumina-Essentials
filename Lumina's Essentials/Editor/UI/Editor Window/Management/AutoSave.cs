@@ -1,34 +1,31 @@
+// Creator: Tarodev
+// Modified by Lumina.
+
 #region
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Lumina.Essentials.Editor.UI.Management;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEditorInternal;
 using UnityEngine;
 #endregion
 
-namespace Tarodev
+namespace Lumina.Essentials.Editor.UI.Management
 {
 [CustomEditor(typeof(AutoSave))]
-public class AutoSave : Editor
+public class AutoSave : UnityEditor.Editor
 {
-    // I'm assuming AutoSaveConfig is a regular class
-    //static AutoSaveConfig AutoSave;
     static CancellationTokenSource tokenSource;
     static Task task;
 
     [InitializeOnLoadMethod]
     static void OnInitialize()
     {
-        // Initialize your AutoSaveConfig class
-        //AutoSave = new ();
-
         CancelTask();
 
         tokenSource = new ();
-        task        = SaveInterval(tokenSource.Token);
+        task = SaveInterval(tokenSource.Token);
     }
 
     static void CancelTask()

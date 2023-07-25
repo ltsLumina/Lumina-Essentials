@@ -16,7 +16,6 @@ namespace Lumina.Essentials.Editor.UI.Management
         internal static GUIStyle mainLabelStyle;
         internal static GUIStyle buttonStyle;
         internal static GUIStyle buttonSetup;
-        internal static GUIStyle toolbarButtonStyle;
         internal static GUIStyle centerLabelStyle;
         internal static GUIStyle subLabelStyle;
         internal static GUIStyle buttonBigStyle; 
@@ -29,8 +28,12 @@ namespace Lumina.Essentials.Editor.UI.Management
         internal static GUIStyle dropAreaStyle;
 
         // -- GUIContent -- //
+        internal static GUIContent safeModeWarningContent;
+        internal static GUIContent createDefaultProjectContent;
         internal static GUIContent configureImagesContent;
-        internal static GUIContent createSubfolderContent;
+        internal static GUIContent createSubfolderContent; // Deprecated. Kept for reference.
+        internal static GUIContent enterPlaymodeOptionsContent;
+        
 
         internal static void SetGUIStyles()
         {
@@ -128,11 +131,37 @@ namespace Lumina.Essentials.Editor.UI.Management
               wordWrap  = true };
             
             // GUIContent
-            configureImagesContent = new("Configure Images",
-                "Configures the default settings for images. \n" + 
-                "This is useful for when you want to import images with the same settings every time.");
+            safeModeWarningContent = new
+            (
+            "Safe Mode",
+            "If disabled, the user is not protected from performing unsafe actions that may perform unintended actions." +
+             " \n Namely, this is used to ensure the user doesn't accidentally delete their files when performing certain operations."
+             );
             
-            createSubfolderContent = new ("Create Subfolder", "Creates a subfolder in the selected folder.");
+            createDefaultProjectContent = new 
+            (
+                "Create Default Project Structure",
+                "Creates a project structure with the recommended default folders such as Art, Scripts, etc."
+            );
+            
+            configureImagesContent = new
+            (
+            "Configure Images",
+            "Configures the default settings for images. \n" + 
+                "This is useful for when you want to import images with the same settings every time."
+            );
+            
+            createSubfolderContent = new // Deprecated. Kept for reference.
+                (
+                "Create Subfolder", 
+                "Creates a subfolder in the selected folder."
+                );
+
+            enterPlaymodeOptionsContent = new
+            (
+            "Enter Playmode Options", 
+            "Enabling \"Enter Playmode Options\" improves Unity's workflow by significantly reducing the time it takes to enter play mode."
+            );
         }
 
         internal static void ReplaceOldPackage()

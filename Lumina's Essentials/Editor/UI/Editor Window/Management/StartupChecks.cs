@@ -103,8 +103,8 @@ namespace Lumina.Essentials.Editor.UI.Management
             // for less than a week, display days
             if (timeSpanSinceLastUpdate < TimeSpan.FromDays(7)) return $"{timeSpanSinceLastUpdate.Days} days ago";
 
-            // for more than a week
-            return "More than a week ago.";
+            // for more than a week: "More than a week ago" in red text.
+            return "<color=red>More than a week ago</color>";
         }
         
         public static int TimeSinceLastUpdateInDays()

@@ -3,12 +3,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Codice.Client.BaseCommands.Import;
 using Lumina.Essentials.Editor.UI.Management;
-using Tarodev;
 using UnityEngine;
 using UnityEditor;
 using static Lumina.Essentials.Editor.UI.Management.EditorGUIUtils;
 using static Lumina.Essentials.Editor.UI.Management.VersionManager;
+using Object = UnityEngine.Object;
 #endregion
 
 namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM package
@@ -48,16 +49,16 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
         static bool misc;
 
         // List of all modules.
-        internal static Dictionary<string, bool> AvailableModules = new()
+        internal readonly static Dictionary<string, bool> AvailableModules = new()
         { { "Full Package", false },
           { "DOTween", false },
-          { "Attributes", false },
           { "Sequencer", false },
+          { "Attributes", false },
           { "Helpers", false },
           { "Shortcuts", false },
           { "Misc", false } };
 
-        Dictionary<string, bool> installedModules = new Dictionary<string, bool>();
+        readonly Dictionary<string, bool> installedModules = new ();
         #endregion
         
         #region Settings variables
@@ -80,16 +81,7 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
         bool SafeMode
         {
             get => EditorPrefs.GetBool("SafeMode", true);
-            set
-            {
-                EditorPrefs.SetBool("SafeMode", value);
-
-                // Ensures that the user is aware of the consequences of replacing files by displaying a warning message if the checkbox is checked
-                if (iUnderstand && !SafeMode)
-                {
-                    DebugHelper.LogWarning($"Safe mode is now {(SafeMode ? "enabled" : "disabled")}.");
-                }
-            }
+            set => EditorPrefs.SetBool("SafeMode", value);
         }
 
         // End of preferences variables //
@@ -105,13 +97,13 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
         // Deprecated. Kept here for reference.
         #region Deprecated
 #pragma warning disable CS0414 // Field is assigned but its value is never used
-        readonly DragAndDropType createProjectEnum = DragAndDropType.CreateProject;        
+        readonly DragAndDropType createProjectEnum = DragAndDropType.CreateProject;
 #pragma warning restore CS0414 // Field is assigned but its value is never used
         #endregion
-        
-        readonly DragAndDropType convertImagesEnum = DragAndDropType.ConvertImages; // TODO: rename
 
-        internal static string ProjectPath = "";
+        const DragAndDropType convertImagesEnum = DragAndDropType.ConvertImages; // TODO: rename
+
+        internal const string ProjectPath = "";
 
         float dropAreaHeight;
         Rect dropArea;
@@ -345,76 +337,85 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
         /// </summary>
         void DrawModulesGUI() // Not to be confused with the SetupWindow
         {
+            GUILayout.Space(5);
             GUILayout.Label("   Add/Remove Modules", mainLabelStyle);
-            
             GUILayout.Space(10);
             
             #region Module Install Options (Checkboxes)
 
-            // If the "Full Package" module is selected, select all modules.
-            EditorGUI.BeginChangeCheck();
-
-            isFullPackageSelected = AvailableModules.First().Value;
-
-            if (EditorGUI.EndChangeCheck() && isFullPackageSelected) { SelectAllModules(); }
-            
-            foreach (var module in AvailableModules.ToList())
+            foreach (var module in new List<string>(AvailableModules.Keys))
             {
-                AvailableModules[module.Key] = EditorGUILayout.Toggle(module.Key, module.Value);
+                bool oldValue = AvailableModules[module];
+                bool newValue = EditorGUILayout.Toggle(module, oldValue);
 
-                if (AvailableModules[module.Key])
+                if (newValue != oldValue)
                 {
-                    installedModules.TryAdd(module.Key, true);
-                }
-                else
-                {
-                    if (installedModules.ContainsKey(module.Key)) { installedModules.Remove(module.Key); }
+                    AvailableModules[module] = newValue;
+
+                    // if changing the Full Package, change all other modules as well
+                    if (module == AvailableModules.Keys.First())
+                    {
+                        // if Full Package is selected, select all modules
+                        // if Full Package is unselected, unselect all modules
+                        foreach (var key in new List<string>(AvailableModules.Keys))
+                        {
+                            if (key != "Full Package") AvailableModules[key] = newValue;
+                        }
+                    }
+                    else if (newValue == false)
+                    {
+                        // if any module is unselected, unselect the Full Package
+                        AvailableModules["Full Package"] = false;
+                    }
+
+                    if (newValue) InstallModule(module);
+                    else UninstallModule(module);
                 }
             }
+
+            // TODO: only install when pressing apply.
+            void InstallModule(string moduleName) => installedModules[moduleName] = true;
+            void UninstallModule(string moduleName) => installedModules[moduleName] = false;
 
             // End of Checkboxes
             #endregion
             
             #region Apply/Cancel Buttons (For the Setup Modules GUI)
-            GUILayout.BeginHorizontal();
-            
-            if (GUILayout.Button("Apply"))
+            using (new GUILayout.HorizontalScope())
             {
-                if (isFullPackageSelected && !SafeMode)
+                if (GUILayout.Button("Apply"))
                 {
-                    // Popup to confirm the replacement of the old files
-                    if (EditorUtility.DisplayDialog
-                    ("Confirmation",
-                     "Are you sure you want to replace the old files? \n " + "Please backup any files from the old version that you may want to keep." +
-                     "It is recommended to backup Systems.prefab in the Resources folder", "Apply", "Cancel"))
+                    if (isFullPackageSelected && !SafeMode)
                     {
+                        // Popup to confirm the replacement of the old files
+                        if (EditorUtility.DisplayDialog
+                        ("Confirmation",
+                         "Are you sure you want to replace the old files? \n " + "Please backup any files from the old version that you may want to keep." +
+                         "It is recommended to backup Systems.prefab in the Resources folder", "Apply", "Cancel"))
+                        {
+                            // Delete the old files and replace them with the new ones
+                            ReplaceOldPackage();
+                            SetupRequired = false;
+                        }
+                        else { DebugHelper.LogAbort(SafeMode); }
+
                         // Delete the old files and replace them with the new ones
                         ReplaceOldPackage();
-                        SetupRequired = false;
                     }
-                    else
-                    {
-                        DebugHelper.LogAbort(SafeMode);
-                    }
-                    
-                    // Delete the old files and replace them with the new ones
-                    ReplaceOldPackage();
+                }
+
+                // "Cancel" button
+                if (GUILayout.Button("Cancel"))
+                {
+                    // Close the setup panel
+                    currentPanel = DisplayToolbar;
+
+                    // Reset the checkboxes
+                    ClearSelectedModules();
+                    iUnderstand = false;
+                    SafeMode    = true;
                 }
             }
-            
-            // "Cancel" button
-            if (GUILayout.Button("Cancel"))
-            {
-                // Close the setup panel
-                currentPanel = DisplayToolbar;
-                
-                // Reset the checkboxes
-                ClearSelectedModules();
-                iUnderstand       = false;
-                SafeMode          = true;
-            }
-            
-            GUILayout.EndHorizontal();
             // End of Apply/Cancel Buttons
             #endregion
             
@@ -422,27 +423,31 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
             EditorGUILayout.HelpBox
             ("This will attempt to delete your previous install of Lumina's Essentials as to properly install the new version. " +
              "\n Please backup any files from the old version that you may want to keep such as 'Systems.prefab' if you are using it. ", MessageType.Warning);
+
+            using (new GUILayout.HorizontalScope())
+            {
+                EditorGUILayout.LabelField("I understand the consequences.");
+                iUnderstand = EditorGUILayout.Toggle(iUnderstand);
+
+                if (iUnderstand) SafeMode = false;
+
+                // Ensures that the user is aware of the consequences of replacing files by displaying a warning message if the checkbox is checked
+                DebugHelper.LogWarning($"Safe mode is now {(SafeMode ? "enabled" : "disabled")}.");
+            }
             
-            // checkbox to confirm
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("I understand the consequences.");
-            iUnderstand = EditorGUILayout.Toggle(iUnderstand);
-
-            if (iUnderstand) SafeMode = false;
-
-            EditorGUILayout.EndHorizontal();
             // End of Help box and Confirmation
             #endregion
         }
         
         void DrawSettingsGUI()
         {
-            GUILayout.Space(5.5f);
+            const float spacer = 5.5f; // Has to be 5.5 to ensure that the text is at the same height as the Utilities panel.
+            GUILayout.Space(spacer);
 
             using (new GUILayout.HorizontalScope())
             {
                 GUILayout.FlexibleSpace();
-                GUILayout.Label("", GUILayout.Width(20));
+                GUILayout.Label("", GUILayout.Width(20)); // Pushes the label to the right to center it.
                 GUILayout.Label("Settings", centerLabelStyle);
                 GUILayout.FlexibleSpace();
                 
@@ -451,7 +456,7 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
                 advancedSettings = GUILayout.Toggle(advancedSettings, advancedSettingsContent);
             }
 
-            GUILayout.Label("Provides useful features to improve your workflow.", subLabelStyle);
+            GUILayout.Label("Various settings to customize your experience.", subLabelStyle);
 
             // Draw a horizontal line (separator)
             EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
@@ -498,13 +503,10 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
 
             #region Settings
             // Display the value of SafeMode as a readonly checkbox and tooltip
-            SafeMode = EditorGUILayout.Toggle 
-            (new GUIContent
-             ("Safe Mode","If disabled, the user is not protected from performing unsafe actions that may perform unintended actions." +
-              " \n Namely, this is used to ensure the user doesn't accidentally delete their old Essentials install when upgrading to a new version."), SafeMode);
+            SafeMode = EditorGUILayout.Toggle(safeModeWarningContent, SafeMode);
             
             // The user can choose the logging level. This is used to determine what is logged to the console.
-            if (!SafeMode)
+            if (!SafeMode && advancedSettings)
                 DebugHelper.LogBehaviour = (DebugHelper.LogLevel) EditorGUILayout.EnumPopup
                     (new GUIContent("└  Logging Behaviour", "Determines what (how much) is logged to the console."), DebugHelper.LogBehaviour);
 
@@ -535,6 +537,37 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
                 if (GUILayout.Button("Show All EditorPrefs", GUILayout.Height(30)))
                 {
                     ShowAllEditorPrefs();
+                }
+
+                if (GUILayout.Button("Update Module Packages", GUILayout.Height(30)) && advancedSettings && !SafeMode) { UpdateModulePackages(); }
+
+                void UpdateModulePackages()
+                {
+                    if (!SafeMode)
+                    {
+                        string folder = EditorUtility.OpenFolderPanel("Choose a folder to export", "", "");
+
+                        if (string.IsNullOrEmpty(folder)) return;
+
+                        string folderName   = Path.GetFileName(folder);
+                        string tempPath     = Path.Combine(Application.dataPath, folderName);
+                        string relativePath = "Assets/" + folderName;
+
+                        // Move folder to the root of Unity's assets folder
+                        AssetDatabase.MoveAsset(Path.GetRelativePath(Application.dataPath, folder), relativePath);
+                        AssetDatabase.Refresh();
+
+                        // Export the folder content
+                        string packageName = folderName + ".unitypackage";
+                        string packagePath = EditorUtility.SaveFilePanel("Save the Package", "", packageName, "unitypackage");
+
+                        if (!string.IsNullOrEmpty(packagePath)) { AssetDatabase.ExportPackage(relativePath, packagePath, ExportPackageOptions.Recurse); }
+
+                        // Move the folder back to its original location
+                        AssetDatabase.MoveAsset(relativePath, Path.GetRelativePath(Application.dataPath, folder));
+                        AssetDatabase.Refresh();
+                    }
+                    else { DebugHelper.LogAbort(SafeMode); }
                 }
                 
                 // Draw a horizontal line (separator)
@@ -581,7 +614,8 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
 
         void DrawUtilitiesGUI()
         {
-            GUILayout.Space(6.5f);
+            const float spacer = 6.5f; // Has to be 6.5 to ensure that the text is at the same height as the Settings panel.
+            GUILayout.Space(spacer);
             GUILayout.Label("Utilities", centerLabelStyle);
             GUILayout.Label("Provides useful features to improve your workflow.", subLabelStyle);
             
@@ -604,6 +638,7 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
         }
 
         [Obsolete] // Deprecated. Kept here for reference.
+        // ReSharper disable once UnusedMember.Local
         void DrawCreateProjectStructureGUI()
         {
             if (GUILayout.Button("Create Default Project Structure"))
@@ -617,35 +652,35 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
             // Checkbox to enable or disable the auto save feature
             AutoSaveConfig.Enabled = EditorGUILayout.Toggle(new GUIContent
                 ("Auto Save",
-                "Automatically saves the scene when entering play mode."
+                "Automatically saves the scene at a set interval."
                 ), AutoSaveConfig.Enabled);
 
             if (AutoSaveConfig.Enabled)
             {
                 using (new GUILayout.HorizontalScope())
                 {
-                    GUILayout.Label("└  Interval", GUILayout.Width(200));
+                    GUILayout.Label("└  Interval (Min)", GUILayout.Width(200));
                     AutoSaveConfig.Interval = EditorGUILayout.IntSlider(AutoSaveConfig.Interval, 1, 60);
                 }
                 
-                GUILayout.Space(3);
+                GUILayout.Space(1.5f);
                 
                 AutoSaveConfig.Logging = EditorGUILayout.Toggle("└  Message", AutoSaveConfig.Logging);
                 
-                GUILayout.Space(5);
+                GUILayout.Space(5.5f);
             }
             
             // Checkbox to enable or disable the enter playmode options
-            EditorSettings.enterPlayModeOptionsEnabled = EditorGUILayout.Toggle(new GUIContent("Enter Playmode Options", 
-            "Enabling \"Enter Playmode Options\" improves Unity's workflow by significantly reducing the time it takes to enter play mode."),
+            EditorSettings.enterPlayModeOptionsEnabled = EditorGUILayout.Toggle(enterPlaymodeOptionsContent,
              EditorSettings.enterPlayModeOptionsEnabled);
-
-            //TODO: more options for cleaner look. even if they are pointless
+            
+            // Horizontal line (separator)
+            EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
 
             GUILayout.Space(10);
 
             // Button that creates a default project directory structure //TODO: allow for selecting a custom directory structure through enum popups
-            if (GUILayout.Button("Create Project \nDirectory Structure", GUILayout.Height(35)))
+            if (GUILayout.Button(createDefaultProjectContent, GUILayout.Height(35)))
             {
                 configuringImages = false;
 
@@ -653,11 +688,9 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
                 else DebugHelper.LogAbort(SafeMode);
             } 
 
-            GUILayout.Space(3);
+            GUILayout.Space(5);
 
             GUI.backgroundColor = configuringImages ? new Color(0.76f, 0.76f, 0.76f) : Color.white;
-
-            GUILayout.Space(3);
             
             if (GUILayout.Button(configureImagesContent, GUILayout.Height(35)))
             {
@@ -677,7 +710,7 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
 
             GUI.backgroundColor = Color.white;
 
-            GUILayout.Space(3);
+            GUILayout.Space(5);
 
             if (GUILayout.Button("Placeholder Button", GUILayout.Height(35)))
             {
@@ -701,6 +734,20 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
                 CreateDirectories(rootName + "/Art", "Animations");
                 CreateDirectories(rootName + "/Audio", "SFX", "Music");
                 AssetDatabase.Refresh();
+                
+                #region Looks like this in the project window:
+                // _Project
+                // └ Scripts
+                // └ Art
+                // |  └  Animations
+                // └ Audio
+                // |  └  SFX
+                // |  └  Music
+                // └ Scenes
+                // └ PREFABS
+                // └ Materials
+                // └ Plugins
+                #endregion
             }
             else { DebugHelper.LogAbort(false); }
         }

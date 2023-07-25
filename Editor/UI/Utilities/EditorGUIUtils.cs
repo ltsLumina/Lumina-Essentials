@@ -230,11 +230,11 @@ namespace Lumina.Essentials.Editor.UI.Management
             foreach (string directory in directories)
             {
                 relativePath = directory[Directory.GetCurrentDirectory().Length..].Replace('\\', '/').TrimStart('/') + "/";
-                Debug.Log(relativePath);
             }
 
             foreach (var module in UtilityWindow.installedModules)
             {
+                #region Package Import Calllbacks
                 AssetDatabase.importPackageCompleted += packageName =>
                 {
                     Debug.Log("Imported: " + packageName);
@@ -249,11 +249,11 @@ namespace Lumina.Essentials.Editor.UI.Management
                 {
                     Debug.Log("Cancelled importing: " + packageName);
                 };
+                #endregion
                 
                 // Combine the path of the module with the path of the packages folder
                 string modulePath = Path.Combine(relativePath, module.Key);
                 modulePath += ".unitypackage";
-                Debug.Log(modulePath);
 
                 AssetDatabase.ImportPackage(modulePath, false);
             }

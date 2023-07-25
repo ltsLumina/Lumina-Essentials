@@ -55,8 +55,8 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
           { "Attributes", false },
           { "Helpers", false },
           { "Shortcuts", false },
-          { "Misc", false },
-          { "DOTween", false } };
+          { "Misc", false }/*,*/
+          /*{ "DOTween", false }*/ };
 
         internal readonly static Dictionary<string, bool> installedModules = new ();
         #endregion
@@ -401,7 +401,7 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
                          "It is recommended to backup Systems.prefab in the Resources folder", "Apply", "Cancel"))
                         {
                             // Delete the old files and replace them with the new ones
-                            ReplaceOldPackage();
+                            //ReplaceOldPackage();
                             InstallModules();
                             SetupRequired = false;
                         }
@@ -428,8 +428,10 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
             
             #region Help box and Confirmation (Safe Mode)
             EditorGUILayout.HelpBox
-            ("This will attempt to delete your previous install of Lumina's Essentials as to properly install the new version. " +
-             "\n Please backup any files from the old version that you may want to keep such as 'Systems.prefab' if you are using it. ", MessageType.Warning);
+            ("Please choose the modules you wish to install. If you are unsure which one(s) to choose, simply select \"Full Package\" " +
+             "and all the recommended modules will be installed. "                                                                      +
+             "                                              "                                                                           +
+             "The Full Package also includes Joel's Essentials as well as an 'Examples' folder with various tips and guides on how the package works. ", MessageType.Info);
 
             using (new GUILayout.HorizontalScope())
             {

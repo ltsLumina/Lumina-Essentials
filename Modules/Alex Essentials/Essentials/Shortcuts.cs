@@ -7,6 +7,7 @@ using UnityEditor;
 using UnityEditor.ShortcutManagement;
 #endif
 using UnityEngine;
+using UnityEngine.SceneManagement;
 #endregion
 
 namespace Lumina.Essentials
@@ -40,8 +41,9 @@ namespace Lumina.Essentials
 
             // Wait for a little to give the reader time to read the warning message.
             await Task.Delay(1500);
-
-            SceneManagerExtended.ReloadScene();
+            
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            
         }
 
         // Warning method for when a shortcut is pressed.

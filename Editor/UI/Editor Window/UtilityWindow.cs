@@ -345,6 +345,12 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
                 bool oldValue = AvailableModules[module];
                 bool newValue = EditorGUILayout.Toggle(module, oldValue);
 
+                // Display Extras right under Full Package whenever Full Package is selected
+                if (module.Equals("Full Package") && newValue)
+                {
+                    using (new EditorGUI.DisabledScope(true)) { EditorGUILayout.LabelField("└ Extras"); }
+                }
+                
                 if (newValue != oldValue)
                 {
                     AvailableModules[module] = newValue;
@@ -376,6 +382,12 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
                         Debug.Log($"Uninstalling {module}...");
                     }
 
+                    // If current module is "Full Package" and is selected, display "Extras"
+                    if (module.Equals("Full Package") && newValue)
+                    {
+                        using (new EditorGUI.DisabledScope(true)) { EditorGUILayout.LabelField("└ Extras"); }
+                    }
+                    
                     void AddModuleToInstalledModules(string moduleName) => installedModules[moduleName] = true;
                     void RemoveModuleFromInstalledModules(string moduleName) => installedModules[moduleName] = false;
                 }
@@ -388,8 +400,9 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
             EditorGUILayout.HelpBox
             ("Please choose the modules you wish to install. If you are unsure which one(s) to choose, simply select \"Full Package\" " +
              "and all the recommended modules will be installed. "                                                                      +
-             "                                              "                                                                           +
-             "The Full Package also includes Joel's Essentials as well as an 'Examples' folder with various tips and guides on how the package works. ", MessageType.Info);
+             "                                              "   /* Spacer for HelpBox */                                                +
+             "The Full Package also includes an \"Extras\" part which itself includes Joel's Essentials"                                +
+             " as well as an 'Examples' folder with various tips and guides on how the package works. ", MessageType.Info);
 
             using (new GUILayout.HorizontalScope())
             {

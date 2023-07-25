@@ -166,79 +166,33 @@ namespace Lumina.Essentials.Editor.UI.Management
 
         internal static void UpdateModulePackages()
         {
-            // Get the selected asset or directory path
             string path = AssetDatabase.GetAssetPath(Selection.activeObject);
 
-            // Validation
-            if (string.IsNullOrEmpty(path) || !Directory.Exists(path) && !File.Exists(path))
+            if (string.IsNullOrEmpty(path) || (!Directory.Exists(path) && !File.Exists(path)))
             {
                 EditorUtility.DisplayDialog("Error", "Please, select a folder or asset to export.", "Ok");
                 return;
             }
 
-            string tempDirName  = "TempExportDir";
-            string headerPath   = "Assets/Header (GitHub front page)/Lumina's Essentials";
-            string tempPath     = headerPath + "/" + tempDirName;
-            string modifiedPath = path; // This will hold the path of the object to be exported
-            bool   isDirectory  = Directory.Exists(path);
-            bool   isFile       = File.Exists(path);
+            bool   isDirectory = Directory.Exists(path);
+            bool   isFile      = File.Exists(path);
+            string headerPath  = "Assets/Header (GitHub front page)/Lumina's Essentials";
 
-            if (isDirectory)
+            if (isDirectory || isFile)
             {
-                string folderName = Path.GetFileName(path);
-
-                // Create a temporary directory
-                if (!AssetDatabase.IsValidFolder(tempPath))
-                {
-                    AssetDatabase.CreateFolder(headerPath, tempDirName);
-                    AssetDatabase.Refresh();
-                }
-
-                AssetDatabase.MoveAsset(path, tempPath + "/" + folderName); // move the folder to temp directory
+                // Temporarily move Lumina's Essential to Assets
+                string pathToEssentials = "Assets/Lumina's Essentials";
+                AssetDatabase.MoveAsset(headerPath, pathToEssentials);
                 AssetDatabase.Refresh();
 
-                modifiedPath = tempPath + "/" + folderName;
-            }
-
-            // Handling single file
-            else if (isFile)
-            {
-                string fileName = Path.GetFileName(path);
-
-                // Create a temporary directory
-                if (!AssetDatabase.IsValidFolder(tempPath))
-                {
-                    AssetDatabase.CreateFolder(headerPath, tempDirName);
-                    AssetDatabase.Refresh();
-                }
-
-                AssetDatabase.MoveAsset(path, tempPath + "/" + fileName); // move the file to temp directory
+                // After Move
+                path = path.Replace(headerPath, pathToEssentials);
+                string packageName = EditorUtility.SaveFilePanel("Save as Unity Package", "", Path.GetFileNameWithoutExtension(path), "unitypackage");
+                if (!string.IsNullOrEmpty(packageName)) { AssetDatabase.ExportPackage(path, packageName, ExportPackageOptions.Recurse); }
                 AssetDatabase.Refresh();
 
-                modifiedPath = tempPath + "/" + fileName;
-            }
-
-            // Export the selected object (folder or asset)
-            string packageName = EditorUtility.SaveFilePanel("Save as Unity Package", "", Path.GetFileNameWithoutExtension(path), "unitypackage");
-            if (!string.IsNullOrEmpty(packageName)) AssetDatabase.ExportPackage(modifiedPath, packageName, ExportPackageOptions.Recurse);
-            AssetDatabase.Refresh();
-
-            if (isDirectory)
-            {
-                // Revert the directory back to its original location
-                AssetDatabase.StartAssetEditing();
-                AssetDatabase.MoveAsset(modifiedPath, path);
-                AssetDatabase.StopAssetEditing();
-                AssetDatabase.Refresh();
-            }
-
-            // Revert single file back to its original location
-            else if (isFile)
-            {
-                AssetDatabase.StartAssetEditing();
-                AssetDatabase.MoveAsset(modifiedPath, path);
-                AssetDatabase.DeleteAsset(tempPath); // delete the temporary directory
-                AssetDatabase.StopAssetEditing();
+                // Move back Lumina's Essentials to original place
+                AssetDatabase.MoveAsset(pathToEssentials, headerPath);
                 AssetDatabase.Refresh();
             }
         }

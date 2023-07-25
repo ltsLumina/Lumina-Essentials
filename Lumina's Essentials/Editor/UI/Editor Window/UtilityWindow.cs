@@ -49,14 +49,14 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
         static bool misc;
 
         // List of all modules.
-        internal readonly static Dictionary<string, bool> AvailableModules = new()
+        internal readonly static Dictionary<string, bool> AvailableModules = new ()
         { { "Full Package", false },
-          { "DOTween", false },
           { "Sequencer", false },
           { "Attributes", false },
           { "Helpers", false },
           { "Shortcuts", false },
-          { "Misc", false } };
+          { "Misc", false },
+          { "DOTween", false } };
 
         readonly Dictionary<string, bool> installedModules = new ();
         #endregion
@@ -539,35 +539,9 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
                     ShowAllEditorPrefs();
                 }
 
-                if (GUILayout.Button("Update Module Packages", GUILayout.Height(30)) && advancedSettings && !SafeMode) { UpdateModulePackages(); }
-
-                void UpdateModulePackages()
+                if (GUILayout.Button("Update Module Packages", GUILayout.Height(30)) && advancedSettings && !SafeMode)
                 {
-                    if (!SafeMode)
-                    {
-                        string folder = EditorUtility.OpenFolderPanel("Choose a folder to export", "", "");
-
-                        if (string.IsNullOrEmpty(folder)) return;
-
-                        string folderName   = Path.GetFileName(folder);
-                        string tempPath     = Path.Combine(Application.dataPath, folderName);
-                        string relativePath = "Assets/" + folderName;
-
-                        // Move folder to the root of Unity's assets folder
-                        AssetDatabase.MoveAsset(Path.GetRelativePath(Application.dataPath, folder), relativePath);
-                        AssetDatabase.Refresh();
-
-                        // Export the folder content
-                        string packageName = folderName + ".unitypackage";
-                        string packagePath = EditorUtility.SaveFilePanel("Save the Package", "", packageName, "unitypackage");
-
-                        if (!string.IsNullOrEmpty(packagePath)) { AssetDatabase.ExportPackage(relativePath, packagePath, ExportPackageOptions.Recurse); }
-
-                        // Move the folder back to its original location
-                        AssetDatabase.MoveAsset(relativePath, Path.GetRelativePath(Application.dataPath, folder));
-                        AssetDatabase.Refresh();
-                    }
-                    else { DebugHelper.LogAbort(SafeMode); }
+                    UpdateModulePackages();
                 }
                 
                 // Draw a horizontal line (separator)
@@ -577,9 +551,6 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
                 GUILayout.Label("Read-only values", centerLabelStyle);
                 GUILayout.Label("These are only here for debugging purposes.", subLabelStyle);
                 GUILayout.Space(5);
-                
-                // Normal fields that the user may edit.
-                // Example
                 
                 // Group of view only fields
                 EditorGUI.BeginDisabledGroup(true);

@@ -289,7 +289,7 @@ namespace Lumina.Essentials.Editor.UI.Management
             var directoryInfo = new DirectoryInfo(str);
             return directoryInfo.Name;
         }
-
+        
         internal static void ShowAllEditorPrefs() => EditorPrefsWindow.ShowWindow();
         
         internal static void SelectAllModules()

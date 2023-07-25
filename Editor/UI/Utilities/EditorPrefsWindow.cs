@@ -6,7 +6,9 @@ namespace Lumina.Essentials.Editor.UI
 {
 public class EditorPrefsWindow : EditorWindow
 {
+#if DEBUG_BUILD
     [MenuItem("Lumina's Essentials/Editor Preferences")]
+#endif
     public static void ShowWindow() => GetWindow<EditorPrefsWindow>("Editor Preferences");
 
     Vector2 scrollPos;

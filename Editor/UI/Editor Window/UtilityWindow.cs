@@ -74,9 +74,6 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
             set => EditorPrefs.SetBool("SetupRequired", value);
         }
         
-        /// <summary> Used to ensure that the user is aware of the consequences of disabling Safe mode. </summary>
-        bool iUnderstand;
-        
         /// <summary> Enabled by default. Prevents the user from accidentally doing something they didn't intend to do. </summary>
         bool SafeMode
         {
@@ -278,7 +275,7 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
                     GUI.color = new Color(1f, 0.75f, 0.55f);
                     if (GUILayout.Button("Something!", buttonSetup, GUILayout.Width(200)))
                     {
-                        Debug.Log("testing");
+                        Debug.Log("Placeholder button. Doesn't do anything yet.");
                     }
                     
                     GUI.color = Color.white;
@@ -387,12 +384,28 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
             // End of Checkboxes
             #endregion
             
+            #region Help box and Confirmation (Safe Mode)
+            EditorGUILayout.HelpBox
+            ("Please choose the modules you wish to install. If you are unsure which one(s) to choose, simply select \"Full Package\" " +
+             "and all the recommended modules will be installed. "                                                                      +
+             "                                              "                                                                           +
+             "The Full Package also includes Joel's Essentials as well as an 'Examples' folder with various tips and guides on how the package works. ", MessageType.Info);
+
+            using (new GUILayout.HorizontalScope())
+            {
+                EditorGUILayout.LabelField("Toggle Safe Mode off to continue.", GUILayout.Width(200));
+                SafeMode = EditorGUILayout.Toggle(SafeMode);
+            }
+            
+            // End of Help box and Confirmation
+            #endregion
+
             #region Apply/Cancel Buttons (For the Setup Modules GUI)
             using (new GUILayout.HorizontalScope())
             {
-                if (GUILayout.Button("Apply"))
+                if (!SafeMode)
                 {
-                    if (!SafeMode)
+                    if (GUILayout.Button("Apply"))
                     {
                         // Popup to confirm the replacement of the old files
                         if (EditorUtility.DisplayDialog
@@ -418,33 +431,12 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
                     // Reset the checkboxes
                     ClearSelectedModules();
                     installedModules.Clear();
-                    
-                    iUnderstand = false;
-                    SafeMode    = true;
+
+                    SafeMode = true;
                 }
             }
+
             // End of Apply/Cancel Buttons
-            #endregion
-            
-            #region Help box and Confirmation (Safe Mode)
-            EditorGUILayout.HelpBox
-            ("Please choose the modules you wish to install. If you are unsure which one(s) to choose, simply select \"Full Package\" " +
-             "and all the recommended modules will be installed. "                                                                      +
-             "                                              "                                                                           +
-             "The Full Package also includes Joel's Essentials as well as an 'Examples' folder with various tips and guides on how the package works. ", MessageType.Info);
-
-            using (new GUILayout.HorizontalScope())
-            {
-                EditorGUILayout.LabelField("I understand the consequences.");
-                iUnderstand = EditorGUILayout.Toggle(iUnderstand);
-
-                if (iUnderstand) SafeMode = false;
-
-                // Ensures that the user is aware of the consequences of replacing files by displaying a warning message if the checkbox is checked
-                DebugHelper.LogWarning($"Safe mode is now {(SafeMode ? "enabled" : "disabled")}.");
-            }
-            
-            // End of Help box and Confirmation
             #endregion
         }
         
@@ -485,7 +477,6 @@ namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM packa
                         
                         // Reset any necessary flags or variables
                         SafeMode                   = true;
-                        iUnderstand                = false;
                         imageConverterPath         = "";
                         DontShow_DebugBuildWarning = false;
                         DebugHelper.LogBehaviour   = DebugHelper.LogLevel.Verbose;

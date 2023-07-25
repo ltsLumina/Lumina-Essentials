@@ -9,17 +9,17 @@ namespace Lumina.Essentials.Editor.UI.Management
     public static class VersionManager
     {
         /// <summary> The current version of Lumina's Essentials. </summary>
-        public static string CurrentVersion => "1.0.0 Debug";
+        public static string CurrentVersion => "3.0.0 Beta1";
         /// <summary> The latest version of Lumina's Essentials available on GitHub. </summary>
         public static string LatestVersion => EditorPrefs.GetString("LatestVersion", "Unknown");
         /// <summary> The version of the package that was last opened. </summary>
         public static string LastOpenVersion
         {
-            get => EditorPrefs.GetString("LastOpenVersion", "Unknown"); // Default to 3.0.0; first version to use EditorPrefs
+            get => EditorPrefs.GetString("LastOpenVersion", "Unknown");
             set => EditorPrefs.SetString("LastOpenVersion", value);
         }
         /// <summary> Whether or not the current version is a debug version. </summary>
-        public static bool DebugVersion => CurrentVersion.Contains("Debug", StringComparison.OrdinalIgnoreCase) || CompareVersions(CurrentVersion, LatestVersion);
+        public static bool DebugVersion => CurrentVersion.Contains("Debug", StringComparison.OrdinalIgnoreCase);
         internal static bool DontShow_DebugBuildWarning
         {
             get => EditorPrefs.GetBool("DontShow_DebugBuildWarning");

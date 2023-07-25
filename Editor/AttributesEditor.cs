@@ -1,12 +1,11 @@
 ﻿#region
 using System;
 using System.Globalization;
-using Lumina.Essentials.Attributes;
 using UnityEditor;
 using UnityEngine;
 #endregion
 
-namespace Lumina.Essentials.Editor
+namespace Lumina.Essentials.Attributes.Editor
 {
     public static class AttributesEditor
     {
@@ -191,7 +190,7 @@ namespace Lumina.Essentials.Editor
 
             public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
             {
-                UnityEditor.EditorGUIUtility.labelWidth /= 4f;
+                EditorGUIUtility.labelWidth /= 4f;
                 position.height             =  LINE_HEIGHT;
                 position.width              /= 4f;
 

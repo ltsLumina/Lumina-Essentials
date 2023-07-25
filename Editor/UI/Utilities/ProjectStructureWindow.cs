@@ -9,6 +9,7 @@ namespace Lumina.Essentials.Editor.UI
 [Obsolete("This class has been deprecated. It remains for reference.")]
 public class ProjectStructureWindow : EditorWindow
 {
+#if DEBUG_BUILD
     [MenuItem("Lumina's Essentials/Show Project Structure Window")]
     public static void ShowWindow()
     {
@@ -18,6 +19,7 @@ public class ProjectStructureWindow : EditorWindow
         window.minSize = new Vector2(350, 500);
         window.Show();
     }
+#endif
 
     void OnGUI()
     {

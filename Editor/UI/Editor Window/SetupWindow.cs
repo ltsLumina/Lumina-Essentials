@@ -1,3 +1,6 @@
+// ONLY UNCOMMENT THIS IF DEBUG BUILD IS TRUE IN VERSION-MANAGER.
+//#define DEBUG_BUILD
+
 using Lumina.Essentials.Editor.UI.Management;
 using UnityEditor;
 using UnityEngine;
@@ -12,8 +15,10 @@ namespace Lumina.Essentials.Editor.UI
     /// </summary>
     public sealed class SetupWindow : EditorWindow
     {
+#if DEBUG_BUILD
         [MenuItem("Lumina's Essentials/Setup", false, 0)]
         static void Debug_OpenSetupWindow() => OpenSetupWindow();
+#endif
         
         /// <summary>
         ///     Opens the setup window that instructs the user on how to get started with Lumina's Essentials.

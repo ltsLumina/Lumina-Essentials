@@ -3,13 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Codice.Client.BaseCommands.Import;
-using Lumina.Essentials.Editor.UI.Management;
 using UnityEngine;
 using UnityEditor;
+using Lumina.Essentials.Editor.UI.Management;
 using static Lumina.Essentials.Editor.UI.Management.EditorGUIUtils;
 using static Lumina.Essentials.Editor.UI.Management.VersionManager;
-using Object = UnityEngine.Object;
 #endregion
 
 namespace Lumina.Essentials.Editor.UI //TODO: Make the installer a git UPM package

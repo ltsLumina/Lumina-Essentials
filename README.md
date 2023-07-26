@@ -1,45 +1,111 @@
-# A collection of scripts to make life with Unity a little more bearable.
-> Written and customized by me, along with features from Joel's essentials.
+# Lumina's Unity Essentials Package
 
-## TL;DR Features:
-#### My personal collection of scripts; "Alex_Essentials".
-- Sequencing methods, Delayed action methods, and a ReadOnly attribute.
-- Cinemachine camera shake instance calls for easy use.
-- Extension for the RigidbodyConstraints2D class for better control.
-- Initialization script for manager classes to always keep track of them.
-- Helper methods for general purposes.
+![Unity Version](https://img.shields.io/badge/Unity-2021.3%2B-blue.svg)
 
-#### Joel's own essentials folder.
-- Create singleton patterns for your classes easily.
-- Object pooling system.
-- Music manager for controlling music only. (No sound effect support)
-- An extension to the SceneManager class in Unity. Includes commonly used scene management methods.
+## Table of Contents
+- [Overview](#overview)
+- [TL;DR Features](#tldr-features)
+- [Installation](#installation)
+- [Getting Started](#getting-started)
+- [Essentials Overview](#essentials-overview)
+  - [Sequencer](#sequencer)
+  - [Attributes](#attributes)
+  - [Helpers](#helpers)
+  - [Shortcuts](#shortcuts)
+  - [Utility Window](#utility-window)
+- [Joel's Essentials](#joels-essentials)
+- [Contribution and Bug Reporting](#contribution-and-bug-reporting)
+- [License](#license)
 
-# Alex Essentials includes:
+## Overview
+Welcome to Lumina's Unity Essentials Package, a collection of scripts designed to improve your Unity workflow and enhance your project development. 
 
-### The All-in-One Essentials script. 
-Features a sequencing method for creating action sequences, a method for running an action after a delay, as well as a ReadOnly attribute that allows you make readonly variables in the inspector. The sequencing and delay methods both feature an async/await counterpart, in case you wish to use those instead. 
-> There is also a class for deprecated features that still work if you are using the old versions of this essentials package.
+This package includes various utility features, shortcuts, and extensions to make your life with Unity a little more bearable. From a powerful Sequencer module to a convenient Utility Window, these essentials are designed to boost your productivity and streamline your game development process.
 
-### A simple camera shake script for Cinemachine.
-Simple script for making a Cinemachine Virtual camera shake using the 6D Shake cinemachine component.
+The package also features contributions from Joel's Essentials, providing additional handy tools to complement the collection.
 
-### An extension to Unity's RigidbodyConstraints2D.
-A class that allows you to freeze/unfreeze individual constraints, rather than Unity's default setting of unfreezing all at once, which is known to cause problems. This class also allows you to call the methods directly from your Rigidbody2D reference.
-Example: `myRigidBody2D.FreezeConstraints(RigidbodyConstraints2DExtended.Constraints.FreezeX);`
+## TL;DR Features
+- A utility window with features to enhance your Unity workflow, such as creating default project directories for new projects and converting image settings for different scenarios.
+- Quick access to enable "Enter Play Mode" options, allowing you to enter play mode much quicker.
+- An auto-save feature for Unity that isn't normally available.
+- A powerful Sequencer module to create sequences of methods, events, or any other actions, with support for running methods after a specified delay.
+- Various attributes, including ReadOnly and Ranged Float features, for customizing variable display in the Unity inspector.
+- A collection of useful Unity shortcuts, such as `ClearConsole()` and `ReloadScene()`, for performing common tasks more efficiently.
+- A Helper Class with miscellaneous methods, such as caching `Camera.main` and playing audio with random pitches.
 
-**It is highly recommended to import the Constraints class as a static member to avoid writing out the full syntax every time.**
+## Installation
+1. Open your Unity project.
+2. Choose whether to install the package from GitHub, or directly from Unity's package manager (UPM).
+   - Install the package from the [Releases page](github.com/ltsLumina/Lumina-Essentials/releases/latest) on GitHub.
+   - Or from the Package Manager under "Add Package from git URL" and enter `https://github.com/ltsLumina/Lumina-Essentials.git`
+3. Download the latest release of the package as a .unitypackage.
+4. In Unity, either open the package or drag and drop it in from wherever you saved it.
+6. Ensure that **all** files are selected and click "Import."
 
-The method also allows you to freeze/unfreeze multiple constraints at once using the bitwise " **|** " (or) operator.
-Example: `myRigidBody2D.FreezeConstraints(FreezeX | FreezeY);`
+## Getting Started
+To access the utility window, go to "Tools" -> "Lumina" -> "Open Utility Window" in the Unity editor. From there, you can explore and utilize various features, including project initialization, enter play mode options, and auto-save.
 
-### Project Initialization
-A simple, but very powerful script that loads a prefab that includes all your manager scripts. The script runs before the scene has loaded and creates a DontDestroyOnLoad prefab by name "Systems" with childed GameObjects containing your managers. By doing it this way, you always have a singleton reference for all your managers, while still being able to serialize fields to the inspector. It also circumvents the need to create a preload scene with all your managers as this script runs before scene load.
-> Keep in mind before use!: You **MUST** create a prefab by name `Systems` and place it in the `Resources` folder in the Alex_Essentials folder for this to work. The prefab should be an empty game object, and each of your manager scripts should be placed on their own gameobject, childed to the Systems parent. 
-[Example of how it should look in the editor.](https://gyazo.com/439639ce3e9e79f4e8f4baad023df8cd) (The Music Player in the image is only for example, not required.)
+All the Essentials are under the `Lumina.Essentials` namespace, with the Sequencer and Attributes being sub-namespaces.
+Simply add the namespace(s) to any script you are writing and start using the methods provided!
 
-### A general purpose Helper Class
-Includes a few random, yet very helpful methods that people find themselves using in almost every single project. Find yourself caching a reference to the camera in almost every script? Worry no more, as you can call Helpers.Camera to access the main camera without it being an expensive method call as we cache it after the first use.
+For details on the available methods, attributes, and shortcuts provided by the package, check out the [documentation](Documentation.md).
 
-# Notes
-#### This essentials package has only been tested by me on my personal project, so in case something breaks, let me know :)
+## Essentials Overview
+
+### Sequencer
+The Sequencer module allows you to create sequences of methods, events, or any other actions you can think of. It supports running a method after a specified delay, performing callback actions, as well as various other functions. The implementation is designed through extension methods for ease of use. For example, you can create a sequence like this: 
+
+```
+Sequence mySequence = Sequencing.CreateSequence(this)
+mySequence().Execute(ExampleMethod).WaitForSeconds(3f).ContinueWith(() => Debug.Log("Finished!"));
+```
+The provided example will function exactly as you expect. It will run the "ExampleMethod" function, then wait for 3 seconds using a coroutine, then once it has finished waiting it prints a "Finished!" message to the Unity console.
+   - Note: The "`this`" inside of `CreateSequence()` is the 'host' of the coroutine. Unless you want a different MonoBehaviour to run your coroutine, always use '`this`'.
+
+### Attributes
+> The Attributes Package includes two essential attributes:
+- **ReadOnly Attribute:** Allows you to add '[ReadOnly]' before a variable so that it is shown but not editable in the inspector. Use it like this: `[SerializeField, ReadOnly] bool readOnlyBool;`.
+- **Ranged Float Attribute:** Allows you to add a range to a float variable in the inspector. It has various different uses so refer to the "Examples" folder in the package for help on how to use it.
+
+The RangedFloat attribute provides a useful class for defining a range with min and max values. Additionally, an implicit operator is included, allowing you to fetch a random value within the range when a RangedFloat is used as a float. The RangedFloatAttribute provides options for how the range is displayed in the inspector, including locked ranges, editable ranges, and hidden ranges.
+
+### Helpers
+> The Helpers class provides miscellaneous helper methods that don't fit into any other category. Some of the essential helper methods include:
+- **CameraMain:** A property that allows you to call `Camera.main` without it being an expensive call, as it caches the main camera after the first use. Use it like this: `Helpers.CameraMain.transform.position`.
+- **PlayRandomPitch:** A method that plays an audio clip on the given audio source with a random pitch between the provided minimum and maximum values. This can add variation to your audio playback.
+- **DestroyAllChildren:** A method that destroys all children of a given transform. This can be used as an extension method, making it easy to clean up child objects.
+- **RandomVector:** Two overloads of the method that generate a random Vector2 or Vector3 within specified minimum and maximum values. This can be useful for generating random positions or directions in your game.
+
+### Shortcuts
+> The Shortcuts Class includes a collection of useful Unity shortcuts, making it easier to perform common tasks more efficiently.
+
+Some of the included shortcuts are `ClearConsole()` and `ReloadScene()`, allowing you to clear the console or reload the scene with a hotkey.
+These methods can also be used as normal in your code, they aren't limited as hotkeys.
+
+### Utility Window
+> The Utility Window provides quick access to various features that enhance your Unity workflow, including:
+- Creating default project directories for new projects, helping you to maintain a standardized project structure.
+- Converting image settings in Unity to be appropriate for any given scenario, simplifying the process of setting up image assets for different platforms or quality levels.
+- Enabling "Enter Play Mode" options", allowing you to enter play mode much quicker and avoid unnecessary manual steps.
+- Auto-save feature for Unity that isn't normally available, providing an added layer of protection against data loss.
+
+## Joel's Essentials
+> Joel's Essentials is a set of additional handy tools that complement Lumina's Unity Essentials Package. It includes the following features:
+
+- **Singleton Class:** Lets you turn any MonoBehaviour into a singleton, ensuring that only one instance of the script exists in the scene.
+
+- **Object Pooling System:** Allows you to easily create object pools for your Unity game, improving performance by reusing objects instead of instantiating and destroying them frequently.
+
+- **SceneManagerExtended:** Extends the SceneManager class with various methods to easily load scenes, reload the current scene, load the next or previous scene, or even load a scene asynchronously.
+
+- **Music System:** Streamlines the process of adding music to your game and includes a MusicTrigger system to play music upon touching a collider.
+
+> Note: The Joel's Essentials part of the package is only available when selecting "Full Package" in the Utility Window's Setup menu.
+
+## Contribution and Bug Reporting
+This essentials package has been tested on various projects, but if you encounter any issues or have suggestions for improvements, please don't hesitate to [submit an issue](https://github.com/ltsLumina/Lumina-Essentials/issues). Your feedback is valuable and helps in making this package even better!
+
+## License
+This package is distributed under the [MIT License](LICENSE), allowing you to use and modify it freely in your projects. If you find it helpful, consider giving credit by mentioning "Lumina's Unity Essentials Package" in your project's acknowledgments.
+
+Happy developing! 🚀

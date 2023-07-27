@@ -59,7 +59,7 @@ namespace Lumina.Essentials.Editor.UI.Management
             {
                 string jsonResult = Encoding.UTF8.GetString(www.downloadHandler.data);
                 string tag        = JsonUtility.FromJson<Release>(jsonResult).tag_name;
-
+                
                 // Update LatestVersion, UpToDate, LastUpdateCheck accordingly.
                 EditorPrefs.SetString("LastUpdateCheck", DateTime.Now.ToString(CultureInfo.InvariantCulture));
                 UpdateStatistics(tag);
@@ -71,6 +71,6 @@ namespace Lumina.Essentials.Editor.UI.Management
     [Serializable]
     internal class Release
     {
-        internal string tag_name;
+        public string tag_name;
     }
 }

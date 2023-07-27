@@ -141,13 +141,13 @@ internal sealed partial class UtilityWindow : EditorWindow
 
         #region Main Labels (Version, Update Check, etc.)
         // Display current version in bold
-        GUILayout.Label($"  Essentials Version: {CurrentVersion}", mainLabelStyle);
+        GUILayout.Label($"  Essentials Version:    {CurrentVersion}", mainLabelStyle);
 
         // Display the latest version in bold
-        GUILayout.Label($"  Latest Version: {LatestVersion}", mainLabelStyle);
+        GUILayout.Label($"  Latest Version:           {LatestVersion}", mainLabelStyle);
 
         // Display the time since the last update check
-        GUILayout.Label($"  Last Update Check: {VersionUpdater.LastUpdateCheck}", mainLabelStyle);
+        GUILayout.Label($"  Last Update Check:  {VersionUpdater.LastUpdateCheck}", mainLabelStyle);
 
         // End of Main Labels
         #endregion

@@ -1,10 +1,9 @@
 #region
 using System;
-using Lumina.Essentials.Editor.UI.Management;
 using UnityEditor;
 #endregion
 
-namespace Lumina.Essentials.Editor
+namespace Lumina.Essentials.Editor.UI.Management
 {
 /// <summary>
 /// Handles time-related operations.

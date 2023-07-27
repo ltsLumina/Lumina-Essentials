@@ -30,10 +30,9 @@ internal static class VersionManager
     }
 
     internal static void UpdateStatistics(string version)
-    {                                                            // Update EditorPrefs
-        EditorPrefs.SetString("CurrentVersion", CurrentVersion); // This will always be this way as I have to personally set CurrentVersion to the latest version.
-
-        EditorPrefs.SetString("LatestVersion", version);
+    {                                                            
+        EditorPrefs.SetString("CurrentVersion", CurrentVersion);
+        EditorPrefs.SetString("LatestVersion", version ?? "Error fetching version..");
         EditorPrefs.SetBool("UpToDate", CompareVersions(CurrentVersion, LatestVersion));
         EditorPrefs.SetBool("DebugVersion", DebugVersion);
     }

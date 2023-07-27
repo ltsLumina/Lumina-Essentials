@@ -5,15 +5,13 @@ namespace Lumina.Essentials.Editor.UI.Management
 {
     public static class StartupChecks
     {
-        internal static void PerformUpdateChecks(string currentVersion, string latestVersion)
+        internal static void DisplayVersionAlert()
         {
-            if (IsNewVersionAvailable(currentVersion, latestVersion)) DisplayNewVersionAlert(latestVersion);
-
             if (!VersionManager.DebugVersion)
             {
-                AlertOnMajorUpdateIfAvailable(latestVersion);
                 CheckForUpdatesAfterOneWeek();
             }
+
             DebugBuildWarning();
         }
         
@@ -26,33 +24,11 @@ namespace Lumina.Essentials.Editor.UI.Management
         internal static bool IsNewVersionAvailable(string currentVersion, string comparisonVersion) => 
             !VersionManager.CompareVersions(currentVersion, comparisonVersion);
         
-        /// <summary>
-        /// Checks if a major update is available by comparing the current version with the latest version.
-        /// If it returns true it logs a warning to the console that a major update is available.
-        /// </summary>
-        /// <param name="latestVersion"> The latest version of Lumina's Essentials. </param>
-        static void DisplayNewVersionAlert(string latestVersion) => 
-            DebugHelper.Log($"A new version of Lumina's Essentials is available! (v{latestVersion})\nYou can download it from the GitHub repository.");
-        /// <summary>
-        /// Checks if a major update is available by comparing the current version with the latest version.
-        /// </summary>
-        /// <param name="latestVersion"></param>
-        static void AlertOnMajorUpdateIfAvailable(string latestVersion)
-        {
-            if (MajorUpdateAvailable() && !VersionManager.DebugVersion)
-            {
-                EditorUtility.DisplayDialog
-                ("Major Update Available",
-                 $"There is a new version of Lumina's Essentials available on GitHub. \n Latest Version: v{latestVersion}. \n" +
-                 "Please check the changelog for more information.", "OK");
-            }
-        }
-        
         static void CheckForUpdatesAfterOneWeek()
         {
             if (TimeSinceLastUpdateInDays() > 7)
             {
-                EssentialsUpdater.CheckForUpdates();
+                EssentialsUpdater.CheckForUpdates(); 
                 
                 // If there is an update available, display a warning to the user.
                 if (IsNewVersionAvailable(VersionManager.CurrentVersion, VersionManager.LatestVersion))
@@ -87,27 +63,36 @@ namespace Lumina.Essentials.Editor.UI.Management
 
             TimeSpan timeSpanSinceLastUpdate = DateTime.Now - lastUpdateCheck;
 
-            // for less than 1 hour, display minutes
-            if (timeSpanSinceLastUpdate < TimeSpan.FromHours(1))
-                return $"{timeSpanSinceLastUpdate.Minutes} minute{(timeSpanSinceLastUpdate.Minutes > 1 ? "s" : "")} ago";
+            (TimeSpan timeSpan, string singularMessage, string pluralMessage)[] timeFrames ={ 
+                (TimeSpan.FromHours(1), "{0} minute ago", "{0} minutes ago"),
+                (TimeSpan.FromHours(2), "{0} hour ago", "{0} hour ago"),
+                (TimeSpan.FromDays(1), "{0} hours ago", "{0} hours ago"),
+                (TimeSpan.FromDays(2), "{0} day ago", "{0} day ago"),
+                (TimeSpan.FromDays(7), "{0} days ago", "{0} days ago"),
+                (TimeSpan.FromDays(30), "{0} weeks ago", "{0} weeks ago"),
+                (TimeSpan.MaxValue, "<color=red>More than a week ago</color>",
+                "<color=red>More than a week ago</color>") };
 
-            // for less than 2 hours, display "hour"
-            if (timeSpanSinceLastUpdate < TimeSpan.FromHours(2)) return "1 hour ago";
+            foreach ((TimeSpan timeSpan, string singularMessage, string pluralMessage) in timeFrames)
+            {
+                if (timeSpanSinceLastUpdate < timeSpan) return FormatTimeMessage(timeSpanSinceLastUpdate, singularMessage, pluralMessage);
+            }
 
-            // for less than 24 hours, display hours
-            if (timeSpanSinceLastUpdate < TimeSpan.FromDays(1)) return $"{timeSpanSinceLastUpdate.Hours} hours ago";
-
-            // for less than 2 days, display "day"
-            if (timeSpanSinceLastUpdate < TimeSpan.FromDays(2)) return "1 day ago";
-
-            // for less than a week, display days
-            if (timeSpanSinceLastUpdate < TimeSpan.FromDays(7)) return $"{timeSpanSinceLastUpdate.Days} days ago";
-
-            // for more than a week: "More than a week ago" in red text.
-            return "<color=red>More than a week ago</color>";
+            return string.Empty; // unreachable code but added to satisfy C# rules
         }
-        
-        public static int TimeSinceLastUpdateInDays()
+
+        static string FormatTimeMessage(TimeSpan deltaTime, string singularMessage, string pluralMessage)
+        {
+            if (deltaTime.TotalMinutes < 1) { return "Less than a minute ago"; }
+            if (deltaTime.TotalMinutes < 2) return string.Format(singularMessage, 1);
+            if (deltaTime.TotalHours   < 2) return string.Format(pluralMessage, (int) deltaTime.TotalMinutes);
+            if (deltaTime.TotalDays    < 2) return string.Format(pluralMessage, (int) deltaTime.TotalHours);
+            if (deltaTime.TotalDays    >= 2) return string.Format(pluralMessage, (int) deltaTime.TotalDays);
+
+            return "";
+        }
+
+        static int TimeSinceLastUpdateInDays()
         {
             if (DateTime.TryParse(EssentialsUpdater.LastUpdateCheck, out DateTime lastUpdateCheck))
             {
@@ -117,12 +102,6 @@ namespace Lumina.Essentials.Editor.UI.Management
 
             // Handle parse failure - depends on your requirements
             return -1; // Example: return -1 if the date could not be parsed
-        }
-        public static bool MajorUpdateAvailable()
-        {
-            EssentialsUpdater.CheckForUpdates(); //TODO: reconsider this.
-
-            return !VersionManager.CompareVersions(VersionManager.CurrentVersion, VersionManager.LatestVersion);
         }
     }
 }

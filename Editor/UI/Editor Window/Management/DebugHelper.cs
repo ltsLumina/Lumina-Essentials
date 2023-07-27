@@ -36,7 +36,7 @@ namespace Lumina.Essentials.Editor.UI.Management
             if (!DebugVersion && LogBehaviour == LogLevel.Verbose) Debug.LogWarning($"{ErrorMessagePrefix} {message ?? DefaultErrorMessage}");
         }
 
-        public static void LogAbort(bool safeMode) => Debug.LogWarning($"{ErrorMessagePrefix} The action was aborted. " + $"\n{(safeMode ? "Safe Mode is enabled." : "")}");
+        public static void LogAbort(bool safeMode = false) => Debug.LogWarning($"{ErrorMessagePrefix} The action was aborted. " + $"\n{(safeMode ? "Safe Mode is enabled." : "")}");
 
         /// <summary>
         ///     Log error message with specific format.

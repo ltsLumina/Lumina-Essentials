@@ -9,7 +9,7 @@ namespace Lumina.Essentials.Editor.UI.Management
     public static class VersionManager
     {
         /// <summary> The current version of Lumina's Essentials. </summary>
-        public static string CurrentVersion => "3.0.0 Beta1";
+        public static string CurrentVersion => "2.7.0 Beta2"; 
         /// <summary> The latest version of Lumina's Essentials available on GitHub. </summary>
         public static string LatestVersion => EditorPrefs.GetString("LatestVersion", "Unknown");
         /// <summary> The version of the package that was last opened. </summary>
@@ -55,8 +55,10 @@ namespace Lumina.Essentials.Editor.UI.Management
             }
 
             // If the current version is newer than the *latest* version, perform update checks (I.e; if the user is up-to-date)
-            if (StartupChecks.IsNewVersionAvailable(currentVersion, latestVersion) || !EditorPrefs.GetBool("UpToDate")) //TODO: make sure editor prefs dont mess with this, cause they probably are
-                StartupChecks.PerformUpdateChecks(currentVersion, latestVersion);
+            if (StartupChecks.IsNewVersionAvailable(currentVersion, latestVersion) || !EditorPrefs.GetBool("UpToDate"))
+            {
+                StartupChecks.DisplayVersionAlert();
+            }
         }
 
         /// <summary>

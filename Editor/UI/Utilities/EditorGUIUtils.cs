@@ -28,6 +28,7 @@ namespace Lumina.Essentials.Editor.UI.Management
         internal static GUIStyle setupLabelStyle;
         internal static GUIStyle setupWindowStyle;
         internal static GUIStyle dropAreaStyle;
+        internal static GUIStyle setupWindowHeaderStyle;
 
         // -- GUIContent -- //
         internal static GUIContent safeModeWarningContent;
@@ -35,7 +36,13 @@ namespace Lumina.Essentials.Editor.UI.Management
         internal static GUIContent configureImagesContent;
         internal static GUIContent createSubfolderContent; // Deprecated. Kept for reference.
         internal static GUIContent enterPlaymodeOptionsContent;
+        internal static GUIContent resetButtonContent;
         
+        // -- GUIContent for the Setup Panel -- //
+        internal static GUIContent openDocumentationContent;
+        internal static GUIContent openChangeLogContent;
+        internal static GUIContent checkForUpdatesContent;
+        internal static GUIContent openKnownIssuesContent;
 
         internal static void SetGUIStyles()
         {
@@ -67,6 +74,8 @@ namespace Lumina.Essentials.Editor.UI.Management
               fontStyle = FontStyle.Bold,
               normal = new ()
               { textColor = new (0.86f, 0.86f, 0.86f) } };
+            
+            
 
             // Button Styles
             buttonStyle         = new (GUI.skin.button);
@@ -123,6 +132,12 @@ namespace Lumina.Essentials.Editor.UI.Management
               normal = new ()
               { textColor = new (0.86f, 0.86f, 0.86f) } };
 
+            setupWindowHeaderStyle = new()
+            { fontSize  = 20,
+              fontStyle = FontStyle.Bold,
+              normal = new()
+              { textColor = new (1f, 0.64f, 0.54f) } };
+
             dropAreaStyle = new (GUI.skin.box)
             { normal =
               { textColor = new (0.87f, 0.87f, 0.87f) },
@@ -136,8 +151,7 @@ namespace Lumina.Essentials.Editor.UI.Management
             safeModeWarningContent = new
             (
             "Safe Mode",
-            "If disabled, the user is not protected from performing unsafe actions that may perform unintended actions." +
-             " \n Namely, this is used to ensure the user doesn't accidentally delete their files when performing certain operations."
+            "If disabled, the user is not able to perform certain operations that could potentially be dangerous or cause unintended behaviour."
              );
             
             createDefaultProjectContent = new 
@@ -164,75 +178,199 @@ namespace Lumina.Essentials.Editor.UI.Management
             "Enter Playmode Options", 
             "Enabling \"Enter Playmode Options\" improves Unity's workflow by significantly reducing the time it takes to enter play mode."
             );
+
+            resetButtonContent = new ("Reset", "Resets the settings to their default values.");
+            
+            // Setup Panel
+
+            openDocumentationContent = new ("Documentation");
+
+            openChangeLogContent = new ("Changelog");
+            
+            checkForUpdatesContent = new
+            (
+            "Check for Updates",
+            "Checks if a new version of Lumina's Essentials is available. \n(Requires internet connection)"
+            );
+            
+            openKnownIssuesContent = new
+            (
+            "Known Issues",
+            "Opens the known issues page on the GitHub repository. \nPlease add any issues you encounter to the list."
+            );
         }
 
-        [Obsolete] // Deprecated. Kept for reference.
-        internal static void UpdateModulePackages()
-        {
-            // Get the selected asset or directory path
-            string selectedPath = AssetDatabase.GetAssetPath(Selection.activeObject);
+        #region Deprecated
+        //[Obsolete] // Deprecated. Kept for reference.
+        // internal static void UpdateModulePackages()
+        // {
+        //     // Get the selected asset or directory path
+        //     string selectedPath = AssetDatabase.GetAssetPath(Selection.activeObject);
+        //
+        //     // Validation
+        //     if (string.IsNullOrEmpty(selectedPath) || (!Directory.Exists(selectedPath) && !File.Exists(selectedPath)))
+        //     {
+        //         EditorUtility.DisplayDialog("Error", "Please, select a folder or asset to export.", "Ok");
+        //         return;
+        //     }
+        //
+        //     string luminaOriginalPath = "Assets/Header (GitHub front page)/Lumina's Essentials";
+        //     string luminaTempPath     = "Assets/Lumina's Essentials";
+        //     string tempSelectedPath   = selectedPath.Replace(luminaOriginalPath, luminaTempPath);
+        //
+        //     bool isDirectory = Directory.Exists(selectedPath);
+        //     bool isFile      = File.Exists(selectedPath);
+        //
+        //     // Move Lumina's Essentials folder to Assets
+        //     AssetDatabase.MoveAsset(luminaOriginalPath, luminaTempPath);
+        //     AssetDatabase.Refresh();
+        //
+        //     // Export the selected object (folder or asset)
+        //     string packageName = EditorUtility.SaveFilePanel("Save as Unity Package", "", Path.GetFileNameWithoutExtension(selectedPath), "unitypackage");
+        //
+        //     if (!string.IsNullOrEmpty(packageName))
+        //     {
+        //         AssetDatabase.ExportPackage(tempSelectedPath, packageName, ExportPackageOptions.Recurse);
+        //         AssetDatabase.Refresh();
+        //     }
+        //
+        //     // Move Lumina's Essentials folder back to original place
+        //     AssetDatabase.MoveAsset(luminaTempPath, luminaOriginalPath);
+        //     AssetDatabase.Refresh();
+        // }
 
-            // Validation
-            if (string.IsNullOrEmpty(selectedPath) || (!Directory.Exists(selectedPath) && !File.Exists(selectedPath)))
+        //[Obsolete] // Deprecated. Kept for reference.
+        // internal static void ReplaceOldPackage()
+        // {
+        //     string essentialsFolderInAssets = "Assets/_EXAMPLE_FOLDER";
+        //     
+        //     if (AssetDatabase.IsValidFolder(essentialsFolderInAssets)) { AssetDatabase.DeleteAsset(essentialsFolderInAssets); }
+        //     else
+        //     {
+        //         DebugHelper.LogError("Essentials folder not found at: " + essentialsFolderInAssets);
+        //         return; 
+        //     }
+        // }
+        #endregion
+
+        public static bool FileExistsInDirectory(string folderPath, string fileName)
+        {
+            return File.Exists(Path.Combine(folderPath, fileName));
+        }
+
+        public static bool IsFolderInProject(string baseDirectory, string targetFolderName)
+        {
+            try
             {
-                EditorUtility.DisplayDialog("Error", "Please, select a folder or asset to export.", "Ok");
+                // using SearchOption.AllDirectories to recursively search the whole directory
+                var directories = Directory.GetDirectories(baseDirectory, targetFolderName, SearchOption.AllDirectories);
+
+                // If the GetDirectories method returns any directories, it means the target folder exist in the project
+                return directories.Length > 0;
+            } catch (Exception ex)
+            {
+                // Handle exception, mostly due to lack of access to some directories
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                return false;
+            }
+        }
+
+        public static bool IsFileInProject(string baseDirectory, string targetFileName)
+        {
+            try
+            {
+                var files = Directory.GetFiles(baseDirectory, targetFileName, SearchOption.AllDirectories);
+                return files.Length > 0; // If any files are found, return true
+            } catch (Exception ex)
+            {
+                // Handle exception, mostly due to lack of access to some directories
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                return false;
+            }
+        }
+
+        public static void CheckForInstalledModules(Dictionary<string, bool> items)
+        {
+            string projectDirectory = Application.dataPath;
+
+            if (CheckFullPackageInstalled())
+            {
+                // Set all keys in InstalledModules to true
+                foreach (var module in UtilityWindow.AvailableModules.Keys.ToList())
+                {
+                    UtilityWindow.InstalledModules[module] = true;
+
+                    if (VersionManager.DebugVersion)
+                    {
+                        Debug.Log($"Item '{module}' exists in the project.");
+                    }
+                }
+
+                // No need to continue if the full package is installed
                 return;
             }
 
-            string luminaOriginalPath = "Assets/Header (GitHub front page)/Lumina's Essentials";
-            string luminaTempPath     = "Assets/Lumina's Essentials";
-            string tempSelectedPath   = selectedPath.Replace(luminaOriginalPath, luminaTempPath);
-
-            bool isDirectory = Directory.Exists(selectedPath);
-            bool isFile      = File.Exists(selectedPath);
-
-            // Move Lumina's Essentials folder to Assets
-            AssetDatabase.MoveAsset(luminaOriginalPath, luminaTempPath);
-            AssetDatabase.Refresh();
-
-            // Export the selected object (folder or asset)
-            string packageName = EditorUtility.SaveFilePanel("Save as Unity Package", "", Path.GetFileNameWithoutExtension(selectedPath), "unitypackage");
-
-            if (!string.IsNullOrEmpty(packageName))
+            foreach (var item in items.Keys)
             {
-                AssetDatabase.ExportPackage(tempSelectedPath, packageName, ExportPackageOptions.Recurse);
-                AssetDatabase.Refresh();
-            }
+                string itemFile = item + ".cs";
 
-            // Move Lumina's Essentials folder back to original place
-            AssetDatabase.MoveAsset(luminaTempPath, luminaOriginalPath);
-            AssetDatabase.Refresh();
+                if (IsFolderInProject(projectDirectory, item) || IsFileInProject(projectDirectory, itemFile))
+                {
+                    if (VersionManager.DebugVersion)
+                    {
+                        Debug.Log($"Item '{item}' exists in the project.");
+                    }
+                    UtilityWindow.InstalledModules[item] = true;
+                }
+                else
+                {
+                    if (VersionManager.DebugVersion)
+                    {
+                        Debug.Log($"Item '{item}' does not exist in the project.");
+                    }
+                    UtilityWindow.InstalledModules[item] = false;
+                }
+            }
         }
 
-        internal static void ReplaceOldPackage()
+        public static bool CheckFullPackageInstalled()
         {
-            string essentialsFolderInAssets = "Assets/_EXAMPLE_FOLDER"; //TODO: Replace with the actual path
-            
-            if (AssetDatabase.IsValidFolder(essentialsFolderInAssets)) { AssetDatabase.DeleteAsset(essentialsFolderInAssets); }
-            else //TODO: doesnt work. idk why
-            {
-                DebugHelper.LogError("Essentials folder not found at: " + essentialsFolderInAssets);
-                //return; //TODO: fix warning or something
-            }
-        }
+            string projectDirectory = Application.dataPath;
+            string targetDirectory  = "Examples";
 
+            // Check for directory existence
+            if (VersionManager.DebugVersion)
+            {
+                Debug.Log(IsFolderInProject(projectDirectory, targetDirectory) ? "Full Package is installed." : "Full Package is not installed.");
+            }
+            return IsFolderInProject(projectDirectory, targetDirectory);
+        }
+        
         internal static void InstallModules()
         {
             //string packagesPath = "Assets/Lumina's Essentials/Editor/Packages/"; Kept here for reference in case something goes wrong.
+            
+            // Initialize an empty string to hold the final relative path
             string relativePath = "";
 
-            const string folderNameToFind = "Packages"; // replace with the name of your folder
+            // Define the directory names for search
+            const string folderNameToFind = "Packages";
             const string assetsPath       = "Assets";
-            string       physicalPath     = Path.Combine(Directory.GetCurrentDirectory(), assetsPath);
 
+            // Create the physical path to the Assets directory
+            string physicalPath = Path.Combine(Directory.GetCurrentDirectory(), assetsPath);
+
+            // Find the directories named 'Packages' in the Assets directory
             string[] directories = Directory.GetDirectories(physicalPath, folderNameToFind, SearchOption.AllDirectories);
 
+            // Loop over each 'Packages' directory
             foreach (string directory in directories)
             {
+                // Get the relative path and format it correctly
                 relativePath = directory[Directory.GetCurrentDirectory().Length..].Replace('\\', '/').TrimStart('/') + "/";
             }
 
-            foreach (var module in UtilityWindow.installedModules)
+            foreach (var module in UtilityWindow.InstalledModules)
             {
                 #region Package Import Calllbacks
                 AssetDatabase.importPackageCompleted += packageName =>

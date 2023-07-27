@@ -63,7 +63,7 @@ public sealed class Examples : MonoBehaviour
 
     #region Sequencer
     // Sequencing Examples //
-    void Start() //TODO: Change to "void Example" in production.
+    void Example()
     {
         // Example 1 -- This is the recommended way to use Sequencing.
         Sequence sequenceOne = Sequencing.CreateSequence(this);

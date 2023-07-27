@@ -17,6 +17,7 @@ namespace Lumina.Essentials.Editor.UI.Management
         /// <summary> Whether or not the current version is the latest version. </summary>
         public static string LastUpdateCheck => StartupChecks.TimeSinceLastUpdate();
         
+        /// <summary> The queue of coroutines to run. </summary>
         readonly static Queue<IEnumerator> coroutineQueue = new ();
 
         public static void CheckForUpdates()
@@ -57,15 +58,8 @@ namespace Lumina.Essentials.Editor.UI.Management
                 string tag        = JsonUtility.FromJson<Release>(jsonResult).tag_name;
 
                 // Update LatestVersion, UpToDate, LastUpdateCheck accordingly.
-                UpdateStatistics(tag);
                 EditorPrefs.SetString("LastUpdateCheck", DateTime.Now.ToString(CultureInfo.InvariantCulture));
-                
-                // Compare tag with CurrentVersion
-                if (!EditorPrefs.GetBool("UpToDate"))
-                {
-                    // Warn user that they are using an outdated version.
-                    DebugHelper.Log("You are using an outdated version. \n Latest Version: v" + tag + "\n" + "You are using version: v" + CurrentVersion);
-                }
+                UpdateStatistics(tag);
             }
         }
 

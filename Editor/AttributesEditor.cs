@@ -1,6 +1,7 @@
 ﻿#region
 using System;
 using System.Globalization;
+using Lumina.Essentials.Editor.UI.Management;
 using UnityEditor;
 using UnityEngine;
 #endregion
@@ -150,7 +151,7 @@ namespace Lumina.Essentials.Attributes.Editor
                 }
                 else
                 {
-                    Debug.LogError
+                    DebugHelper.LogError
                     ($"Attempting to use the <b>'[{nameof(RangedFloat)}(float min, float max)]'</b> attribute on a <color=red>{property.type}</color> type field. " +
                      $"Should be <color=green>'{nameof(RangedFloat)}'</color> instead.");
                 }

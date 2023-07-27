@@ -12,8 +12,6 @@ namespace Lumina.Essentials.Editor.UI
 internal sealed partial class UtilityWindow
 {
     #region Modules
-    // Whether or not the user has selected the full package.
-    static bool isFullPackageSelected;
     /// <summary> Toggle to enable or disable the installation of Alex' Essentials. (Half the package) </summary>
     static bool attributes;
     /// <summary> Toggle to enable or disable the installation of the Sequencer module of Lumina's Essentials. </summary>

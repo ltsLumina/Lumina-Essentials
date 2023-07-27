@@ -343,6 +343,10 @@ namespace Lumina.Essentials.Editor.UI.Management
             {
                 Debug.Log(IsFolderInProject(projectDirectory, targetDirectory) ? "Full Package is installed." : "Full Package is not installed.");
             }
+            
+            // If the "Examples" folder is found, the "Full Package" is installed.
+            // Might be a poor design choice, but for the time being I have no other way to indicate
+            // that the Full Package is installed.
             return IsFolderInProject(projectDirectory, targetDirectory);
         }
         
@@ -354,7 +358,7 @@ namespace Lumina.Essentials.Editor.UI.Management
             string relativePath = "";
 
             // Define the directory names for search
-            const string folderNameToFind = "Packages";
+            const string folderNameToFind = "Packages"; //TODO: also needs to check in Editor/Packages, not anywhere.
             const string assetsPath       = "Assets";
 
             // Create the physical path to the Assets directory

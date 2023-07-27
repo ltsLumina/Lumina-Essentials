@@ -9,7 +9,7 @@ using static Lumina.Essentials.Editor.UI.Management.EditorGUIUtils;
 
 namespace Lumina.Essentials.Editor.UI
 {
-public sealed partial class UtilityWindow
+internal sealed partial class UtilityWindow
 {
     #region Modules
     // Whether or not the user has selected the full package.
@@ -136,9 +136,9 @@ public sealed partial class UtilityWindow
                             InstallModules();
                             SetupRequired = false;
                         }
-                        else { DebugHelper.LogAbort(SafeMode); }
+                        else { EssentialsDebugger.LogAbort(SafeMode); }
                     }
-                    else { DebugHelper.LogWarning("Please select at least one module to install."); }
+                    else { EssentialsDebugger.LogWarning("Please select at least one module to install."); }
                 }
 
             // "Cancel" button

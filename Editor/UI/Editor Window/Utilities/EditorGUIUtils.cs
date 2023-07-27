@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Lumina.Essentials.Editor.UI.Management
 {
-    public static class EditorGUIUtils
+    internal static class EditorGUIUtils
     {
         // Image that will be displayed at the top of the window.
         internal static Texture2D headerImg, footerImg;
@@ -247,18 +247,18 @@ namespace Lumina.Essentials.Editor.UI.Management
         //     if (AssetDatabase.IsValidFolder(essentialsFolderInAssets)) { AssetDatabase.DeleteAsset(essentialsFolderInAssets); }
         //     else
         //     {
-        //         DebugHelper.LogError("Essentials folder not found at: " + essentialsFolderInAssets);
+        //         EssentialsDebugger.LogError("Essentials folder not found at: " + essentialsFolderInAssets);
         //         return; 
         //     }
         // }
         #endregion
 
-        public static bool FileExistsInDirectory(string folderPath, string fileName)
+        internal static bool FileExistsInDirectory(string folderPath, string fileName)
         {
             return File.Exists(Path.Combine(folderPath, fileName));
         }
 
-        public static bool IsFolderInProject(string baseDirectory, string targetFolderName)
+        internal static bool IsFolderInProject(string baseDirectory, string targetFolderName)
         {
             try
             {
@@ -275,7 +275,7 @@ namespace Lumina.Essentials.Editor.UI.Management
             }
         }
 
-        public static bool IsFileInProject(string baseDirectory, string targetFileName)
+        internal static bool IsFileInProject(string baseDirectory, string targetFileName)
         {
             try
             {
@@ -289,7 +289,7 @@ namespace Lumina.Essentials.Editor.UI.Management
             }
         }
 
-        public static void CheckForInstalledModules(Dictionary<string, bool> items)
+        internal static void CheckForInstalledModules(Dictionary<string, bool> items)
         {
             string projectDirectory = Application.dataPath;
 
@@ -333,7 +333,7 @@ namespace Lumina.Essentials.Editor.UI.Management
             }
         }
 
-        public static bool CheckFullPackageInstalled()
+        internal static bool CheckFullPackageInstalled()
         {
             string projectDirectory = Application.dataPath;
             string targetDirectory  = "Examples";
@@ -405,7 +405,7 @@ namespace Lumina.Essentials.Editor.UI.Management
             if (!Directory.Exists(fullpath))
             {
                 Directory.CreateDirectory(fullpath);
-                DebugHelper.Log("Successfully created directory: " + fullpath);
+                EssentialsDebugger.Log("Successfully created directory: " + fullpath);
             }
 
             foreach (var newDirectory in directories)
@@ -415,7 +415,7 @@ namespace Lumina.Essentials.Editor.UI.Management
                 if (!Directory.Exists(newFullPath))
                 {
                     Directory.CreateDirectory(newFullPath);
-                    DebugHelper.Log("Successfully created directory: " + newFullPath);
+                    EssentialsDebugger.Log("Successfully created directory: " + newFullPath);
                 }
             }
         }

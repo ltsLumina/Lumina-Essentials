@@ -151,7 +151,7 @@ namespace Lumina.Essentials.Attributes.Editor
                 }
                 else
                 {
-                    DebugHelper.LogError
+                    EssentialsDebugger.LogError
                     ($"Attempting to use the <b>'[{nameof(RangedFloat)}(float min, float max)]'</b> attribute on a <color=red>{property.type}</color> type field. " +
                      $"Should be <color=green>'{nameof(RangedFloat)}'</color> instead.");
                 }

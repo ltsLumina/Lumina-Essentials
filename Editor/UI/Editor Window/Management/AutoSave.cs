@@ -14,7 +14,7 @@ using UnityEngine;
 namespace Lumina.Essentials.Editor.UI.Management
 {
 [CustomEditor(typeof(AutoSave))]
-public class AutoSave : UnityEditor.Editor
+internal class AutoSave : UnityEditor.Editor
 {
     static CancellationTokenSource tokenSource;
     static Task task;
@@ -45,7 +45,7 @@ public class AutoSave : UnityEditor.Editor
             if (!InternalEditorUtility.isApplicationActive) continue;
 
             EditorSceneManager.SaveOpenScenes();
-            if (AutoSaveConfig.Logging) DebugHelper.Log($"Auto-saved at {DateTime.Now:h:mm:ss tt}");
+            if (AutoSaveConfig.Logging) EssentialsDebugger.Log($"Auto-saved at {DateTime.Now:h:mm:ss tt}");
         }
     }
 }

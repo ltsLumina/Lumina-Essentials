@@ -12,7 +12,7 @@ namespace Lumina.Essentials.Editor.UI
 {
 // One of the three tabs in the Utility Window.
 // Includes all the functions for the Utilities tab.
-public sealed partial class UtilityWindow
+internal sealed partial class UtilityWindow
 {
     #region Utilities variables
     enum DragAndDropType // Only the ConvertImagesUtility enum is being used. The rest are deprecated.
@@ -108,7 +108,7 @@ public sealed partial class UtilityWindow
             configuringImages = false;
 
             if (!SafeMode) CreateProjectStructure();
-            else DebugHelper.LogAbort(SafeMode);
+            else EssentialsDebugger.LogAbort(SafeMode);
         }
 
         GUILayout.Space(5);
@@ -132,7 +132,7 @@ public sealed partial class UtilityWindow
 
         GUILayout.Space(5);
 
-        if (GUILayout.Button("Placeholder Button", GUILayout.Height(35))) DebugHelper.Log("This does nothing as it's a placeholder.");
+        if (GUILayout.Button("Placeholder Button", GUILayout.Height(35))) EssentialsDebugger.Log("This does nothing as it's a placeholder.");
 
         //TODO: This could be similar to configure images, but for audio instead. (.wav, .mp3, .ogg, etc.)
     }
@@ -164,7 +164,7 @@ public sealed partial class UtilityWindow
             // └ Plugins
             #endregion
         }
-        else { DebugHelper.LogAbort(); }
+        else { EssentialsDebugger.LogAbort(); }
     }
 
     void DrawConfigureImagesGUI()
@@ -224,7 +224,7 @@ public sealed partial class UtilityWindow
             // It remains here in case I decide to use it again, or if I want to repurpose it for something else.
             // I don't like leaving large amounts of code commented, but I want it for reference.
             case DragAndDropType.CreateProjectUtility:
-                DebugHelper.LogError("You are using the deprecated Create Project Structure enum!");
+                EssentialsDebugger.LogError("You are using the deprecated Create Project Structure enum!");
                 #region Deprecated Create Project Structure Code
                 // GUILayout.Label("Drag a folder here:", middleStyle);
                 // GUILayout.Label("The selected folder will be used as the root folder.", subLabelStyle);
@@ -281,7 +281,7 @@ public sealed partial class UtilityWindow
                 //     if (GUILayout.Button("Apply"))
                 //     {
                 //         if (isCorrectDirectory) ProjectStructureGUI.ApplyChanges();
-                //         else DebugHelper.LogWarning("The action was aborted. \nYou haven't checked the confirmation box!");
+                //         else EssentialsDebugger.LogWarning("The action was aborted. \nYou haven't checked the confirmation box!");
                 //     }
                 // }
                 // else
@@ -340,7 +340,7 @@ public sealed partial class UtilityWindow
                     if (isCorrectDirectory)
                     {
                         SafeMode = !SafeMode;
-                        DebugHelper.LogWarning("Safe mode disabled.");
+                        EssentialsDebugger.LogWarning("Safe mode disabled.");
                     }
 
                     GUILayout.Space(5);
@@ -348,7 +348,7 @@ public sealed partial class UtilityWindow
                     if (GUILayout.Button("Apply"))
                     {
                         if (isCorrectDirectory) ConfigureImages();
-                        else DebugHelper.LogWarning("You haven't checked the confirmation box!");
+                        else EssentialsDebugger.LogWarning("You haven't checked the confirmation box!");
                     }
                 }
                 else { GUILayout.Label(noFolderSelectedMsg, middleStyle); }
@@ -396,15 +396,15 @@ public sealed partial class UtilityWindow
                         textureImporter.textureCompression = compression;
                         textureImporter.SaveAndReimport();
 
-                        foreach (string configuredImage in images) { DebugHelper.Log($"Configured {Path.GetFileName(configuredImage)}"); }
+                        foreach (string configuredImage in images) { EssentialsDebugger.Log($"Configured {Path.GetFileName(configuredImage)}"); }
                     }
                 }
 
                 AssetDatabase.Refresh();
             }
-            else { DebugHelper.LogAbort(SafeMode); }
+            else { EssentialsDebugger.LogAbort(SafeMode); }
         }
-        else { DebugHelper.LogAbort(SafeMode); }
+        else { EssentialsDebugger.LogAbort(SafeMode); }
     }
 }
 }

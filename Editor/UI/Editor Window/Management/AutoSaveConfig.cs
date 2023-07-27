@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Lumina.Essentials.Editor.UI.Management
 {
-    public static class AutoSaveConfig
+    internal static class AutoSaveConfig
     {
         /// <summary>
         /// Enable auto save functionality

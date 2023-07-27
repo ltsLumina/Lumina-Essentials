@@ -17,7 +17,7 @@ namespace Lumina.Essentials.Editor.UI
 ///     It also provides a button to install the latest version of Lumina's Essentials as well as DOTween (in a future
 ///     update).
 /// </summary>
-public sealed class SetupWindow : EditorWindow
+internal sealed class SetupWindow : EditorWindow
 {
 #if DEBUG_BUILD
         [MenuItem("Lumina's Essentials/Setup", false, 0)]
@@ -28,12 +28,12 @@ public sealed class SetupWindow : EditorWindow
     ///     Opens the setup window that instructs the user on how to get started with Lumina's Essentials.
     /// </summary>
     /// <param name="updateOccured">Whether or not an update has occured since the last time the window was opened.</param>
-    public static void OpenSetupWindow(bool updateOccured = false)
+    internal static void OpenSetupWindow(bool updateOccured = false)
     {
         var window = GetWindow<SetupWindow>(true, "New Version of Lumina's Essentials Imported", true);
         window.ConfigureWindow();
 
-        if (updateOccured) HandleUpdate();
+        if (updateOccured) HandleUpdateOccured();
     }
 
     void OnGUI() => DisplayGUIElements();
@@ -45,9 +45,9 @@ public sealed class SetupWindow : EditorWindow
         Show();
     }
 
-    static void HandleUpdate()
+    static void HandleUpdateOccured()
     {
-        DebugHelper.Log("An update has occured. Please setup the new version of Lumina's Essentials.");
+        EssentialsDebugger.Log("An update has occured. Please setup the new version of Lumina's Essentials.");
         UtilityWindow.SetupRequired = !UtilityWindow.InstalledModules.Values.Any(module => module);
 
         CloseUtilityWindowIfOpen();
@@ -70,7 +70,7 @@ public sealed class SetupWindow : EditorWindow
 
     void DrawBackground() => EditorGUI.DrawRect(new (0, 0, maxSize.x, maxSize.y), new (0.18f, 0.18f, 0.18f));
 
-    void DrawTitleAndInstructions()
+    static void DrawTitleAndInstructions()
     {
         // Top label with the title of the window in large rose gold text
         GUILayout.Label("Lumina's Essentials", setupWindowHeaderStyle);

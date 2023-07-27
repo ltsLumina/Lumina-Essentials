@@ -7,16 +7,16 @@ using static Lumina.Essentials.Editor.UI.Management.VersionManager;
 
 namespace Lumina.Essentials.Editor.UI.Management
 {
-    public static class DebugHelper
+    internal static class EssentialsDebugger
     {
         /// <summary>
         ///     The log level to be used when logging messages.
         ///     <param name="Quiet"> Does not log any messages. </param>
         ///     <param name="Verbose"> Logs all messages. </param>
         /// </summary>
-        public static LogLevel LogBehaviour { get; internal set; } = LogLevel.Verbose;
+        internal static LogLevel LogBehaviour { get; set; } = LogLevel.Verbose;
 
-        public enum LogLevel
+        internal enum LogLevel
         {
             [UsedImplicitly] // An option in the Settings menu of the Utility Window. 
             Quiet,
@@ -26,21 +26,21 @@ namespace Lumina.Essentials.Editor.UI.Management
         const string ErrorMessagePrefix = "<color=orange>[Lumina Essentials] ►</color>";
         const string DefaultErrorMessage = "An Error Has Occurred:";
 
-        public static void Log(string message)
+        internal static void Log(string message)
         {
             if (!DebugVersion && LogBehaviour == LogLevel.Verbose) 
                 Debug.Log($"{ErrorMessagePrefix} {message ?? DefaultErrorMessage}");
         }
 
         // ReSharper disable Unity.PerformanceAnalysis
-        public static void LogWarning(string message)
+        internal static void LogWarning(string message)
         {
             if (!DebugVersion && LogBehaviour == LogLevel.Verbose) 
                 Debug.LogWarning($"{ErrorMessagePrefix} {message ?? DefaultErrorMessage}");
         }
 
         // ReSharper disable Unity.PerformanceAnalysis
-        public static void LogAbort(bool safeMode = false) => 
+        internal static void LogAbort(bool safeMode = false) => 
             Debug.LogWarning($"{ErrorMessagePrefix} The action was aborted. " + $"\n{(safeMode ? "Safe Mode is enabled." : "")}");
 
         // ReSharper disable Unity.PerformanceAnalysis
@@ -48,7 +48,7 @@ namespace Lumina.Essentials.Editor.UI.Management
         ///     Log error message with specific format.
         /// </summary>
         /// <param name="message">The custom message to be logged.</param>
-        public static void LogError(string message)
+        internal static void LogError(string message)
         {
             if (!DebugVersion && LogBehaviour == LogLevel.Verbose) 
                 Debug.LogError($"{ErrorMessagePrefix} {message ?? DefaultErrorMessage}");
@@ -58,7 +58,7 @@ namespace Lumina.Essentials.Editor.UI.Management
         ///     Log exception message with specific format.
         /// </summary>
         /// <param name="exception">The exception to be logged.</param>
-        public static void LogError(Exception exception)
+        internal static void LogError(Exception exception)
         {
             if (!DebugVersion && LogBehaviour == LogLevel.Verbose) 
                 Debug.LogError($"{ErrorMessagePrefix} {exception.Message ?? DefaultErrorMessage}");

@@ -7,13 +7,13 @@ using static Lumina.Essentials.Editor.UI.Management.EditorGUIUtils;
 namespace Lumina.Essentials.Editor.UI
 {
 [Obsolete("This class has been deprecated. It remains for reference.")]
-public class ProjectStructureWindow : EditorWindow
+internal class ProjectStructureWindow : EditorWindow
 {
 #if DEBUG_BUILD
     [MenuItem("Lumina's Essentials/Show Project Structure Window")]
-    public static void ShowWindow()
+    internal static void ShowWindow()
     {
-        DebugHelper.LogError($"You are using a deprecated class!" + "(ProjectStructureWindow)");
+        EssentialsDebugger.LogError($"You are using a deprecated class!" + "(ProjectStructureWindow)");
         
         var window = GetWindow<ProjectStructureWindow>("Project Structure");
         window.minSize = new Vector2(350, 500);
@@ -23,7 +23,7 @@ public class ProjectStructureWindow : EditorWindow
 
     void OnGUI()
     {
-        DebugHelper.LogError($"You are using a deprecated class!" + "(ProjectStructureWindow)");
+        EssentialsDebugger.LogError($"You are using a deprecated class!" + "(ProjectStructureWindow)");
         
 #pragma warning disable CS8321 // Local function is declared but never used
         void DrawCreateProjectStructureConfig()

@@ -12,7 +12,7 @@ using UnityEngine.SceneManagement;
 
 namespace Lumina.Essentials
 {
-    public static class Shortcuts
+    public static class Shortcuts //TODO: why did i put shortcuts in modules? It's literally only for the editor. you dummy.
     {
         /// <summary>
         ///     Alt+ C to clear the console in the Unity Editor.

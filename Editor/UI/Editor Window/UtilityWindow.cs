@@ -15,7 +15,7 @@ namespace Lumina.Essentials.Editor.UI
 ///     Includes the Setup Window, Settings Window, and Utilities Window.
 ///     This class is split into three partials, one for each panel.
 /// </summary>
-public sealed partial class UtilityWindow : EditorWindow
+internal sealed partial class UtilityWindow : EditorWindow
 {
     readonly static Vector2 winSize = new (370, 650);
     readonly static float buttonSize = winSize.x * 0.5f - 6;
@@ -33,7 +33,7 @@ public sealed partial class UtilityWindow : EditorWindow
     #endregion
 
     [MenuItem("Tools/Lumina/Open Utility Panel")]
-    public static void OpenUtilityWindow()
+    internal static void OpenUtilityWindow()
     {
         // Get existing open window or if none, make a new one:
         var window = (UtilityWindow) GetWindow(typeof(UtilityWindow), true, "Lumina's Essentials Utility Panel");
@@ -47,8 +47,12 @@ public sealed partial class UtilityWindow : EditorWindow
         // Initialize all the variables
         Initialization();
 
+        Repaint();
+        return;
+
         void Initialization()
-        { // Set the last open version to the current version
+        { 
+            // Set the last open version to the current version
             LastOpenVersion = CurrentVersion;
             SafeMode        = true;
 
@@ -67,14 +71,14 @@ public sealed partial class UtilityWindow : EditorWindow
             string       headerPath = AssetDatabase.GUIDToAssetPath(headerGUID);
             string       footerPath = AssetDatabase.GUIDToAssetPath(footerGUID);
 
-            if (headerPath != null && footerPath != null)
-            {
-                headerImg = AssetDatabase.LoadAssetAtPath<Texture2D>(headerPath);
-                footerImg = AssetDatabase.LoadAssetAtPath<Texture2D>(footerPath);
-            }
-        }
+            if (headerPath == null || footerPath == null) return;
+            headerImg = AssetDatabase.LoadAssetAtPath<Texture2D>(headerPath);
+            footerImg = AssetDatabase.LoadAssetAtPath<Texture2D>(footerPath);
 
-        Repaint();
+            // If the user is not up-to-date, display a warning.
+            if (!EditorPrefs.GetBool("UpToDate")) 
+                EssentialsDebugger.LogWarning("There is a new version available!" + "\nPlease update to the latest version for the latest features.");
+        }
     }
 
     /// <summary>
@@ -143,7 +147,7 @@ public sealed partial class UtilityWindow : EditorWindow
         GUILayout.Label($"  Latest Version: {LatestVersion}", mainLabelStyle);
 
         // Display the time since the last update check
-        GUILayout.Label($"  Last Update Check: {EssentialsUpdater.LastUpdateCheck}", mainLabelStyle);
+        GUILayout.Label($"  Last Update Check: {VersionUpdater.LastUpdateCheck}", mainLabelStyle);
 
         // End of Main Labels
         #endregion
@@ -192,7 +196,7 @@ public sealed partial class UtilityWindow : EditorWindow
             {
                 GUILayout.FlexibleSpace();
                 GUI.color = new (1f, 0.75f, 0.55f);
-                if (GUILayout.Button("Something!", buttonSetup, GUILayout.Width(200))) DebugHelper.Log("Placeholder button. Doesn't do anything yet.");
+                if (GUILayout.Button("Something!", buttonSetup, GUILayout.Width(200))) EssentialsDebugger.Log("Placeholder button. Doesn't do anything yet.");
 
                 GUI.color = Color.white;
                 GUILayout.FlexibleSpace();
@@ -220,12 +224,12 @@ public sealed partial class UtilityWindow : EditorWindow
             // Display the button to check for updates
             if (GUILayout.Button(checkForUpdatesContent, GUILayout.Width(buttonSize), GUILayout.Height(40)))
             {
-                EssentialsUpdater.CheckForUpdates();
+                VersionUpdater.CheckForUpdates();
 
                 // if there is a new version available, open the GitHub repository's releases page
                 if (!EditorPrefs.GetBool("UpToDate"))
                 {
-                    DebugHelper.LogWarning("There is a new version available!" + "\nPlease update to the latest version to ensure functionality.");
+                    EssentialsDebugger.LogWarning("There is a new version available!" + "\nPlease update to the latest version to ensure functionality.");
                     Application.OpenURL("https://github.com/ltsLumina/Unity-Essentials/releases/latest");
                 }
             }

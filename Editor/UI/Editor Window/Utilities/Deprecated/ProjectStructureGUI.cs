@@ -10,7 +10,7 @@ using static Lumina.Essentials.Editor.UI.UtilityWindow;
 
 namespace Lumina.Essentials.Editor.UI.Management
 {
-public sealed class ProjectStructureGUI : EditorWindow
+internal sealed class ProjectStructureGUI : EditorWindow
 {
     static Vector2 _scrollPosition;
     static Dictionary<string, bool> folderToggleStates = new ();
@@ -52,9 +52,9 @@ public sealed class ProjectStructureGUI : EditorWindow
                 
                 ApplyChanges();
             }
-            else { DebugHelper.LogWarning("Selected folder does not exist."); }
+            else { EssentialsDebugger.LogWarning("Selected folder does not exist."); }
         }
-        else { DebugHelper.LogWarning("No folder is selected."); }
+        else { EssentialsDebugger.LogWarning("No folder is selected."); }
 
         if (GUILayout.Button("Delete Selected"))
         {
@@ -74,9 +74,9 @@ public sealed class ProjectStructureGUI : EditorWindow
                     // Delete the folder from your Dictionary if it exists.
                     if (folderToggleStates.ContainsKey(selectedFolder)) { folderToggleStates.Remove(selectedFolder); }
                 }
-                else { DebugHelper.LogWarning("Selected folder does not exist."); }
+                else { EssentialsDebugger.LogWarning("Selected folder does not exist."); }
             }
-            else { DebugHelper.LogWarning("No folder is selected."); }
+            else { EssentialsDebugger.LogWarning("No folder is selected."); }
         }
         
         // Text field to rename the folder.
@@ -101,9 +101,9 @@ public sealed class ProjectStructureGUI : EditorWindow
                     
                     ApplyChanges();
                 }
-                else { DebugHelper.LogWarning("Selected folder does not exist."); }
+                else { EssentialsDebugger.LogWarning("Selected folder does not exist."); }
             }
-            else { DebugHelper.LogWarning("No folder is selected."); }
+            else { EssentialsDebugger.LogWarning("No folder is selected."); }
         }
 
         // GUILayout.Label

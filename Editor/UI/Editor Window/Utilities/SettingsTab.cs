@@ -7,7 +7,7 @@ using static Lumina.Essentials.Editor.UI.Management.EditorGUIUtils;
 
 namespace Lumina.Essentials.Editor.UI
 {
-public sealed partial class UtilityWindow
+internal sealed partial class UtilityWindow
 {
     #region Settings variables
     // The variables to be shown under the settings tab.
@@ -19,7 +19,7 @@ public sealed partial class UtilityWindow
     Vector2 scrollPos;
 
     /// <summary> Whether or not the user has to set up Lumina's Essentials to the latest version. </summary>
-    public static bool SetupRequired
+    internal static bool SetupRequired
     {
         get => EditorPrefs.GetBool("SetupRequired", true);
         set => EditorPrefs.SetBool("SetupRequired", value);
@@ -83,22 +83,22 @@ public sealed partial class UtilityWindow
                     SafeMode                                  = true;
                     imageConverterPath                        = "";
                     VersionManager.DontShow_DebugBuildWarning = false;
-                    DebugHelper.LogBehaviour                  = DebugHelper.LogLevel.Verbose;
+                    EssentialsDebugger.LogBehaviour                  = EssentialsDebugger.LogLevel.Verbose;
 
-                    DebugHelper.LogWarning("Settings and EditorPrefs have been reset.");
+                    EssentialsDebugger.LogWarning("Settings and EditorPrefs have been reset.");
 
                     // Display a warning if the user is in a debug build
                     StartupChecks.DebugBuildWarning();
 
                     // Check for updates to set up everything again.
-                    EssentialsUpdater.CheckForUpdates();
+                    VersionUpdater.CheckForUpdates();
 
                     Close();
                     SetupWindow.OpenSetupWindow();
                 }
-                else { DebugHelper.LogAbort(SafeMode); }
+                else { EssentialsDebugger.LogAbort(SafeMode); }
             }
-            else { DebugHelper.LogAbort(); }
+            else { EssentialsDebugger.LogAbort(); }
 
         GUILayout.EndHorizontal();
     }
@@ -118,7 +118,7 @@ public sealed partial class UtilityWindow
 
             #region Deprecated
             if (GUILayout.Button("Update Module Packages", GUILayout.Height(30)) && advancedSettings && !SafeMode)
-                DebugHelper.LogWarning("This feature is deprecated and will be removed in a future update. \n It was once used to update the modules individually.");
+                EssentialsDebugger.LogWarning("This feature is deprecated and will be removed in a future update. \n It was once used to update the modules individually.");
 
             //UpdateModulePackages(); // Kept for reference.
             #endregion
@@ -179,8 +179,8 @@ public sealed partial class UtilityWindow
 
         // The user can choose the logging level. This is used to determine what is logged to the console.
         if (!SafeMode && advancedSettings)
-            DebugHelper.LogBehaviour = (DebugHelper.LogLevel) EditorGUILayout.EnumPopup
-                (new GUIContent("└  Logging Behaviour", "Determines what (how much) is logged to the console."), DebugHelper.LogBehaviour);
+            EssentialsDebugger.LogBehaviour = (EssentialsDebugger.LogLevel) EditorGUILayout.EnumPopup
+                (new GUIContent("└  Logging Behaviour", "Determines what (how much) is logged to the console."), EssentialsDebugger.LogBehaviour);
 
         GUILayout.Space(3);
 

@@ -12,15 +12,18 @@ using static Lumina.Essentials.Editor.UI.Management.VersionManager;
 
 namespace Lumina.Essentials.Editor.UI.Management
 {
-    public static class EssentialsUpdater
+/// <summary>
+/// Updates the version of Lumina's Essentials.
+/// </summary>
+    internal static class VersionUpdater
     {
         /// <summary> Whether or not the current version is the latest version. </summary>
-        public static string LastUpdateCheck => StartupChecks.TimeSinceLastUpdate();
+        internal static string LastUpdateCheck => TimeManager.TimeSinceLastUpdate();
         
         /// <summary> The queue of coroutines to run. </summary>
         readonly static Queue<IEnumerator> coroutineQueue = new ();
 
-        public static void CheckForUpdates()
+        internal static void CheckForUpdates()
         {
             EditorApplication.update += Update;
             coroutineQueue.Enqueue(RequestUpdateCheck());
@@ -66,8 +69,8 @@ namespace Lumina.Essentials.Editor.UI.Management
     }
 
     [Serializable]
-    public class Release
+    internal class Release
     {
-        public string tag_name;
+        internal string tag_name;
     }
 }

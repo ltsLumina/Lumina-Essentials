@@ -1,146 +1,60 @@
 #region
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using UnityEngine;
-using UnityEditor;
 using Lumina.Essentials.Editor.UI.Management;
+using UnityEditor;
+using UnityEngine;
 using static Lumina.Essentials.Editor.UI.Management.EditorGUIUtils;
 using static Lumina.Essentials.Editor.UI.Management.VersionManager;
 #endregion
 
 namespace Lumina.Essentials.Editor.UI
 {
-    public sealed class UtilityWindow : EditorWindow
+/// <summary>
+///     The Utility Window that provides various features to enhance the user's workflow.
+///     Includes the Setup Window, Settings Window, and Utilities Window.
+///     This class is split into three partials, one for each panel.
+/// </summary>
+public sealed partial class UtilityWindow : EditorWindow
+{
+    readonly static Vector2 winSize = new (370, 650);
+    readonly static float buttonSize = winSize.x * 0.5f - 6;
+
+    #region Panels
+    /// <summary> The panel that will be displayed. </summary>
+    int selectedTab;
+
+    /// <summary> The labels of the tabs. </summary>
+    readonly string[] tabLabels =
+    { "Setup", "Settings", "Utilities" };
+
+    /// <summary> Used to invoke the setup panel when necessary. (Not the main panel) </summary>
+    Action currentPanel;
+    #endregion
+
+    [MenuItem("Tools/Lumina/Open Utility Panel")]
+    public static void OpenUtilityWindow()
     {
-        readonly static Vector2 winSize = new (370, 650);
-        readonly static float buttonSize = winSize.x * 0.5f - 6;
-        
-        #region Panels
-        /// <summary> The panel that will be displayed. </summary>
-        int selectedTab;
-        /// <summary> The labels of the tabs. </summary>
-        readonly string[] tabLabels = { "Setup", "Settings", "Utilities" };
-        /// <summary> Used to invoke the setup panel when necessary. (Not the main panel) </summary>
-        Action currentPanel;
-        #endregion
-        
-        #region Modules
-        // Whether or not the user has selected the full package.
-        bool isFullPackageSelected;
-        /// <summary> Toggle to enable or disable the installation of Alex' Essentials. (Half the package) </summary>
-        static bool alexEssentials;
-        /// <summary> Toggle to enable or disable the installation of Joel's Essentials. (Half the package) </summary>
-        static bool installDOTween;
-        /// <summary> Toggle to enable or disable the installation of the Attributes module of Lumina's Essentials. </summary>
-        static bool attributes;
-        /// <summary> Toggle to enable or disable the installation of the Sequencer module of Lumina's Essentials. </summary>
-        static bool sequencer;
-        /// <summary> Toggle to enable or disable the installation of the Helpers module of Lumina's Essentials. </summary>
-        static bool helpers;
-        /// <summary> Toggle to enable or disable the installation of the Editor module of Lumina's Essentials. </summary>
-        static bool shortcuts;
-        /// <summary> Toggle to enable or disable the installation of the Misc module of Lumina's Essentials. </summary>
-        static bool misc;
+        // Get existing open window or if none, make a new one:
+        var window = (UtilityWindow) GetWindow(typeof(UtilityWindow), true, "Lumina's Essentials Utility Panel");
+        window.minSize = winSize;
+        window.maxSize = window.minSize;
+        window.Show();
+    }
 
-        // List of all modules.
-        internal readonly static Dictionary<string, bool> AvailableModules = new ()
-        { { "Full Package", false },
-          { "Sequencer", false },
-          { "Attributes", false },
-          { "Helpers", false },
-          { "Shortcuts", false },
-          { "Misc", false } };
-        // TODO: Add option to install DOTween from here.
+    void OnEnable()
+    {
+        // Initialize all the variables
+        Initialization();
 
-        internal readonly static Dictionary<string, bool> InstalledModules = new ();
-        #endregion
-        
-        #region Settings variables
-        // The variables to be shown under the settings tab.
+        void Initialization()
+        { // Set the last open version to the current version
+            LastOpenVersion = CurrentVersion;
+            SafeMode        = true;
 
-        /// <summary> Shows the more advanced settings. </summary>
-        bool advancedSettings;
-        
-        /// <summary> The position of the scroll view. </summary>
-        Vector2 scrollPos;
-        
-        /// <summary> Whether or not the user has to set up Lumina's Essentials to the latest version. </summary>
-        public static bool SetupRequired
-        {
-            get => EditorPrefs.GetBool("SetupRequired", true);
-            set => EditorPrefs.SetBool("SetupRequired", value);
-        }
-        
-        /// <summary> Enabled by default. Prevents the user from accidentally doing something they didn't intend to do. </summary>
-        bool SafeMode
-        {
-            get => EditorPrefs.GetBool("SafeMode", true);
-            set => EditorPrefs.SetBool("SafeMode", value);
-        }
-
-        // End of preferences variables //
-        #endregion
-
-        #region Utilities variables
-        enum DragAndDropType // Only the ConvertImagesUtility enum is being used. The rest are deprecated.
-        {
-            CreateProjectUtility,
-            ConvertImagesUtility
-        }
-        
-        // Deprecated. Kept here for reference.
-        #region Deprecated
-#pragma warning disable CS0414 // Field is assigned but its value is never used
-        readonly DragAndDropType createProjectEnum = DragAndDropType.CreateProjectUtility;
-#pragma warning restore CS0414 // Field is assigned but its value is never used
-        #endregion
-
-        const DragAndDropType convertImagesEnum = DragAndDropType.ConvertImagesUtility;
-
-        internal const string ProjectPath = "";
-
-        float dropAreaHeight;
-        Rect dropArea;
-
-        string folderSelectedMsg = $"The folder: \"{GetFolderNameFromString(ProjectPath)}\" will be used as root project.";
-        static string noFolderSelectedMsg = "No folder selected. \nPlease drag and drop a folder to use.";
-        
-        /// <summary> Opens the configure images options. </summary>
-        bool configuringImages;
-        static SpriteImportMode spriteImportMode = SpriteImportMode.Single;
-        static FilterMode filterMode = FilterMode.Point;
-        static TextureImporterCompression compression = TextureImporterCompression.Uncompressed;
-        /// <summary> Quick toggle to set the sprite import mode to the recommended settings for importing sprites. </summary>
-        bool isSpriteSheet;
-        bool dragAndDropFolder;
-        bool isCorrectDirectory;
-        /// <summary> Shows the path of the selected object. </summary>
-        string imageConverterPath = "";
-        
-        // End of utilities variables //
-        #endregion
-
-        [MenuItem("Tools/Lumina/Open Utility Panel")]
-        public static void OpenUtilityWindow()
-        {
-            // Get existing open window or if none, make a new one:
-            var window = (UtilityWindow) GetWindow(typeof(UtilityWindow), true, "Lumina's Essentials Utility Panel");
-            window.minSize = winSize;
-            window.maxSize = window.minSize;
-            window.Show();
-        }
-
-        void OnEnable()
-        {
-            // Set the last open version to the current version
-            LastOpenVersion        = CurrentVersion;
-            SafeMode               = true;
-            
             // Initialize the installed modules
             CheckForInstalledModules(AvailableModules);
-            
+
             // Set SetupRequired to true if there are no modules installed.
             SetupRequired = !InstalledModules.Values.Any(module => module);
 
@@ -158,845 +72,210 @@ namespace Lumina.Essentials.Editor.UI
                 headerImg = AssetDatabase.LoadAssetAtPath<Texture2D>(headerPath);
                 footerImg = AssetDatabase.LoadAssetAtPath<Texture2D>(footerPath);
             }
-
-            Repaint();
         }
 
-        /// <summary>
-        ///     Displays the toolbar at the top of the window that toggles between the two panels.
-        /// </summary>
-        void OnGUI()
+        Repaint();
+    }
+
+    /// <summary>
+    ///     Displays the toolbar at the top of the window that toggles between the two panels.
+    /// </summary>
+    void OnGUI()
+    {
+        // Initialize GUIStyles
+        SetGUIStyles();
+
+        // If the user is in play mode, display a message telling them that the utility panel is not available while in play mode.
+        if (EditorApplication.isPlaying)
         {
-            // Initialize GUIStyles
-            SetGUIStyles();
-            
-            // If the user is in play mode, display a message telling them that the utility panel is not available while in play mode.
-            if (EditorApplication.isPlaying)
-            { 
-                GUILayout.Space(40);
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("The Utility Panel \nis disabled while in play mode.", wrapCenterLabelStyle, GUILayout.ExpandWidth(true));
-                GUILayout.Space(40);
-                GUILayout.EndHorizontal();
-                return;
-            }
-            
-            // Don't show the toolbar if the user in the setup panel
-            currentPanel();
-        }
-
-        void DisplayToolbar()
-        {
-            var areaRect = new Rect(0, 0, 370, 30);
-            selectedTab = GUI.Toolbar(areaRect, selectedTab, tabLabels);
-            
-            GUILayout.Space(30);
-
-            switch (selectedTab)
-            {
-                case 1:
-                    DrawSettingsGUI();
-                    break;
-
-                case 2:
-                    DrawUtilitiesGUI();
-                    break;
-
-                default:
-                    DrawSetupGUI();
-                    break;
-            }
-        }
-
-        void DrawSetupGUI()
-        {
-            var areaRect = new Rect(0, 30, 370, 118);
-            GUI.DrawTexture(areaRect, headerImg, ScaleMode.StretchToFill, false);
-            GUILayout.Space(areaRect.y + 90);
-            
-            #region Main Labels (Version, Update Check, etc.)
-            // Display current version in bold
-            GUILayout.Label($"  Essentials Version: {CurrentVersion}", mainLabelStyle);
-
-            // Display the latest version in bold
-            GUILayout.Label($"  Latest Version: {LatestVersion}", mainLabelStyle);
-
-            // Display the time since the last update check
-            GUILayout.Label($"  Last Update Check: {EssentialsUpdater.LastUpdateCheck}", mainLabelStyle);
-            
-            // End of Main Labels
-            #endregion
-            GUILayout.Space(3);
-
-            #region Setup Lumina Essentials Button
-            GUILayout.Space(3);
-            if (SetupRequired)
-            {
-                GUI.backgroundColor = Color.red;
-                GUILayout.BeginVertical(GUI.skin.box);
-                GUILayout.Label("SETUP REQUIRED", setupLabelStyle);
-                GUILayout.EndVertical();
-                GUI.backgroundColor = Color.white;
-            }
-            else { GUILayout.Space(8); }
-
-            GUI.color = Color.green;
-
-            using (new GUILayout.HorizontalScope())
-            {
-                GUILayout.FlexibleSpace();
-                if (GUILayout.Button("<b>Setup Essentials...</b>\n(add/remove Modules)", buttonSetup, GUILayout.Width(200)))
-                {
-                    // Select Setup Panel (not main panel)
-                    currentPanel = DrawModulesGUI;
-                }
-                GUILayout.FlexibleSpace();
-            }
-
-            GUI.color = new Color(0.89f, 0.87f, 0.87f);
-
-            GUI.backgroundColor = Color.white;
-            GUILayout.Space(4);
-            // End of Setup Lumina Essentials Button
-            #endregion
-            GUILayout.Space(3);
-
-            #region Text Box (Description)
-            
-            using (new GUILayout.VerticalScope(GUI.skin.box)) {
-                using (new GUILayout.HorizontalScope())
-                {
-                    GUILayout.FlexibleSpace();
-                    GUI.color = new Color(1f, 0.75f, 0.55f);
-                    if (GUILayout.Button("Something!", buttonSetup, GUILayout.Width(200)))
-                    {
-                        DebugHelper.Log("Placeholder button. Doesn't do anything yet.");
-                    }
-                    
-                    GUI.color = Color.white;
-                    GUILayout.FlexibleSpace();
-                }
-
-                GUILayout.Label
-                (
-                "Thank you for using Lumina's Essentials! \n" + "This window will help you get started with Lumina's Essentials. \n" +
-                "Please select the \"Setup\" tab to get started." + "\n" + "" +
-                "\n" + "Check out the \"Utilities\" tab to access the various workflow-enhancing features that this package provides.", wrapCenterLabelStyle);
-            }
-            #endregion
-            GUILayout.Space(3);
-
-            #region Grid of Buttons (Open Documentation, Open Changelog, etc.)
-            using (new GUILayout.HorizontalScope())
-            {
-                if (GUILayout.Button
-                    (openDocumentationContent, GUILayout.Width(buttonSize), GUILayout.Height(40)))
-                    Application.OpenURL("https://github.com/ltsLumina/Unity-Essentials");
-
-                if (GUILayout.Button
-                    (openChangeLogContent, GUILayout.Width(buttonSize), GUILayout.Height(40)))
-                    Application.OpenURL("https://github.com/ltsLumina/Unity-Essentials/releases/latest");
-            }
-            
-            using (new GUILayout.HorizontalScope())
-            {
-                // Display the button to check for updates
-                if (GUILayout.Button(checkForUpdatesContent, GUILayout.Width(buttonSize), GUILayout.Height(40)))
-                {
-                    EssentialsUpdater.CheckForUpdates();
-
-                    // if there is a new version available, open the GitHub repository's releases page
-                    if (!EditorPrefs.GetBool("UpToDate"))
-                    {
-                        DebugHelper.LogWarning("There is a new version available!" +
-                                               "\nPlease update to the latest version to ensure functionality.");
-                        Application.OpenURL("https://github.com/ltsLumina/Unity-Essentials/releases/latest");
-                    }
-                }
-
-                if (GUILayout.Button
-                    (openKnownIssuesContent, GUILayout.Width(buttonSize), GUILayout.Height(40))) 
-                    Application.OpenURL("https://github.com/ltsLumina/Lumina-Essentials/issues");
-                
-            }
-            #endregion
-            GUILayout.Space(4);
-            
-            // Footer/Developed by Lumina
-            if (GUILayout.Button(footerImg, btImgStyle)) Application.OpenURL("https://github.com/ltsLumina/");
-        }
-
-        /// <summary>
-        ///    Displays the setup panel that allows the user to replace the old files with the new ones.
-        /// </summary>
-        void DrawModulesGUI() // Not to be confused with the SetupWindow
-        {
-            GUILayout.Space(5);
-            GUILayout.Label("   Add/Remove Modules", mainLabelStyle);
-            GUILayout.Space(10);
-            
-            #region Module Install Options (Checkboxes)
-
-            foreach (var module in new List<string>(AvailableModules.Keys))
-            {
-                bool oldValue = AvailableModules[module];
-                bool newValue = EditorGUILayout.Toggle(module, oldValue);
-
-                // Display Extras right under Full Package whenever Full Package is selected
-                if (module.Equals("Full Package") && newValue)
-                {
-                    using (new EditorGUI.DisabledScope(true)) { EditorGUILayout.LabelField("└ Includes Extras"); }
-                }
-                
-                if (newValue != oldValue)
-                {
-                    AvailableModules[module] = newValue;
-
-                    // if changing the Full Package, change all other modules as well
-                    if (module == AvailableModules.Keys.First())
-                    {
-                        // if Full Package is selected, select all modules
-                        // if Full Package is unselected, unselect all modules
-                        foreach (var key in new List<string>(AvailableModules.Keys))
-                        {
-                            if (key != "Full Package") AvailableModules[key] = newValue;
-                        }
-                    }
-                    else if (newValue == false)
-                    {
-                        // if any module is unselected, unselect the Full Package
-                        AvailableModules["Full Package"] = false;
-                    }
-
-                    if (newValue)
-                    {
-                        AddModuleToInstalledModules(module);
-                    }
-                    else
-                    {
-                        RemoveModuleFromInstalledModules(module);
-                    }
-
-                    // If current module is "Full Package" and is selected, display "Extras"
-                    if (module.Equals("Full Package") && newValue)
-                    {
-                        using (new EditorGUI.DisabledScope(true)) { EditorGUILayout.LabelField("└ Extras"); }
-                    }
-                    
-                    void AddModuleToInstalledModules(string moduleName) => InstalledModules[moduleName] = true;
-                    void RemoveModuleFromInstalledModules(string moduleName) => InstalledModules[moduleName] = false;
-                }
-            }
-
-            // End of Checkboxes
-            #endregion
-            
-            #region Help box and Confirmation (Safe Mode)
-            EditorGUILayout.HelpBox
-            ("Please choose the modules you wish to install. If you are unsure which one(s) to choose, simply select \"Full Package\" " +
-             "and all the recommended modules will be installed. "                                                                      +
-             "                                              "   /* Spacer for HelpBox */                                                +
-             "The Full Package also includes an \"Extras\" part which itself includes Joel's Essentials"                                +
-             " as well as an 'Examples' folder with various tips and guides on how the package works. ", MessageType.Info);
-
-            using (new GUILayout.HorizontalScope())
-            {
-                EditorGUILayout.LabelField("Uncheck the checkbox to continue.", GUILayout.Width(200));
-                SafeMode = EditorGUILayout.Toggle(SafeMode);
-            }
-            
-            // End of Help box and Confirmation
-            #endregion
-
-            #region Apply/Cancel Buttons (For the Setup Modules GUI)
-            using (new GUILayout.HorizontalScope())
-            { // Only install the modules if the user is not in Safe Mode and if there are modules to install.
-                if (!SafeMode)
-                    if (GUILayout.Button("Install Selected", GUILayout.Height(25)))
-                    {
-                        if (!SafeMode && AvailableModules.Values.Any(module => module))
-                        {
-                            // Popup to confirm the replacement of the old files
-                            if (EditorUtility.DisplayDialog
-                            ("Confirmation",
-                             "Are you sure you want to replace the old files? \n " + "Please backup any files from the old version that you may want to keep." +
-                             "It is recommended to backup Systems.prefab in the Resources folder", "Apply", "Cancel"))
-                            {
-                                // Delete the old files and replace them with the new ones
-                                //ReplaceOldPackage();
-                                InstallModules();
-                                SetupRequired = false;
-                            }
-                            else { DebugHelper.LogAbort(SafeMode); }
-                        }
-                        else { DebugHelper.LogWarning("Please select at least one module to install."); }
-                    }
-
-                // "Cancel" button
-                if (GUILayout.Button("Cancel Setup", GUILayout.Height(25)))
-                {
-                    // Close the setup panel
-                    currentPanel = DisplayToolbar;
-
-                    // Reset the checkboxes
-                    ClearSelectedModules();
-                    InstalledModules.Clear();
-                    
-                    // Check which modules are still installed
-                    CheckForInstalledModules(AvailableModules);
-
-                    SafeMode = true;
-                }
-            }
-
-            // End of Apply/Cancel Buttons
-            #endregion
-        }
-        
-        void DrawSettingsGUI()
-        {
-            const float spacer = 5.5f; // Has to be 5.5 to ensure that the text is at the same height as the Utilities panel.
-            GUILayout.Space(spacer);
-
-            // Begin scroll view
-            scrollPos = EditorGUILayout.BeginScrollView(scrollPos, false, false, GUILayout.Width(370), GUILayout.Height(650));
-            
-            using (new GUILayout.HorizontalScope())
-            {
-                GUILayout.FlexibleSpace();
-                GUILayout.Label("", GUILayout.Width(20)); // Pushes the label to the right to center it.
-                GUILayout.Label("Settings", centerLabelStyle);
-                GUILayout.FlexibleSpace();
-                
-                // Checkbox to show the advanced settings
-                GUIContent advancedSettingsContent = new GUIContent("", "Shows the advanced settings.");
-                advancedSettings = GUILayout.Toggle(advancedSettings, advancedSettingsContent);
-            }
-
-            GUILayout.Label("Various settings to customize your experience.", subLabelStyle);
-
-            // Draw a horizontal line (separator)
-            EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
-            
-            #region Reset Button (Resets the EditorPrefs)
-            GUILayout.Space(6);
-            
+            GUILayout.Space(40);
             GUILayout.BeginHorizontal();
-
-            if (GUILayout.Button(resetButtonContent, GUILayout.Width(100), GUILayout.Height(35), GUILayout.ExpandWidth(true)))
-                if (EditorUtility.DisplayDialog("Confirmation", "Are you sure you want to reset the Utility Window?", "Yes", "No"))
-                {
-                    if (!SafeMode)
-                    {
-                        // Reset the EditorPrefs
-                        EditorPrefs.DeleteAll();
-
-                        // Reset any necessary flags or variables
-                        SafeMode                   = true;
-                        imageConverterPath         = "";
-                        DontShow_DebugBuildWarning = false;
-                        DebugHelper.LogBehaviour   = DebugHelper.LogLevel.Verbose;
-
-                        DebugHelper.LogWarning("Settings and EditorPrefs have been reset.");
-
-                        // Display a warning if the user is in a debug build
-                        StartupChecks.DebugBuildWarning();
-
-                        // Check for updates to set up everything again.
-                        EssentialsUpdater.CheckForUpdates();
-
-                        Close();
-                        SetupWindow.OpenSetupWindow();
-                    }
-                    else { DebugHelper.LogAbort(SafeMode); }
-                }
-                else { DebugHelper.LogAbort(); }
-
+            GUILayout.Label("The Utility Panel \nis disabled while in play mode.", wrapCenterLabelStyle, GUILayout.ExpandWidth(true));
+            GUILayout.Space(40);
             GUILayout.EndHorizontal();
-            // End of Reset Button
-            #endregion
-            
-            GUILayout.Space(10);
-
-            #region Settings
-            // Display the value of SafeMode as a readonly checkbox and tooltip
-            SafeMode = EditorGUILayout.Toggle(safeModeWarningContent, SafeMode);
-            
-            // The user can choose the logging level. This is used to determine what is logged to the console.
-            if (!SafeMode && advancedSettings)
-                DebugHelper.LogBehaviour = (DebugHelper.LogLevel) EditorGUILayout.EnumPopup
-                    (new GUIContent("└  Logging Behaviour", "Determines what (how much) is logged to the console."), DebugHelper.LogBehaviour);
-
-            GUILayout.Space(3);
-            
-            // Displays the last version of the Essentials package that was opened
-            EditorGUILayout.LabelField("Last Open Version", EditorPrefs.GetString("LastOpenVersion"));
-            
-            // Displays whether the user is up to date or not
-            EditorGUILayout.LabelField("Up To Date", EditorPrefs.GetBool("UpToDate").ToString());
-            
-            // Displays if this is a debug build or not
-            EditorGUILayout.LabelField("Debug Version", EditorPrefs.GetBool("DebugVersion").ToString());
-
-            // Displays if the Auto-Save feature is enabled or not
-            EditorGUILayout.LabelField("Auto-Save", AutoSaveConfig.Enabled.ToString());
-
-            // Draw a horizontal line (separator)
-            EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
-            
-            // Displays all the advanced settings.
-            if (advancedSettings)
-            {
-                GUILayout.Label("Debug Options", centerLabelStyle);
-                GUILayout.Label("Various buttons and settings for debugging.", subLabelStyle);
-                GUILayout.Space(5);
-
-                if (GUILayout.Button("Show All EditorPrefs", GUILayout.Height(30)))
-                {
-                    ShowAllEditorPrefs();
-                }
-
-                #region Deprecated
-                if (GUILayout.Button("Update Module Packages", GUILayout.Height(30)) && advancedSettings && !SafeMode)
-                {
-                    DebugHelper.LogWarning("This feature is deprecated and will be removed in a future update. \n It was once used to update the modules individually.");
-                    //UpdateModulePackages(); // Kept for reference.
-                }
-                #endregion
-                
-                // Draw a horizontal line (separator)
-                EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
-                
-                // Display the image configuration options
-                GUILayout.Label("Read-only values", centerLabelStyle);
-                GUILayout.Label("These are only here for debugging purposes.", subLabelStyle);
-                GUILayout.Space(5);
-                
-                // Group of view only fields
-                EditorGUI.BeginDisabledGroup(true);
-                // Box view the SetupRequired bool
-                SetupRequired = EditorGUILayout.Toggle("Setup Required", SetupRequired);
-                DontShow_DebugBuildWarning = EditorGUILayout.Toggle("Don't Show Debug Alert", DontShow_DebugBuildWarning);
-
-                // Draw a horizontal line (separator)
-                EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
-                
-                GUILayout.Space(3);
-                
-                GUILayout.Label("Installed Modules", centerLabelStyle);
-                GUILayout.Label("These are the modules that are installed.", subLabelStyle);
-                
-                GUILayout.Space(5);
-
-                // Display the available modules with the values from InstalledModules
-                foreach (var available in AvailableModules.Keys)
-                {
-                    foreach (var installed in InstalledModules.Keys)
-                    {
-                        // Display the text from the AvailableModules dictionary but the value from the InstalledModules dictionary
-                        if (available == installed)
-                        {
-                            EditorGUILayout.Toggle(available, InstalledModules[installed]);
-                        }
-                    }
-                }
-
-                EditorGUI.EndDisabledGroup();
-
-                GUILayout.Space(10);
-                
-                // Draw a horizontal line (separator)
-                EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
-            }
-            
-            // End of Settings
-            #endregion
-            
-            // End scroll view
-            EditorGUILayout.EndScrollView();
+            return;
         }
 
-        void DrawUtilitiesGUI()
+        // Don't show the toolbar if the user in the setup panel
+        currentPanel();
+    }
+
+    /// <summary>
+    ///     The toolbar at the top of the window with the tabs.
+    /// </summary>
+    void DisplayToolbar()
+    {
+        var areaRect = new Rect(0, 0, 370, 30);
+        selectedTab = GUI.Toolbar(areaRect, selectedTab, tabLabels);
+
+        GUILayout.Space(30);
+
+        switch (selectedTab)
         {
-            const float spacer = 6.5f; // Has to be 6.5 to ensure that the text is at the same height as the Settings panel.
-            GUILayout.Space(spacer);
-            GUILayout.Label("Utilities", centerLabelStyle);
-            GUILayout.Label("Provides useful features to improve your workflow.", subLabelStyle);
-            
-            // Draw a horizontal line (separator)
-            EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
-            
-            #region Utilities
+            case 1:
+                DrawSettingsGUI();
+                break;
 
-            // Buttons and Toggles
-            DrawUtilitiesButtonsGUI();
-            
-            DrawConfigureImagesGUI();
-            
-            #endregion
-            
-            GUILayout.Space(10);
+            case 2:
+                DrawUtilitiesGUI();
+                break;
 
-            // Draw a horizontal line (separator)
-            EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
-        }
-
-        [Obsolete] // Deprecated. Kept here for reference.
-        // ReSharper disable once UnusedMember.Local
-        void DrawCreateProjectStructureGUI()
-        {
-            if (GUILayout.Button("Create Default Project Structure"))
-            {
-                CreateProjectStructure();
-            }
-        }
-        
-        void DrawUtilitiesButtonsGUI()
-        {
-            // Checkbox to enable or disable the auto save feature
-            AutoSaveConfig.Enabled = EditorGUILayout.Toggle(new GUIContent
-                ("Auto Save",
-                "Automatically saves the scene at a set interval."
-                ), AutoSaveConfig.Enabled);
-
-            if (AutoSaveConfig.Enabled)
-            {
-                using (new GUILayout.HorizontalScope())
-                {
-                    GUILayout.Label("└  Interval (Min)", GUILayout.Width(200));
-                    AutoSaveConfig.Interval = EditorGUILayout.IntSlider(AutoSaveConfig.Interval, 1, 60);
-                }
-                
-                GUILayout.Space(1.5f);
-                
-                AutoSaveConfig.Logging = EditorGUILayout.Toggle("└  Message", AutoSaveConfig.Logging);
-                
-                GUILayout.Space(5.5f);
-            }
-            
-            // Checkbox to enable or disable the enter playmode options
-            EditorSettings.enterPlayModeOptionsEnabled = EditorGUILayout.Toggle(enterPlaymodeOptionsContent,
-             EditorSettings.enterPlayModeOptionsEnabled);
-            
-            // Horizontal line (separator)
-            EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
-
-            GUILayout.Space(10);
-
-            // Button that creates a default project directory structure
-            if (GUILayout.Button(createDefaultProjectContent, GUILayout.Height(35)))
-            {
-                configuringImages = false;
-
-                if (!SafeMode) CreateProjectStructure();
-                else DebugHelper.LogAbort(SafeMode);
-            } 
-
-            GUILayout.Space(5);
-
-            GUI.backgroundColor = configuringImages ? new Color(0.76f, 0.76f, 0.76f) : Color.white;
-            
-            if (GUILayout.Button(configureImagesContent, GUILayout.Height(35)))
-            {
-                configuringImages = !configuringImages;
-                
-                // Reset the image converter path if the user stops configuring the configure images settings.
-                if (!configuringImages)
-                {
-                    imageConverterPath = "";
-                    isCorrectDirectory = false;
-                }
-                else
-                {
-                    DrawConfigureImagesGUI(); 
-                } 
-            }
-
-            GUI.backgroundColor = Color.white;
-
-            GUILayout.Space(5);
-
-            if (GUILayout.Button("Placeholder Button", GUILayout.Height(35)))
-            {
-                DebugHelper.Log("This does nothing as it's a placeholder.");
-                
-                //TODO: This could be similar to configure images, but for audio instead. (.wav, .mp3, .ogg, etc.)
-            }
-        }
-        
-        // Old method for creating the project structure. This was replaced by a new method but that has since been deprecated (for now). 
-        void CreateProjectStructure()
-        {
-            const string rootName = "_Project";
-            
-            // Confirmation pop-up
-            if (EditorUtility.DisplayDialog("Confirmation", "Are you sure you want to create the default project structure?", "Yes", "No"))
-            {
-                // Create the default folders in the root of the project 
-                CreateDirectories(rootName, "Scripts", "Art", "Audio", "Scenes", "PREFABS", "Materials", "Plugins"); // "DEL" to put it at the bottom.
-                CreateDirectories(rootName + "/Art", "Animations");
-                CreateDirectories(rootName + "/Audio", "SFX", "Music");
-                AssetDatabase.Refresh();
-                
-                #region Looks like this in the project window:
-                // _Project
-                // └ Scripts
-                // └ Art
-                // |  └  Animations
-                // └ Audio
-                // |  └  SFX
-                // |  └  Music
-                // └ Scenes
-                // └ PREFABS
-                // └ Materials
-                // └ Plugins
-                #endregion
-            }
-            else { DebugHelper.LogAbort(); }
-        }
-
-        void DrawConfigureImagesGUI()
-        {
-            if (configuringImages)
-            {
-                DrawImageSettingsConfig();
-
-                GUILayout.Space(5);
-
-                DrawDragAndDropConfig(convertImagesEnum); // The convertImagesEnum is used to determine what the drag and drop GUI will display.
-            }
-            else
-            {
-                // Reset the enums to the default values
-                spriteImportMode = SpriteImportMode.Single;
-                filterMode       = FilterMode.Bilinear;
-                compression      = TextureImporterCompression.Compressed;
-            }
-        }
-        
-        void DrawImageSettingsConfig()
-        { // Display the image configuration options
-            GUILayout.Label("Image Configuration", centerLabelStyle);
-            GUILayout.Label("Configure the default settings for images.", subLabelStyle);
-            GUILayout.Space(10);
-            
-            
-            // Enum popups for the image configuration
-            spriteImportMode = (SpriteImportMode) EditorGUILayout.EnumPopup("Sprite Mode", spriteImportMode);
-            filterMode       = (FilterMode) EditorGUILayout.EnumPopup("Filter Mode", filterMode);
-            compression      = (TextureImporterCompression) EditorGUILayout.EnumPopup("Compression", compression);
-
-            // Quick toggle to set the recommended settings for sprites (multiple)
-            var spriteModeContent = new GUIContent
-            (
-            "Sprite-Sheet",
-            "Sets the recommended settings for sprite-sheets \n" + 
-            "This will set the sprite mode to multiple, filter mode to point, and compression to uncompressed."
-             );
-
-            isSpriteSheet = EditorGUILayout.Toggle(spriteModeContent, isSpriteSheet);
-
-            if (isSpriteSheet)
-            {
-                spriteImportMode = SpriteImportMode.Multiple;
-                filterMode       = FilterMode.Point;
-                compression      = TextureImporterCompression.Uncompressed;
-            }
-        }
-        
-        void DrawDragAndDropConfig(DragAndDropType type)
-        {
-            switch (type)
-            { // This case has since been deprecated as I figured the way I was designing the project structure was not the best way to do it.
-                // It remains here in case I decide to use it again, or if I want to repurpose it for something else.
-                // I don't like leaving large amounts of code commented, but I want it for reference.
-                case DragAndDropType.CreateProjectUtility:
-                    DebugHelper.LogError("You are using the deprecated Create Project Structure enum!");
-                    #region Deprecated Create Project Structure Code
-                    // GUILayout.Label("Drag a folder here:", middleStyle);
-                    // GUILayout.Label("The selected folder will be used as the root folder.", subLabelStyle);
-                    // GUILayout.Label("\"/Assets/\" is the default folder if nothing is selected.", subLabelStyle);
-                    // GUILayout.Space(10);
-                    //
-                    // dropAreaHeight = ProjectPath.Length > 60 ? 45 : 30;
-                    //
-                    // dropArea = GUILayoutUtility.GetRect(0, dropAreaHeight, GUILayout.ExpandWidth(true));
-                    // GUI.Box(dropArea, ProjectPath, dropAreaStyle);
-                    //
-                    // if (Event.current.type == EventType.DragUpdated && dropArea.Contains(Event.current.mousePosition))
-                    // {
-                    //     DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
-                    //     Event.current.Use();
-                    // }
-                    //
-                    // if (Event.current.type == EventType.DragPerform && dropArea.Contains(Event.current.mousePosition))
-                    // {
-                    //     DragAndDrop.AcceptDrag();
-                    //
-                    //     foreach (string path in DragAndDrop.paths)
-                    //     {
-                    //         // check if the path is directory (folder)
-                    //         if (Directory.Exists(path))
-                    //         {
-                    //             ProjectPath = path;
-                    //             Event.current.Use();
-                    //             break;
-                    //         }
-                    //     }
-                    // }
-                    //
-                    // GUILayout.Space(8);
-                    //
-                    // folderSelectedMsg   = $"The folder: \"{GetFolderNameFromString(ProjectPath)}\" will be used as root project.";
-                    // noFolderSelectedMsg = "No folder selected. \nPlease drag and drop a folder to use.";
-                    //
-                    // if (!string.IsNullOrEmpty(ProjectPath))
-                    // {
-                    //     GUILayout.Label(folderSelectedMsg, middleStyle);
-                    //     GUILayout.Space(4);
-                    //
-                    //     var correctDirectoryContent = new GUIContent("Is this directory correct?", "This will disable safe mode. \nPlease proceed with caution.");
-                    //     isCorrectDirectory = EditorGUILayout.Toggle(correctDirectoryContent, isCorrectDirectory);
-                    //
-                    //     if (isCorrectDirectory)
-                    //     {
-                    //         ProjectStructureWindow.ShowWindow();
-                    //     }
-                    //
-                    //     GUILayout.Space(5);
-                    //
-                    //     if (GUILayout.Button("Apply"))
-                    //     {
-                    //         if (isCorrectDirectory) ProjectStructureGUI.ApplyChanges();
-                    //         else DebugHelper.LogWarning("The action was aborted. \nYou haven't checked the confirmation box!");
-                    //     }
-                    // }
-                    // else
-                    // {
-                    //     GUILayout.Label(noFolderSelectedMsg, middleStyle);
-                    // }
-                    #endregion
-                    break;
-
-                case DragAndDropType.ConvertImagesUtility:
-                {
-                    GUILayout.Label("Drag a folder here:", middleStyle);
-                    GUILayout.Label("The selected folder will be used to convert the images.", subLabelStyle);
-                    GUILayout.Space(10);
-
-                    dropAreaHeight = imageConverterPath.Length > 60 ? 45 : 30;
-
-                    dropArea = GUILayoutUtility.GetRect(0, dropAreaHeight, GUILayout.ExpandWidth(true));
-                    GUI.Box(dropArea, imageConverterPath, dropAreaStyle);
-
-                    if (Event.current.type == EventType.DragUpdated && dropArea.Contains(Event.current.mousePosition))
-                    {
-                        DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
-                        Event.current.Use();
-                    }
-
-                    if (Event.current.type == EventType.DragPerform && dropArea.Contains(Event.current.mousePosition))
-                    {
-                        DragAndDrop.AcceptDrag();
-
-                        foreach (string path in DragAndDrop.paths)
-                        {
-                            // check if the path is directory (folder)
-                            if (Directory.Exists(path))
-                            {
-                                imageConverterPath = path;
-                                Event.current.Use();
-                                break;
-                            }
-                        }
-                    }
-
-                    GUILayout.Space(8);
-
-                    folderSelectedMsg   = $"The folder: \"{GetFolderNameFromString(imageConverterPath)}\" will be used to convert all images.";
-                    noFolderSelectedMsg = "No folder selected. \nPlease drag and drop a folder to use.";
-
-                    if (!string.IsNullOrEmpty(imageConverterPath))
-                    {
-                        GUILayout.Label(folderSelectedMsg, middleStyle);
-                        GUILayout.Label("Please put any images you wish to convert in said folder.", subLabelStyle);
-                        GUILayout.Space(4);
-
-                        var correctDirectoryContent = new GUIContent("Is this directory correct?", "This will disable safe mode. \nPlease proceed with caution.");
-                        isCorrectDirectory = EditorGUILayout.Toggle(correctDirectoryContent, isCorrectDirectory);
-
-                        if (isCorrectDirectory)
-                        {
-                            SafeMode = !SafeMode;
-                            DebugHelper.LogWarning("Safe mode disabled.");
-                        }
-
-                        GUILayout.Space(5);
-
-                        if (GUILayout.Button("Apply"))
-                        {
-                            if (isCorrectDirectory) ConfigureImages();
-                            else DebugHelper.LogWarning("You haven't checked the confirmation box!");
-                        }
-                    }
-                    else
-                    {
-                        GUILayout.Label(noFolderSelectedMsg, middleStyle);
-                    }
-
-                    break;
-                }
-            }
-        }
-
-        void ConfigureImages()
-        {
-            const string imageMsg  = "Are you sure you want to configure the images?";
-            const string spriteMsg = "Are you sure you want to configure the sprites?";
-            string confirmationMessage = isSpriteSheet
-                ? $"{imageMsg}\nThis will set the sprite mode to multiple, filter mode to point, and compression to uncompressed."
-                : $"{spriteMsg}\nThis will set the filter mode to point and compression to uncompressed." +
-                  " Keep in mind that the 'multiple' sprite mode is used for sprite-sheets and is not recommended for single sprites.";
-            
-            if (!SafeMode)
-            {
-                if (EditorUtility.DisplayDialog("Confirmation", confirmationMessage, "Yes", "No"))
-                {
-                    // Get all files in /Lumina Essentials/Editor/Utilities/Image Converter/
-                    string folderPath = imageConverterPath;
-
-                    // Get the search patterns for the files (png, jpg, jpeg)
-                    string[] searchPatterns ={ "*.png", "*.jpg", "*.jpeg" };
-
-                    string[] images = searchPatterns.SelectMany(pattern => Directory.GetFiles(folderPath, pattern)).ToArray();
-
-                    // Loop through each file
-                    foreach (string image in images)
-                    {
-                        // Get the asset path and texture importer
-                        string assetPath       = Path.Combine(folderPath, Path.GetFileName(image)).Replace('\\', '/');
-                        var    textureImporter = AssetImporter.GetAtPath(assetPath) as TextureImporter;
-
-                        if (textureImporter != null)
-                        {
-                            // Set the filter mode and compression to point and no compression at the path
-                            textureImporter.spriteImportMode   = spriteImportMode;
-                            textureImporter.filterMode         = filterMode;
-                            textureImporter.textureCompression = compression;
-                            textureImporter.SaveAndReimport();
-
-                            foreach (string configuredImage in images)
-                            {
-                                DebugHelper.Log($"Configured {Path.GetFileName(configuredImage)}");
-                            }
-                        }
-                    }
-
-                    AssetDatabase.Refresh();
-                }
-                else { DebugHelper.LogAbort(SafeMode); }
-            }
-            else { DebugHelper.LogAbort(SafeMode); }
+            default:
+                DrawSetupGUI();
+                break;
         }
     }
+
+    /// <summary>
+    ///     Displays the main panel that shows the current version, latest version, etc.
+    /// </summary>
+    void DrawSetupGUI()
+    {
+        var areaRect = new Rect(0, 30, 370, 118);
+        GUI.DrawTexture(areaRect, headerImg, ScaleMode.StretchToFill, false);
+        GUILayout.Space(areaRect.y + 90);
+
+        #region Main Labels (Version, Update Check, etc.)
+        // Display current version in bold
+        GUILayout.Label($"  Essentials Version: {CurrentVersion}", mainLabelStyle);
+
+        // Display the latest version in bold
+        GUILayout.Label($"  Latest Version: {LatestVersion}", mainLabelStyle);
+
+        // Display the time since the last update check
+        GUILayout.Label($"  Last Update Check: {EssentialsUpdater.LastUpdateCheck}", mainLabelStyle);
+
+        // End of Main Labels
+        #endregion
+        GUILayout.Space(3);
+
+        #region Setup Lumina Essentials Button
+        GUILayout.Space(3);
+
+        if (SetupRequired)
+        {
+            GUI.backgroundColor = Color.red;
+            GUILayout.BeginVertical(GUI.skin.box);
+            GUILayout.Label("SETUP REQUIRED", setupLabelStyle);
+            GUILayout.EndVertical();
+            GUI.backgroundColor = Color.white;
+        }
+        else { GUILayout.Space(8); }
+
+        GUI.color = Color.green;
+
+        using (new GUILayout.HorizontalScope())
+        {
+            GUILayout.FlexibleSpace();
+
+            if (GUILayout.Button("<b>Setup Essentials...</b>\n(add/remove Modules)", buttonSetup, GUILayout.Width(200)))
+
+                // Select Setup Panel (not main panel)
+                currentPanel = DrawModulesGUI;
+
+            GUILayout.FlexibleSpace();
+        }
+
+        GUI.color = new (0.89f, 0.87f, 0.87f);
+
+        GUI.backgroundColor = Color.white;
+        GUILayout.Space(4);
+
+        // End of Setup Lumina Essentials Button
+        #endregion
+        GUILayout.Space(3);
+
+        #region Text Box (Description)
+        using (new GUILayout.VerticalScope(GUI.skin.box))
+        {
+            using (new GUILayout.HorizontalScope())
+            {
+                GUILayout.FlexibleSpace();
+                GUI.color = new (1f, 0.75f, 0.55f);
+                if (GUILayout.Button("Something!", buttonSetup, GUILayout.Width(200))) DebugHelper.Log("Placeholder button. Doesn't do anything yet.");
+
+                GUI.color = Color.white;
+                GUILayout.FlexibleSpace();
+            }
+
+            GUILayout.Label
+            ("Thank you for using Lumina's Essentials! \n"     + "This window will help you get started with Lumina's Essentials. \n" +
+             "Please select the \"Setup\" tab to get started." + "\n"                                                                 + "" + "\n" +
+             "Check out the \"Utilities\" tab to access the various workflow-enhancing features that this package provides.", wrapCenterLabelStyle);
+        }
+        #endregion
+        GUILayout.Space(3);
+
+        #region Grid of Buttons (Open Documentation, Open Changelog, etc.)
+        using (new GUILayout.HorizontalScope())
+        {
+            if (GUILayout.Button(openDocumentationContent, GUILayout.Width(buttonSize), GUILayout.Height(40))) Application.OpenURL("https://github.com/ltsLumina/Unity-Essentials");
+
+            if (GUILayout.Button
+                (openChangeLogContent, GUILayout.Width(buttonSize), GUILayout.Height(40))) Application.OpenURL("https://github.com/ltsLumina/Unity-Essentials/releases/latest");
+        }
+
+        using (new GUILayout.HorizontalScope())
+        {
+            // Display the button to check for updates
+            if (GUILayout.Button(checkForUpdatesContent, GUILayout.Width(buttonSize), GUILayout.Height(40)))
+            {
+                EssentialsUpdater.CheckForUpdates();
+
+                // if there is a new version available, open the GitHub repository's releases page
+                if (!EditorPrefs.GetBool("UpToDate"))
+                {
+                    DebugHelper.LogWarning("There is a new version available!" + "\nPlease update to the latest version to ensure functionality.");
+                    Application.OpenURL("https://github.com/ltsLumina/Unity-Essentials/releases/latest");
+                }
+            }
+
+            if (GUILayout.Button
+                (openKnownIssuesContent, GUILayout.Width(buttonSize), GUILayout.Height(40))) Application.OpenURL("https://github.com/ltsLumina/Lumina-Essentials/issues");
+        }
+        #endregion
+        GUILayout.Space(3);
+
+        // Footer/Developed by Lumina
+        if (GUILayout.Button(footerImg, btImgStyle)) Application.OpenURL("https://github.com/ltsLumina/");
+    }
+
+    /// <summary>
+    ///     Displays the setup panel that allows the user to select which modules to install.
+    /// </summary>
+    void DrawModulesGUI()
+    {
+        DrawModulesHeader();
+        DrawModulesInstallGUI();
+        DrawModulesHelpBox();
+        DrawModulesButtons();
+    }
+
+    /// <summary>
+    ///     Displays the settings panel that allows the user to change various settings.
+    /// </summary>
+    void DrawSettingsGUI()
+    {
+        // Begin scroll view
+        scrollPos = EditorGUILayout.BeginScrollView(scrollPos, false, false, GUILayout.Width(370), GUILayout.Height(650));
+
+        DrawSettingsHeader();
+        DrawResetSettingsButton();
+        DrawSettingsLabels();
+        DrawAdvancedSettingsGUI();
+
+        // End scroll view
+        EditorGUILayout.EndScrollView();
+    }
+
+    /// <summary>
+    ///     Displays the utilities panel that provides various features to enhance the user's workflow.
+    /// </summary>
+    void DrawUtilitiesGUI()
+    {
+        DrawUtilitiesHeader();
+        DrawUtilitiesButtonsGUI();
+        DrawConfigureImagesGUI();
+    }
+}
 }

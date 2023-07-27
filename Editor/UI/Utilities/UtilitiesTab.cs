@@ -1,20 +1,79 @@
-﻿using System;
+#region
+using System;
 using System.IO;
 using System.Linq;
 using Lumina.Essentials.Editor.UI.Management;
 using UnityEditor;
 using UnityEngine;
+using static Lumina.Essentials.Editor.UI.Management.EditorGUIUtils;
+#endregion
 
 namespace Lumina.Essentials.Editor.UI
 {
+// One of the three tabs in the Utility Window.
+// Includes all the functions for the Utilities tab.
 public sealed partial class UtilityWindow
 {
+    #region Utilities variables
+    enum DragAndDropType // Only the ConvertImagesUtility enum is being used. The rest are deprecated.
+    {
+        CreateProjectUtility,
+        ConvertImagesUtility,
+    }
+
+    // Deprecated. Kept here for reference.
+    #region Deprecated
+#pragma warning disable CS0414 // Field is assigned but its value is never used
+    readonly DragAndDropType createProjectEnum = DragAndDropType.CreateProjectUtility;
+#pragma warning restore CS0414 // Field is assigned but its value is never used
+    #endregion
+
+    const DragAndDropType convertImagesEnum = DragAndDropType.ConvertImagesUtility;
+
+    internal const string ProjectPath = "";
+
+    float dropAreaHeight;
+    Rect dropArea;
+
+    string folderSelectedMsg = $"The folder: \"{GetFolderNameFromString(ProjectPath)}\" will be used as root project.";
+    static string noFolderSelectedMsg = "No folder selected. \nPlease drag and drop a folder to use.";
+
+    /// <summary> Opens the configure images options. </summary>
+    bool configuringImages;
+    static SpriteImportMode spriteImportMode = SpriteImportMode.Single;
+    static FilterMode filterMode = FilterMode.Point;
+    static TextureImporterCompression compression = TextureImporterCompression.Uncompressed;
+    /// <summary> Quick toggle to set the sprite import mode to the recommended settings for importing sprites. </summary>
+    bool isSpriteSheet;
+    bool dragAndDropFolder;
+    bool isCorrectDirectory;
+    /// <summary> Shows the path of the selected object. </summary>
+    string imageConverterPath = "";
+
+    // End of utilities variables //
+    #endregion
+
+    /// <summary>
+    ///     Draws the header of the utilities panel.
+    /// </summary>
+    static void DrawUtilitiesHeader()
+    {
+        const float spacer = 6.5f; // Has to be 6.5 to ensure that the text is at the same height as the Settings panel.
+        GUILayout.Space(spacer);
+        GUILayout.Label("Utilities", centerLabelStyle);
+        GUILayout.Label("Provides useful features to improve your workflow.", subLabelStyle);
+
+        // Draw a horizontal line (separator)
+        EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+    }
+
     [Obsolete] // Deprecated. Kept here for reference.
     // ReSharper disable once UnusedMember.Local
     void DrawCreateProjectStructureGUI()
     {
-        if (GUILayout.Button("Create Default Project Structure")) { CreateProjectStructure(); }
+        if (GUILayout.Button("Create Default Project Structure")) CreateProjectStructure();
     }
+
     void DrawUtilitiesButtonsGUI()
     {
         // Checkbox to enable or disable the auto save feature
@@ -36,7 +95,7 @@ public sealed partial class UtilityWindow
         }
 
         // Checkbox to enable or disable the enter playmode options
-        EditorSettings.enterPlayModeOptionsEnabled = EditorGUILayout.Toggle(EditorGUIUtils.enterPlaymodeOptionsContent, EditorSettings.enterPlayModeOptionsEnabled);
+        EditorSettings.enterPlayModeOptionsEnabled = EditorGUILayout.Toggle(enterPlaymodeOptionsContent, EditorSettings.enterPlayModeOptionsEnabled);
 
         // Horizontal line (separator)
         EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
@@ -44,7 +103,7 @@ public sealed partial class UtilityWindow
         GUILayout.Space(10);
 
         // Button that creates a default project directory structure
-        if (GUILayout.Button(EditorGUIUtils.createDefaultProjectContent, GUILayout.Height(35)))
+        if (GUILayout.Button(createDefaultProjectContent, GUILayout.Height(35)))
         {
             configuringImages = false;
 
@@ -54,9 +113,9 @@ public sealed partial class UtilityWindow
 
         GUILayout.Space(5);
 
-        GUI.backgroundColor = configuringImages ? new Color(0.76f, 0.76f, 0.76f) : Color.white;
+        GUI.backgroundColor = configuringImages ? new (0.76f, 0.76f, 0.76f) : Color.white;
 
-        if (GUILayout.Button(EditorGUIUtils.configureImagesContent, GUILayout.Height(35)))
+        if (GUILayout.Button(configureImagesContent, GUILayout.Height(35)))
         {
             configuringImages = !configuringImages;
 
@@ -73,14 +132,12 @@ public sealed partial class UtilityWindow
 
         GUILayout.Space(5);
 
-        if (GUILayout.Button("Placeholder Button", GUILayout.Height(35)))
-        {
-            DebugHelper.Log("This does nothing as it's a placeholder.");
+        if (GUILayout.Button("Placeholder Button", GUILayout.Height(35))) DebugHelper.Log("This does nothing as it's a placeholder.");
 
-            //TODO: This could be similar to configure images, but for audio instead. (.wav, .mp3, .ogg, etc.)
-        }
+        //TODO: This could be similar to configure images, but for audio instead. (.wav, .mp3, .ogg, etc.)
     }
-    void CreateProjectStructure()
+
+    static void CreateProjectStructure()
     {
         const string rootName = "_Project";
 
@@ -88,9 +145,9 @@ public sealed partial class UtilityWindow
         if (EditorUtility.DisplayDialog("Confirmation", "Are you sure you want to create the default project structure?", "Yes", "No"))
         {
             // Create the default folders in the root of the project 
-            EditorGUIUtils.CreateDirectories(rootName, "Scripts", "Art", "Audio", "Scenes", "PREFABS", "Materials", "Plugins"); // "DEL" to put it at the bottom.
-            EditorGUIUtils.CreateDirectories(rootName + "/Art", "Animations");
-            EditorGUIUtils.CreateDirectories(rootName + "/Audio", "SFX", "Music");
+            CreateDirectories(rootName, "Scripts", "Art", "Audio", "Scenes", "PREFABS", "Materials", "Plugins"); // "DEL" to put it at the bottom.
+            CreateDirectories(rootName + "/Art", "Animations");
+            CreateDirectories(rootName + "/Audio", "SFX", "Music");
             AssetDatabase.Refresh();
 
             #region Looks like this in the project window:
@@ -109,6 +166,7 @@ public sealed partial class UtilityWindow
         }
         else { DebugHelper.LogAbort(); }
     }
+
     void DrawConfigureImagesGUI()
     {
         if (configuringImages)
@@ -126,11 +184,17 @@ public sealed partial class UtilityWindow
             filterMode       = FilterMode.Bilinear;
             compression      = TextureImporterCompression.Compressed;
         }
+
+        GUILayout.Space(10);
+
+        // Draw a horizontal line (separator)
+        EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
     }
+
     void DrawImageSettingsConfig()
     { // Display the image configuration options
-        GUILayout.Label("Image Configuration", EditorGUIUtils.centerLabelStyle);
-        GUILayout.Label("Configure the default settings for images.", EditorGUIUtils.subLabelStyle);
+        GUILayout.Label("Image Configuration", centerLabelStyle);
+        GUILayout.Label("Configure the default settings for images.", subLabelStyle);
         GUILayout.Space(10);
 
         // Enum popups for the image configuration
@@ -152,6 +216,7 @@ public sealed partial class UtilityWindow
             compression      = TextureImporterCompression.Uncompressed;
         }
     }
+
     void DrawDragAndDropConfig(DragAndDropType type)
     {
         switch (type)
@@ -227,14 +292,14 @@ public sealed partial class UtilityWindow
                 break;
 
             case DragAndDropType.ConvertImagesUtility: {
-                GUILayout.Label("Drag a folder here:", EditorGUIUtils.middleStyle);
-                GUILayout.Label("The selected folder will be used to convert the images.", EditorGUIUtils.subLabelStyle);
+                GUILayout.Label("Drag a folder here:", middleStyle);
+                GUILayout.Label("The selected folder will be used to convert the images.", subLabelStyle);
                 GUILayout.Space(10);
 
                 dropAreaHeight = imageConverterPath.Length > 60 ? 45 : 30;
 
                 dropArea = GUILayoutUtility.GetRect(0, dropAreaHeight, GUILayout.ExpandWidth(true));
-                GUI.Box(dropArea, imageConverterPath, EditorGUIUtils.dropAreaStyle);
+                GUI.Box(dropArea, imageConverterPath, dropAreaStyle);
 
                 if (Event.current.type == EventType.DragUpdated && dropArea.Contains(Event.current.mousePosition))
                 {
@@ -260,13 +325,13 @@ public sealed partial class UtilityWindow
 
                 GUILayout.Space(8);
 
-                folderSelectedMsg   = $"The folder: \"{EditorGUIUtils.GetFolderNameFromString(imageConverterPath)}\" will be used to convert all images.";
+                folderSelectedMsg   = $"The folder: \"{GetFolderNameFromString(imageConverterPath)}\" will be used to convert all images.";
                 noFolderSelectedMsg = "No folder selected. \nPlease drag and drop a folder to use.";
 
                 if (!string.IsNullOrEmpty(imageConverterPath))
                 {
-                    GUILayout.Label(folderSelectedMsg, EditorGUIUtils.middleStyle);
-                    GUILayout.Label("Please put any images you wish to convert in said folder.", EditorGUIUtils.subLabelStyle);
+                    GUILayout.Label(folderSelectedMsg, middleStyle);
+                    GUILayout.Label("Please put any images you wish to convert in said folder.", subLabelStyle);
                     GUILayout.Space(4);
 
                     var correctDirectoryContent = new GUIContent("Is this directory correct?", "This will disable safe mode. \nPlease proceed with caution.");
@@ -286,12 +351,13 @@ public sealed partial class UtilityWindow
                         else DebugHelper.LogWarning("You haven't checked the confirmation box!");
                     }
                 }
-                else { GUILayout.Label(noFolderSelectedMsg, EditorGUIUtils.middleStyle); }
+                else { GUILayout.Label(noFolderSelectedMsg, middleStyle); }
 
                 break;
             }
         }
     }
+
     void ConfigureImages()
     {
         const string imageMsg  = "Are you sure you want to configure the images?";

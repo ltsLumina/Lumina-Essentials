@@ -397,6 +397,7 @@ namespace Lumina.Essentials.Editor.UI.Management
             }
         }
         
+        // ReSharper disable Unity.PerformanceAnalysis
         internal static void CreateDirectories(string root, params string[] directories)
         {
             var fullpath = Path.Combine(Application.dataPath, root);

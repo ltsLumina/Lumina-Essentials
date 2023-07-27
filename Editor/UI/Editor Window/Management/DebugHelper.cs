@@ -28,23 +28,30 @@ namespace Lumina.Essentials.Editor.UI.Management
 
         public static void Log(string message)
         {
-            if (!DebugVersion && LogBehaviour == LogLevel.Verbose) Debug.Log($"{ErrorMessagePrefix} {message ?? DefaultErrorMessage}");
+            if (!DebugVersion && LogBehaviour == LogLevel.Verbose) 
+                Debug.Log($"{ErrorMessagePrefix} {message ?? DefaultErrorMessage}");
         }
 
+        // ReSharper disable Unity.PerformanceAnalysis
         public static void LogWarning(string message)
         {
-            if (!DebugVersion && LogBehaviour == LogLevel.Verbose) Debug.LogWarning($"{ErrorMessagePrefix} {message ?? DefaultErrorMessage}");
+            if (!DebugVersion && LogBehaviour == LogLevel.Verbose) 
+                Debug.LogWarning($"{ErrorMessagePrefix} {message ?? DefaultErrorMessage}");
         }
 
-        public static void LogAbort(bool safeMode = false) => Debug.LogWarning($"{ErrorMessagePrefix} The action was aborted. " + $"\n{(safeMode ? "Safe Mode is enabled." : "")}");
+        // ReSharper disable Unity.PerformanceAnalysis
+        public static void LogAbort(bool safeMode = false) => 
+            Debug.LogWarning($"{ErrorMessagePrefix} The action was aborted. " + $"\n{(safeMode ? "Safe Mode is enabled." : "")}");
 
+        // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
         ///     Log error message with specific format.
         /// </summary>
         /// <param name="message">The custom message to be logged.</param>
         public static void LogError(string message)
         {
-            if (!DebugVersion && LogBehaviour == LogLevel.Verbose) Debug.LogError($"{ErrorMessagePrefix} {message ?? DefaultErrorMessage}");
+            if (!DebugVersion && LogBehaviour == LogLevel.Verbose) 
+                Debug.LogError($"{ErrorMessagePrefix} {message ?? DefaultErrorMessage}");
         }
 
         /// <summary>
@@ -53,7 +60,8 @@ namespace Lumina.Essentials.Editor.UI.Management
         /// <param name="exception">The exception to be logged.</param>
         public static void LogError(Exception exception)
         {
-            if (!DebugVersion && LogBehaviour == LogLevel.Verbose) Debug.LogError($"{ErrorMessagePrefix} {exception.Message ?? DefaultErrorMessage}");
+            if (!DebugVersion && LogBehaviour == LogLevel.Verbose) 
+                Debug.LogError($"{ErrorMessagePrefix} {exception.Message ?? DefaultErrorMessage}");
         }
     }
 }

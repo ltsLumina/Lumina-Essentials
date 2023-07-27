@@ -1,4 +1,5 @@
 #region
+using System.Linq;
 using Lumina.Essentials.Editor.UI.Management;
 using UnityEditor;
 using UnityEngine;
@@ -151,10 +152,9 @@ internal sealed partial class UtilityWindow
             // Display the available modules with the values from InstalledModules
             foreach (string available in AvailableModules.Keys)
             {
-                foreach (string installed in InstalledModules.Keys)
+                foreach (string installed in InstalledModules.Keys.Where(installed => installed == available))
                 {
-                    // Display the text from the AvailableModules dictionary but the value from the InstalledModules dictionary
-                    if (available == installed) EditorGUILayout.Toggle(available, InstalledModules[installed]);
+                    EditorGUILayout.Toggle(available, InstalledModules[installed]);
                 }
             }
 

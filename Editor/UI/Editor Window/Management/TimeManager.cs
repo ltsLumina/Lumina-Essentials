@@ -16,7 +16,8 @@ internal static class TimeManager
         string lastUpdateCheckString = EditorPrefs.GetString("LastUpdateCheck");
         bool   isParsedSuccessfully  = DateTime.TryParse(lastUpdateCheckString, out DateTime lastUpdateCheck);
 
-        if (!isParsedSuccessfully) return "Failed to parse stored date time string.";
+        if (!isParsedSuccessfully) return "Failed to parse. " +
+                                          "\n  └ <i>(Are you connected to the internet?)</i>";
 
         TimeSpan timeSpanSinceLastUpdate = DateTime.Now - lastUpdateCheck;
 

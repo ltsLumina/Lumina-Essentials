@@ -196,15 +196,19 @@ internal sealed partial class UtilityWindow : EditorWindow
             {
                 GUILayout.FlexibleSpace();
                 GUI.color = new (1f, 0.75f, 0.55f);
-                if (GUILayout.Button("Something!", buttonSetup, GUILayout.Width(200))) EssentialsDebugger.Log("Placeholder button. Doesn't do anything yet.");
+
+                if (GUILayout.Button("Something!", buttonSetup, GUILayout.Width(200)))
+                {
+                    EssentialsDebugger.Log("Placeholder button. Doesn't do anything yet.");
+                }
 
                 GUI.color = Color.white;
                 GUILayout.FlexibleSpace();
             }
 
             GUILayout.Label
-            ("Thank you for using Lumina's Essentials! \n"     + "This window will help you get started with Lumina's Essentials. \n" +
-             "Please select the \"Setup\" tab to get started." + "\n"                                                                 + "" + "\n" +
+            ("Thank you for using Lumina's Essentials! \n"     + "This window will help you get started. \n" +
+             "Please select the \"Setup\" tab to get started."     + "\n" + "" + "\n" +
              "Check out the \"Utilities\" tab to access the various workflow-enhancing features that this package provides.", wrapCenterLabelStyle);
         }
         #endregion

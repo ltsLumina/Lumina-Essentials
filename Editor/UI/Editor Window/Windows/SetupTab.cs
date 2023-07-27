@@ -109,7 +109,7 @@ internal sealed partial class UtilityWindow
         using (new GUILayout.HorizontalScope())
         {
             EditorGUILayout.LabelField("Uncheck the checkbox to continue.", GUILayout.Width(200));
-            SafeMode = EditorGUILayout.Toggle(SafeMode);
+            SafeMode = EditorGUILayout.Toggle(SafeMode); //TODO: Move the checkbox further right as it cuts off the text in laptop view.
         }
     }
 
@@ -131,8 +131,7 @@ internal sealed partial class UtilityWindow
                          "Are you sure you want to replace the old files? \n " + "Please backup any files from the old version that you may want to keep." +
                          "It is recommended to backup Systems.prefab in the Resources folder", "Apply", "Cancel"))
                         {
-                            // Delete the old files and replace them with the new ones
-                            //ReplaceOldPackage();
+                            //TODO: check if the selected module(s) are already installed, and prompt the user if they want to reinstall the selected.
                             InstallModules();
                             SetupRequired = false;
                         }

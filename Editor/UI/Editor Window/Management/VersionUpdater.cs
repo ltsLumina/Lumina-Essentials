@@ -41,28 +41,28 @@ namespace Lumina.Essentials.Editor.UI.Management
 
         static IEnumerator RequestUpdateCheck()
         {
-            using UnityWebRequest www = UnityWebRequest.Get("https://api.github.com/repos/ltsLumina/Unity-Essentials/releases/latest");
+            using UnityWebRequest webRequest = UnityWebRequest.Get("https://api.github.com/repos/ltsLumina/Unity-Essentials/releases/latest");
 
-            yield return www.SendWebRequest();
+            yield return webRequest.SendWebRequest();
 
-            while (!www.isDone)
+            while (!webRequest.isDone)
             {
                 yield return null; // Wait for the request to complete
             }
 
-            if (www.result != UnityWebRequest.Result.Success)
+            if (webRequest.result == UnityWebRequest.Result.Success)
             {
-                Debug.LogError("UnityWebRequest failed with result: " + www.result);
-                Debug.LogError("Error message: "                      + www.error);
-            }
-            else
-            {
-                string jsonResult = Encoding.UTF8.GetString(www.downloadHandler.data);
+                string jsonResult = Encoding.UTF8.GetString(webRequest.downloadHandler.data);
                 string tag        = JsonUtility.FromJson<Release>(jsonResult).tag_name;
-                
+
                 // Update LatestVersion, UpToDate, LastUpdateCheck accordingly.
                 EditorPrefs.SetString("LastUpdateCheck", DateTime.Now.ToString(CultureInfo.InvariantCulture));
                 UpdateStatistics(tag);
+            }
+            else
+            {
+                Debug.LogError($"UnityWebRequest failed with result: {webRequest.result} \nAre you connected to the internet?");
+                Debug.LogError($"Error message: {webRequest.error} \nAre you connected to the internet?");
             }
         }
 

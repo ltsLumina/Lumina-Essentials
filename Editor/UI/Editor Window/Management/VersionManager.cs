@@ -12,7 +12,7 @@ namespace Lumina.Essentials.Editor.UI.Management
 internal static class VersionManager
 {
     /// <summary> The current version of Lumina's Essentials. </summary>
-    internal static string CurrentVersion => "2.4.0 Beta2";
+    internal static string CurrentVersion => "1.2.3 Beta3 Debug";
     /// <summary> The latest version of Lumina's Essentials available on GitHub. </summary>
     internal static string LatestVersion => EditorPrefs.GetString("LatestVersion", "Unknown");
     /// <summary> The version of the package that was last opened. </summary>

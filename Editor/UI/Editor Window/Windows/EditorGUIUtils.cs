@@ -335,7 +335,7 @@ namespace Lumina.Essentials.Editor.UI.Management
 
         internal static bool CheckFullPackageInstalled()
         {
-            string projectDirectory = Application.dataPath;
+            string projectDirectory = Application.dataPath; //TODO: Needs to check in "Lumina's Essentials" folder, not the root dir.
             string targetDirectory  = "Examples";
 
             // Check for directory existence
@@ -392,7 +392,9 @@ namespace Lumina.Essentials.Editor.UI.Management
                 // Combine the path of the module with the path of the packages folder
                 string modulePath = Path.Combine(relativePath, module.Key);
                 modulePath += ".unitypackage";
-
+                
+                //TODO: (requires more testing) If a singular module doesn't import successfully,
+                //TODO: it's possible that all other packages fail in succession.
                 AssetDatabase.ImportPackage(modulePath, false);
             }
         }

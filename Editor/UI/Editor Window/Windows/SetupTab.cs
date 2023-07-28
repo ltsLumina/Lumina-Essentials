@@ -99,10 +99,11 @@ internal sealed partial class UtilityWindow
     void DrawModulesHelpBox()
     {
         EditorGUILayout.HelpBox
-        (System.Environment.NewLine + "Please choose the modules you wish to install." + System.Environment.NewLine +
-         "If you are unsure which one(s) to choose, simply select \"Full Package\"" + " and all the recommended modules will be installed." + System.Environment.NewLine +
-         "The Full Package also includes an \"Extras\" part which itself includes Joel's Essentials" +
-         " as well as an 'Examples' folder with various tips and guides on how the package works." + System.Environment.NewLine, MessageType.Info);
+        ($"{System.Environment.NewLine}Please choose the modules you wish to install."                                                +
+         $"{System.Environment.NewLine}If you are unsure which one(s) to choose, simply select {System.Environment.NewLine}\"Full Package\" " +
+         $"and all the recommended modules will be installed."                                                                                +
+         $"{System.Environment.NewLine}The Full Package also includes an \"Extras\" part which itself includes Joel's Essentials "            +
+         $"as well as an 'Examples' folder with various tips and guides on how the package works.{System.Environment.NewLine}", MessageType.Info);
 
         //TODO: FIX HOTKEYS
         

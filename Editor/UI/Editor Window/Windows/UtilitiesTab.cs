@@ -300,7 +300,7 @@ internal sealed partial class UtilityWindow
                 GUILayout.Label("The selected folder will be used to convert the images.", subLabelStyle);
                 GUILayout.Space(10);
 
-                dropAreaHeight = imageConverterPath.Length > 60 ? 60 : 30;
+                dropAreaHeight = imageConverterPath.Length > 60 ? 45 : 30;
 
                 dropArea = GUILayoutUtility.GetRect(0, dropAreaHeight, GUILayout.ExpandWidth(true));
                 GUI.Box(dropArea, imageConverterPath, dropAreaStyle);

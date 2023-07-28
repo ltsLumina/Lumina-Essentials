@@ -347,7 +347,7 @@ internal sealed partial class UtilityWindow
 
                     if (isCorrectDirectory && !SafeMode)
                     {
-                        if (GUILayout.Button("Apply Settings"))
+                        if (GUILayout.Button("Apply Settings", GUILayout.Height(25)))
                         {
                             if (isCorrectDirectory) ConfigureImages();
                             else EssentialsDebugger.LogWarning("You haven't checked the confirmation box!");

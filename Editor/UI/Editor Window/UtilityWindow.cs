@@ -224,6 +224,8 @@ Check out the ""Utilities"" tab to access the various workflow-enhancing feature
         GUILayout.Space(3);
 
         #region Grid of Buttons (Open Documentation, Open Changelog, etc.)
+        GUILayout.Space(4);
+        
         using (new GUILayout.HorizontalScope())
         {
             if (GUILayout.Button(openDocumentationContent, GUILayout.Width(buttonSize), GUILayout.Height(40))) Application.OpenURL("https://github.com/ltsLumina/Unity-Essentials");

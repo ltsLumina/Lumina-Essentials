@@ -102,7 +102,7 @@ internal sealed partial class UtilityWindow
         ("Please choose the modules you wish to install. If you are unsure which one(s) to choose, simply select \"Full Package\" " +
          "and all the recommended modules will be installed. " + "                                              " /* Spacer for HelpBox */ +
          "The Full Package also includes an \"Extras\" part which itself includes Joel's Essentials" +
-         " as well as an 'Examples' folder with various tips and guides on how the package works. ", MessageType.Info);
+         " as well as an 'Examples' folder with various tips and guides on how the package works. ", MessageType.Info, true);
 
         using (new GUILayout.HorizontalScope())
         {

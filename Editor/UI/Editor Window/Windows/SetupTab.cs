@@ -106,7 +106,8 @@ internal sealed partial class UtilityWindow
 
         using (new GUILayout.HorizontalScope())
         {
-            EditorGUILayout.LabelField("Uncheck the checkbox to continue.", GUILayout.Width(200));
+            EditorGUILayout.LabelField("Uncheck the checkbox to continue.", GUILayout.Width(210));
+            GUILayout.FlexibleSpace();
             SafeMode = EditorGUILayout.Toggle(SafeMode); //TODO: Move the checkbox further right as it cuts off the text in laptop view.
         }
     }

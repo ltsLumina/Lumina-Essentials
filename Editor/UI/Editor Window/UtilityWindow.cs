@@ -89,19 +89,23 @@ internal sealed partial class UtilityWindow : EditorWindow
         // Initialize GUIStyles
         SetGUIStyles();
 
-        // If the user is in play mode, display a message telling them that the utility panel is not available while in play mode.
-        if (EditorApplication.isPlaying)
-        {
-            GUILayout.Space(40);
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("The Utility Panel \nis disabled while in play mode.", wrapCenterLabelStyle, GUILayout.ExpandWidth(true));
-            GUILayout.Space(40);
-            GUILayout.EndHorizontal();
-            return;
-        }
+        // If the user is in play mode, displays a warning and deactivates the Utility Window.
+        if (IsPlaymodeActive()) return;
 
         // Don't show the toolbar if the user in the setup panel
         currentPanel();
+    }
+    
+    static bool IsPlaymodeActive()
+    { // If the user is in play mode, display a message telling them that the utility panel is not available while in play mode.
+        if (!EditorApplication.isPlaying) return false;
+        GUILayout.Space(40);
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("The Utility Panel \nis disabled while in play mode.", wrapCenterLabelStyle, GUILayout.ExpandWidth(true));
+        GUILayout.Space(40);
+        GUILayout.EndHorizontal();
+        return true;
+
     }
 
     /// <summary>
@@ -206,10 +210,15 @@ internal sealed partial class UtilityWindow : EditorWindow
                 GUILayout.FlexibleSpace();
             }
 
-            GUILayout.Label
-            ("Thank you for using Lumina's Essentials! \n"     + "This window will help you get started. \n" +
-             "Please select the \"Setup\" tab to get started."     + "\n" + "" + "\n" +
-             "Check out the \"Utilities\" tab to access the various workflow-enhancing features that this package provides.", wrapCenterLabelStyle);
+            #region Description Label
+            const string labelContent = @"Thank you for using Lumina's Essentials! 
+This window will help you get started. 
+Please press the ""Setup Essentials"" button to begin.
+
+Check out the ""Utilities"" tab to access the various workflow-enhancing features that this package provides.";
+
+            GUILayout.Label(labelContent, wrapCenterLabelStyle);
+            #endregion
         }
         #endregion
         GUILayout.Space(3);
@@ -231,10 +240,14 @@ internal sealed partial class UtilityWindow : EditorWindow
                 VersionUpdater.CheckForUpdates();
 
                 // if there is a new version available, open the GitHub repository's releases page
-                if (!EditorPrefs.GetBool("UpToDate"))
+                if (!EditorPrefs.GetBool("UpToDate") && !LatestVersion.Contains("Error"))
                 {
                     EssentialsDebugger.LogWarning("There is a new version available!" + "\nPlease update to the latest version to ensure functionality.");
                     Application.OpenURL("https://github.com/ltsLumina/Unity-Essentials/releases/latest");
+                }
+                else
+                {
+                    EssentialsDebugger.LogError("Failed to fetch version! \nAre you connected to the internet?");
                 }
             }
 

@@ -8,6 +8,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Networking;
 using static Lumina.Essentials.Editor.UI.Management.VersionManager;
+using Object = UnityEngine.Object;
 #endregion
 
 namespace Lumina.Essentials.Editor.UI.Management
@@ -57,12 +58,17 @@ namespace Lumina.Essentials.Editor.UI.Management
 
                 // Update LatestVersion, UpToDate, LastUpdateCheck accordingly.
                 EditorPrefs.SetString("LastUpdateCheck", DateTime.Now.ToString(CultureInfo.InvariantCulture));
-                UpdateStatistics(tag);
+                
+                // Set the Editor Prefs to their updated values.
+                LatestVersion = tag;
+                UpdatePrefs();
             }
-            else
+            else // Web Request failed, log errors and set LatestVersion to null.
             {
                 Debug.LogError($"UnityWebRequest failed with result: {webRequest.result} \nAre you connected to the internet?");
                 Debug.LogError($"Error message: {webRequest.error} \nAre you connected to the internet?");
+
+                LatestVersion = null;
             }
         }
 

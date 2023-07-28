@@ -14,7 +14,24 @@ internal static class VersionManager
     /// <summary> The current version of Lumina's Essentials. </summary>
     internal static string CurrentVersion => "1.2.3 Beta3 Debug";
     /// <summary> The latest version of Lumina's Essentials available on GitHub. </summary>
-    internal static string LatestVersion => EditorPrefs.GetString("LatestVersion", "Unknown");
+    internal static string LatestVersion
+    {
+        get => EditorPrefs.GetString("LatestVersion", null);
+        set
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                //EditorPrefs.DeleteKey("LatestVersion");
+                
+                EditorPrefs.SetString("LatestVersion", "Error fetching version..." +
+                "\n  └ <i>(Are you connected to the internet?)</i>");
+            }
+            else
+            {
+                EditorPrefs.SetString("LatestVersion", "ver. " + value);
+            }
+        }
+    }
     /// <summary> The version of the package that was last opened. </summary>
     internal static string LastOpenVersion
     {
@@ -29,10 +46,10 @@ internal static class VersionManager
         set => EditorPrefs.SetBool("DontShow_DebugBuildWarning", value);
     }
 
-    internal static void UpdateStatistics(string version)
-    {                                                            
+    internal static void UpdatePrefs()
+    {
         EditorPrefs.SetString("CurrentVersion", CurrentVersion);
-        EditorPrefs.SetString("LatestVersion", version ?? "Error fetching version..");
+        EditorPrefs.SetString("LatestVersion", LatestVersion ?? "Error fetching version..");
         EditorPrefs.SetBool("UpToDate", CompareVersions(CurrentVersion, LatestVersion));
         EditorPrefs.SetBool("DebugVersion", DebugVersion);
     }

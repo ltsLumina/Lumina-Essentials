@@ -162,7 +162,7 @@ namespace Lumina.Essentials.Editor.UI.Management
             
             configureImagesContent = new
             (
-            "Configure Images",
+            "Image Settings Converter",
             "Configures the default settings for images. \n" + 
                 "This is useful for when you want to import images with the same settings every time."
             );

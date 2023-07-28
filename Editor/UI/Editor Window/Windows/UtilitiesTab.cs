@@ -40,7 +40,9 @@ internal sealed partial class UtilityWindow
 
     /// <summary> Opens the configure images options. </summary>
     bool configuringImages;
+    TextureImporter importer;
     static SpriteImportMode spriteImportMode = SpriteImportMode.Single;
+    static float pixelsPerUnit;
     static FilterMode filterMode = FilterMode.Point;
     static TextureImporterCompression compression = TextureImporterCompression.Uncompressed;
     /// <summary> Quick toggle to set the sprite import mode to the recommended settings for importing sprites. </summary>
@@ -181,6 +183,7 @@ internal sealed partial class UtilityWindow
         {
             // Reset the enums to the default values
             spriteImportMode = SpriteImportMode.Single;
+            pixelsPerUnit    = 100;
             filterMode       = FilterMode.Bilinear;
             compression      = TextureImporterCompression.Compressed;
         }
@@ -199,6 +202,7 @@ internal sealed partial class UtilityWindow
 
         // Enum popups for the image configuration
         spriteImportMode = (SpriteImportMode) EditorGUILayout.EnumPopup("Sprite Mode", spriteImportMode);
+        pixelsPerUnit    = EditorGUILayout.FloatField("Pixels Per Unit", pixelsPerUnit);
         filterMode       = (FilterMode) EditorGUILayout.EnumPopup("Filter Mode", filterMode);
         compression      = (TextureImporterCompression) EditorGUILayout.EnumPopup("Compression", compression);
 
@@ -337,18 +341,17 @@ internal sealed partial class UtilityWindow
                     var correctDirectoryContent = new GUIContent("Is this directory correct?", "This will disable safe mode. \nPlease proceed with caution.");
                     isCorrectDirectory = EditorGUILayout.Toggle(correctDirectoryContent, isCorrectDirectory);
 
-                    if (isCorrectDirectory)
-                    {
-                        SafeMode = !SafeMode;
-                        EssentialsDebugger.LogWarning("Safe mode disabled.");
-                    }
+                    if (isCorrectDirectory) SafeMode = false;
 
                     GUILayout.Space(5);
 
-                    if (GUILayout.Button("Apply"))
+                    if (isCorrectDirectory && !SafeMode)
                     {
-                        if (isCorrectDirectory) ConfigureImages();
-                        else EssentialsDebugger.LogWarning("You haven't checked the confirmation box!");
+                        if (GUILayout.Button("Apply Settings"))
+                        {
+                            if (isCorrectDirectory) ConfigureImages();
+                            else EssentialsDebugger.LogWarning("You haven't checked the confirmation box!");
+                        }
                     }
                 }
                 else { GUILayout.Label(noFolderSelectedMsg, middleStyle); }
@@ -376,8 +379,7 @@ internal sealed partial class UtilityWindow
                 string folderPath = imageConverterPath;
 
                 // Get the search patterns for the files (png, jpg, jpeg)
-                string[] searchPatterns =
-                { "*.png", "*.jpg", "*.jpeg" };
+                string[] searchPatterns = { "*.png", "*.jpg", "*.jpeg" };
 
                 string[] images = searchPatterns.SelectMany(pattern => Directory.GetFiles(folderPath, pattern)).ToArray();
 
@@ -388,18 +390,19 @@ internal sealed partial class UtilityWindow
                     string assetPath       = Path.Combine(folderPath, Path.GetFileName(image)).Replace('\\', '/');
                     var    textureImporter = AssetImporter.GetAtPath(assetPath) as TextureImporter;
 
-                    if (textureImporter != null)
-                    {
-                        // Set the filter mode and compression to point and no compression at the path
-                        textureImporter.spriteImportMode   = spriteImportMode;
-                        textureImporter.filterMode         = filterMode;
-                        textureImporter.textureCompression = compression;
-                        textureImporter.SaveAndReimport();
+                    if (textureImporter == null) continue;
 
-                        foreach (string configuredImage in images) { EssentialsDebugger.Log($"Configured {Path.GetFileName(configuredImage)}"); }
-                    }
+                    // Set the filter mode and compression to point and no compression at the path
+                    textureImporter.spriteImportMode    = spriteImportMode;
+                    textureImporter.spritePixelsPerUnit = pixelsPerUnit;
+                    textureImporter.filterMode          = filterMode;
+                    textureImporter.textureCompression  = compression;
+                    textureImporter.SaveAndReimport();
+
+                    foreach (string configuredImage in images) { EssentialsDebugger.Log($"Configured {Path.GetFileName(configuredImage)}"); }
                 }
-
+                
+                SafeMode = true;
                 AssetDatabase.Refresh();
             }
             else { EssentialsDebugger.LogAbort(SafeMode); }

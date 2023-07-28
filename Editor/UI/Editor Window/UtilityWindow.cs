@@ -74,7 +74,7 @@ internal sealed partial class UtilityWindow : EditorWindow
             if (headerPath == null || footerPath == null) return;
             headerImg = AssetDatabase.LoadAssetAtPath<Texture2D>(headerPath);
             footerImg = AssetDatabase.LoadAssetAtPath<Texture2D>(footerPath);
-
+            
             // If the user is not up-to-date, display a warning.
             if (!EditorPrefs.GetBool("UpToDate")) 
                 EssentialsDebugger.LogWarning("There is a new version available!" + "\nPlease update to the latest version for the latest features.");

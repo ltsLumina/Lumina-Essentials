@@ -14,8 +14,7 @@ namespace Lumina.Essentials.Sequencer
         /// <summary>
         /// Creates a new <see cref="Sequence"/> instance.
         /// </summary>
-        /// <param name="host">The <see cref="MonoBehaviour"/> on which the sequence is hosted.
-        /// Use the 'this' keyword if you want to host the sequence (coroutine) on the current <see cref="MonoBehaviour"/>.</param>
+        /// <param name="host">The <see cref="MonoBehaviour"/> on which the sequence is hosted.</param>
         /// <returns>A new <see cref="Sequence"/> instance.</returns>
         public static Sequence CreateSequence(MonoBehaviour host) => new (host);
     }

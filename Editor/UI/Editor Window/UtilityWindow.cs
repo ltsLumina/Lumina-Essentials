@@ -57,7 +57,7 @@ internal sealed partial class UtilityWindow : EditorWindow
             SafeMode        = true;
 
             // Initialize the installed modules
-            CheckForInstalledModules(AvailableModules);
+            CheckForInstalledModules();
 
             // Set SetupRequired to true if there are no modules installed.
             SetupRequired = !InstalledModules.Values.Any(module => module);

@@ -149,13 +149,13 @@ internal sealed partial class UtilityWindow
 
             GUILayout.Space(5);
 
-            // Display the available modules with the values from InstalledModules
-            foreach (string available in AvailableModules.Keys)
+            // Display the installed modules from the dictionary
+            foreach (var module in InstalledModules)
             {
-                foreach (string installed in InstalledModules.Keys.Where(installed => installed == available))
-                {
-                    EditorGUILayout.Toggle(available, InstalledModules[installed]);
-                }
+                EditorGUILayout.Toggle(module.Key, module.Value);
+
+                if (module.Key == "Full Package")
+                    using (new EditorGUI.DisabledScope(true)) { EditorGUILayout.LabelField("└ Extras"); }
             }
 
             EditorGUI.EndDisabledGroup();

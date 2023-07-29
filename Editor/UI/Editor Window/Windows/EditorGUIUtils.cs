@@ -253,12 +253,8 @@ namespace Lumina.Essentials.Editor.UI.Management
         // }
         #endregion
 
-        internal static bool FileExistsInDirectory(string folderPath, string fileName)
-        {
-            return File.Exists(Path.Combine(folderPath, fileName));
-        }
-
-        internal static bool IsFolderInProject(string baseDirectory, string targetFolderName)
+        #region Check for Folder/File
+        static bool IsFolderInProject(string baseDirectory, string targetFolderName)
         {
             try
             {
@@ -275,7 +271,7 @@ namespace Lumina.Essentials.Editor.UI.Management
             }
         }
 
-        internal static bool IsFileInProject(string baseDirectory, string targetFileName)
+        static bool IsFileInProject(string baseDirectory, string targetFileName)
         {
             try
             {
@@ -288,21 +284,23 @@ namespace Lumina.Essentials.Editor.UI.Management
                 return false;
             }
         }
+        #endregion
 
-        internal static void CheckForInstalledModules(Dictionary<string, bool> items)
+        #region Checks for Modules
+        internal static void CheckForInstalledModules()
         {
             string projectDirectory = Application.dataPath;
 
             if (CheckFullPackageInstalled())
             {
                 // Set all keys in InstalledModules to true
-                foreach (var module in UtilityWindow.AvailableModules.Keys.ToList())
+                foreach (var module in UtilityWindow.InstalledModules.Keys.ToList())
                 {
                     UtilityWindow.InstalledModules[module] = true;
 
                     if (VersionManager.DebugVersion)
-                    {
-                        Debug.Log($"Item '{module}' exists in the project.");
+                    { // Don't print the "Full Package" debug as it will always be false by this implementation.
+                        if (module != "Full Package") Debug.Log($"Item '{module}' exists in the project.");
                     }
                 }
 
@@ -310,7 +308,7 @@ namespace Lumina.Essentials.Editor.UI.Management
                 return;
             }
 
-            foreach (var item in items.Keys)
+            foreach (var item in UtilityWindow.InstalledModules.Keys)
             {
                 string itemFile = item + ".cs";
 
@@ -333,75 +331,104 @@ namespace Lumina.Essentials.Editor.UI.Management
             }
         }
 
-        internal static bool CheckFullPackageInstalled()
+        static bool CheckFullPackageInstalled()
         {
-            string projectDirectory = Application.dataPath; //TODO: Needs to check in "Lumina's Essentials" folder, not the root dir.
-            string targetDirectory  = "Examples";
+            string mainDirectory   = Path.Combine("Lumina's Essentials", "Modules");
+            string targetDirectory = "Examples";
 
-            // Check for directory existence
-            if (VersionManager.DebugVersion)
+            var allDirectories = Directory.GetDirectories(Application.dataPath, "*.*", SearchOption.AllDirectories);
+
+            foreach (var directory in allDirectories)
             {
-                Debug.Log(IsFolderInProject(projectDirectory, targetDirectory) ? "Full Package is installed." : "Full Package is not installed.");
+                // Get the relative path from Assets
+                var relativePath = directory[(Application.dataPath.Length - "Assets".Length)..];
+
+                // If directory is within "Lumina's Essentials/Modules"
+                if (Path.GetFullPath(relativePath).EndsWith(mainDirectory))
+                {
+                    // Get all subdirectories within the main directory.
+                    var subDirectories = Directory.GetDirectories(directory, "*.*", SearchOption.AllDirectories);
+
+                    // Check if "Examples" directory exists within any of the subdirectories
+                    if (subDirectories.Any(sub => Path.GetFileName(sub).Equals(targetDirectory, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        if (VersionManager.DebugVersion) { Debug.Log("Full package is installed."); }
+                        return true;
+                    }
+                }
             }
-            
-            // If the "Examples" folder is found, the "Full Package" is installed.
-            // Might be a poor design choice, but for the time being I have no other way to indicate
-            // that the Full Package is installed.
-            return IsFolderInProject(projectDirectory, targetDirectory);
+
+            if (VersionManager.DebugVersion) { Debug.Log("Full package is not installed."); }
+            return false;
         }
-        
+
         internal static void InstallModules()
         {
-            //string packagesPath = "Assets/Lumina's Essentials/Editor/Packages/"; Kept here for reference in case something goes wrong.
-            
-            // Initialize an empty string to hold the final relative path
-            string relativePath = "";
+            const string targetDirectory = "Lumina's Essentials/Editor/Packages";
+            string       relativePath    = GetRelativePath(targetDirectory);
 
-            // Define the directory names for search
-            const string folderNameToFind = "Packages"; //TODO: also needs to check in Editor/Packages, not anywhere.
-            const string assetsPath       = "Assets";
-
-            // Create the physical path to the Assets directory
-            string physicalPath = Path.Combine(Directory.GetCurrentDirectory(), assetsPath);
-
-            // Find the directories named 'Packages' in the Assets directory
-            string[] directories = Directory.GetDirectories(physicalPath, folderNameToFind, SearchOption.AllDirectories);
-
-            // Loop over each 'Packages' directory
-            foreach (string directory in directories)
+            if (string.IsNullOrEmpty(relativePath))
             {
-                // Get the relative path and format it correctly
-                relativePath = directory[Directory.GetCurrentDirectory().Length..].Replace('\\', '/').TrimStart('/') + "/";
+                Debug.LogWarning(targetDirectory + " not found.");
+                return;
             }
 
-            foreach (var module in UtilityWindow.InstalledModules)
+            SetupAssetDatabaseCallbacks();
+
+            foreach (KeyValuePair<string, bool> module in UtilityWindow.InstalledModules)
             {
-                #region Package Import Calllbacks
-                AssetDatabase.importPackageCompleted += packageName =>
+                if (module.Value && UtilityWindow.SelectedModules.ContainsKey(module.Key))
                 {
-                    Debug.Log("Imported: " + packageName);
-                };
-                
-                AssetDatabase.importPackageFailed += (packageName, errorMessage) =>
-                {
-                    Debug.LogError("Failed to import: " + packageName + "\n" + errorMessage);
-                };
-                
-                AssetDatabase.importPackageCancelled += packageName =>
-                {
-                    Debug.Log("Cancelled importing: " + packageName);
-                };
-                #endregion
-                
-                // Combine the path of the module with the path of the packages folder
-                string modulePath = Path.Combine(relativePath, module.Key);
-                modulePath += ".unitypackage";
-                
-                //TODO: (requires more testing) If a singular module doesn't import successfully,
-                //TODO: it's possible that all other packages fail in succession.
-                AssetDatabase.ImportPackage(modulePath, false);
+                    bool reInstall = ModuleInstallConfirmation(module.Key);
+
+                    if (!reInstall) continue;
+
+                    ImportModulePackage(relativePath, module.Key);
+                }
             }
         }
+
+
+        static bool ModuleInstallConfirmation(string moduleName) => 
+            EditorUtility.DisplayDialog
+            (
+            "Module Installation Warning",
+            $"The module \"{moduleName}\" is already installed. Would you like to reinstall it?", "Yes", "No"
+            );
+
+        static string GetRelativePath(string targetDirectory)
+        {
+            string[] allDirectories = Directory.GetDirectories(Application.dataPath, "*.*", SearchOption.AllDirectories);
+
+            foreach (string directory in allDirectories)
+            {
+                string pathFromAssets = directory.Replace(Application.dataPath, "Assets");
+
+                if (pathFromAssets.Replace("\\", "/").EndsWith(targetDirectory)) return pathFromAssets + "/";
+            }
+
+            return string.Empty;
+        }
+
+        static void ImportModulePackage(string relativePath, string moduleName)
+        {
+            string modulePath = Path.Combine(relativePath, moduleName) + ".unitypackage";
+            AssetDatabase.ImportPackage(modulePath, false);
+        }
+
+        static void SetupAssetDatabaseCallbacks()
+        {
+            AssetDatabase.importPackageCompleted += packageName => { Debug.Log("Imported: " + packageName); };
+            AssetDatabase.importPackageFailed += (packageName, errorMessage) => { Debug.LogError("Failed to import: " + packageName + "\n" + errorMessage); };
+            AssetDatabase.importPackageCancelled += packageName => { Debug.Log("Cancelled importing: " + packageName); };
+        }
+
+        internal static void ClearSelectedModules()
+        {
+            foreach (var module in UtilityWindow.SelectedModules.ToList()) { UtilityWindow.SelectedModules[module.Key] = false; }
+        }
+        // -- End of Module Checks --
+        #endregion
         
         // ReSharper disable Unity.PerformanceAnalysis
         internal static void CreateDirectories(string root, params string[] directories)
@@ -436,22 +463,5 @@ namespace Lumina.Essentials.Editor.UI.Management
         }
         
         internal static void ShowAllEditorPrefs() => EditorPrefsWindow.ShowWindow();
-        
-        internal static void SelectAllModules()
-        {
-            // Get the state of "Full Package", which is always the first one
-            bool isFullPackageSelected = UtilityWindow.AvailableModules.First().Value;
-
-            // Go through each module. If "Full Package" is selected, select all modules, otherwise unselect them.
-            foreach (var module in UtilityWindow.AvailableModules.Keys.ToList())
-            {
-                UtilityWindow.AvailableModules[module] = isFullPackageSelected;
-            }
-        }
-
-        internal static void ClearSelectedModules()
-        {
-            foreach (var module in UtilityWindow.AvailableModules.ToList()) { UtilityWindow.AvailableModules[module.Key] = false; }
-        }
     }
 }

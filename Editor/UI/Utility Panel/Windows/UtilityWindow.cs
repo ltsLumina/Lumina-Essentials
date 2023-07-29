@@ -57,7 +57,7 @@ internal sealed partial class UtilityWindow : EditorWindow
             SafeMode        = true;
 
             // Initialize the installed modules
-            CheckForInstalledModules();
+            ModuleInstaller.CheckForInstalledModules();
 
             // Set SetupRequired to true if there are no modules installed.
             SetupRequired = !InstalledModules.Values.Any(module => module);
@@ -80,6 +80,9 @@ internal sealed partial class UtilityWindow : EditorWindow
                 EssentialsDebugger.LogWarning("There is a new version available!" + "\nPlease update to the latest version for the latest features.");
         }
     }
+
+    // Clear the selected modules when the window is closed.
+    void OnDestroy() => ModuleInstaller.ClearSelectedModules();
 
     /// <summary>
     ///     Displays the toolbar at the top of the window that toggles between the two panels.

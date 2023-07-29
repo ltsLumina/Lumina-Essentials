@@ -35,7 +35,7 @@ internal sealed partial class UtilityWindow
     float dropAreaHeight;
     Rect dropArea;
 
-    string folderSelectedMsg = $"The folder: \"{GetFolderNameFromString(ProjectPath)}\" will be used as root project.";
+    string folderSelectedMsg = $"The folder: \"{DirectoryUtilities.GetFolderNameFromString(ProjectPath)}\" will be used as root project.";
     static string noFolderSelectedMsg = "No folder selected. \nPlease drag and drop a folder to use.";
 
     /// <summary> Opens the configure images options. </summary>
@@ -147,9 +147,9 @@ internal sealed partial class UtilityWindow
         if (EditorUtility.DisplayDialog("Confirmation", "Are you sure you want to create the default project structure?", "Yes", "No"))
         {
             // Create the default folders in the root of the project 
-            CreateDirectories(rootName, "Scripts", "Art", "Audio", "Scenes", "PREFABS", "Materials", "Plugins"); // "DEL" to put it at the bottom.
-            CreateDirectories(rootName + "/Art", "Animations");
-            CreateDirectories(rootName + "/Audio", "SFX", "Music");
+            DirectoryUtilities.CreateDirectories(rootName, "Scripts", "Art", "Audio", "Scenes", "PREFABS", "Materials", "Plugins"); // "DEL" to put it at the bottom.
+            DirectoryUtilities.CreateDirectories(rootName + "/Art", "Animations");
+            DirectoryUtilities.CreateDirectories(rootName + "/Audio", "SFX", "Music");
             AssetDatabase.Refresh();
 
             #region Looks like this in the project window:
@@ -329,7 +329,7 @@ internal sealed partial class UtilityWindow
 
                 GUILayout.Space(8);
 
-                folderSelectedMsg   = $"The folder: \"{GetFolderNameFromString(imageConverterPath)}\" will be used to convert all images.";
+                folderSelectedMsg   = $"The folder: \"{DirectoryUtilities.GetFolderNameFromString(imageConverterPath)}\" will be used to convert all images.";
                 noFolderSelectedMsg = "No folder selected. \nPlease drag and drop a folder to use.";
 
                 if (!string.IsNullOrEmpty(imageConverterPath))

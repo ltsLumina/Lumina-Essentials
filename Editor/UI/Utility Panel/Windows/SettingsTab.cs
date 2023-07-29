@@ -23,7 +23,11 @@ internal sealed partial class UtilityWindow
     internal static bool SetupRequired
     {
         get => EditorPrefs.GetBool("SetupRequired", true);
-        set => EditorPrefs.SetBool("SetupRequired", value);
+        set
+        {
+            value = !InstalledModules.Values.Any(module => module);
+            EditorPrefs.SetBool("SetupRequired", value);
+        }
     }
 
     /// <summary> Enabled by default. Prevents the user from accidentally doing something they didn't intend to do. </summary>
@@ -185,13 +189,13 @@ internal sealed partial class UtilityWindow
         GUILayout.Space(3);
 
         // Displays the last version of the Essentials package that was opened
-        EditorGUILayout.LabelField("Last Open Version", EditorPrefs.GetString("LastOpenVersion"));
+        EditorGUILayout.LabelField("Last Open Version", VersionManager.LastOpenVersion);
 
         // Displays whether the user is up to date or not
         EditorGUILayout.LabelField("Up To Date", EditorPrefs.GetBool("UpToDate").ToString());
 
         // Displays if this is a debug build or not
-        EditorGUILayout.LabelField("Debug Version", EditorPrefs.GetBool("DebugVersion").ToString());
+        EditorGUILayout.LabelField("Debug Version", VersionManager.DebugVersion.ToString());
 
         // Displays if the Auto-Save feature is enabled or not
         EditorGUILayout.LabelField("Auto-Save", AutoSaveConfig.Enabled.ToString());

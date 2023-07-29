@@ -35,7 +35,7 @@ internal sealed partial class UtilityWindow
 
     // TODO: Add option to install DOTween from here.
 
-    internal readonly static Dictionary<string, bool> SelectedModules = new ();
+    internal readonly static Dictionary<string, bool> SelectedModules = AvailableModules.ToDictionary(moduleName => moduleName, _ => false);
 
     internal readonly static Dictionary<string, bool> InstalledModules = AvailableModules.ToDictionary(moduleName => moduleName, _ => false);
     #endregion
@@ -51,40 +51,50 @@ internal sealed partial class UtilityWindow
     }
 
     /// <summary>
-    ///     Draws the GUI that allows the user to select which modules to install.
+    /// Draws a GUI for the installation of modules.
     /// </summary>
     static void DrawModulesInstallGUI()
     {
+        // Iterate over the available modules
         foreach (string module in AvailableModules)
         {
-            bool oldValue = SelectedModules.ContainsKey(module) && SelectedModules[module];
-            bool newValue = EditorGUILayout.Toggle(module, oldValue);
+            // Get the old value for the selected state of the current module
+            bool oldSelectedState = SelectedModules.ContainsKey(module) && SelectedModules[module];
 
-            // Display Extras right under Full Package whenever Full Package is selected
-            if (module.Equals("Full Package") && newValue)
-                using (new EditorGUI.DisabledScope(true)) { EditorGUILayout.LabelField("└ Includes Extras"); }
+            // Present a toggle button in UI for user to select or unselect the module
+            bool newSelectedState = EditorGUILayout.Toggle(module, oldSelectedState);
 
-            if (newValue != oldValue)
+            // If the selected state of the module has been changed by user
+            if (newSelectedState != oldSelectedState)
             {
-                SelectedModules[module] = newValue;
+                // Update the selected state of current module
+                SelectedModules[module] = newSelectedState;
 
-                // If changing the 'Full Package', change all other modules as well
+                if (VersionManager.DebugVersion)
+                {
+                    Debug.Log($"Module '{module}' selected state changed to {newSelectedState}");
+                    Debug.Log($"Module '{module}' installed state is {InstalledModules[module]}");
+                }
+
+                // If the 'Full Package' module is selected or unselected, toggle the selected state of all other modules to match 'Full Package'
                 if (module == AvailableModules.First())
                 {
-                    // If 'Full Package' is selected, select all modules
-                    // If 'Full Package' is unselected, unselect all modules
-                    foreach (string key in AvailableModules.Where(key => key != "Full Package")) { SelectedModules[key] = newValue; }
+                    foreach (string key in AvailableModules.Where(key => key != "Full Package"))
+                    {
+                        // Update the selected state of each module, excluding 'Full Package'
+                        SelectedModules[key] = newSelectedState;
+                    }
                 }
-                else if (!newValue)
+                else if (!newSelectedState)
                 {
-                    // If any module is unselected, unselect the 'Full Package'
+                    // If any other module than 'Full Package' is unselected, also unselect the 'Full Package'
                     SelectedModules["Full Package"] = false;
                 }
-
-                // If current module is 'Full Package' and is selected, display 'Extras'
-                if (module.Equals("Full Package") && newValue)
-                    using (new EditorGUI.DisabledScope(true)) { EditorGUILayout.LabelField("└ Extras"); }
             }
+
+            // If the 'Full Package' module is selected, display 'Includes Extras' info underneath its toggle
+            if (module.Equals("Full Package") && newSelectedState)
+                using (new EditorGUI.DisabledScope(true)) { EditorGUILayout.LabelField("└ Includes Extras"); }
         }
     }
 
@@ -127,8 +137,7 @@ internal sealed partial class UtilityWindow
                          "\nIt is recommended to backup Systems.prefab in the Resources folder", "Apply", "Cancel"))
                         {
                             //TODO: check if the selected module(s) are already installed, and prompt the user if they want to reinstall the selected.
-                            InstallModules();
-                            SetupRequired = false;
+                            ModuleInstaller.InstallSelectedModules();
                         }
                         else { EssentialsDebugger.LogAbort(SafeMode); }
                     }
@@ -142,10 +151,10 @@ internal sealed partial class UtilityWindow
                 currentPanel = DisplayToolbar;
 
                 // Reset the checkboxes
-                ClearSelectedModules();
+                ModuleInstaller.ClearSelectedModules();
 
                 // Check which modules are still installed
-                CheckForInstalledModules();
+                ModuleInstaller.CheckForInstalledModules();
 
                 SafeMode = true;
             }

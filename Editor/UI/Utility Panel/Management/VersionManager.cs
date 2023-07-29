@@ -21,8 +21,6 @@ internal static class VersionManager
         {
             if (string.IsNullOrEmpty(value))
             {
-                //EditorPrefs.DeleteKey("LatestVersion");
-                
                 EditorPrefs.SetString("LatestVersion", "Error fetching version..." +
                 "\n  └ <i>(Are you connected to the internet?)</i>");
             }
@@ -32,12 +30,14 @@ internal static class VersionManager
             }
         }
     }
+    
     /// <summary> The version of the package that was last opened. </summary>
     internal static string LastOpenVersion
     {
         get => EditorPrefs.GetString("LastOpenVersion", "Unknown");
         set => EditorPrefs.SetString("LastOpenVersion", value);
     }
+    
     /// <summary> Whether or not the current version is a debug version. </summary>
     internal static bool DebugVersion => CurrentVersion.Contains("Debug", StringComparison.OrdinalIgnoreCase);
     internal static bool DontShow_DebugBuildWarning

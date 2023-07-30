@@ -3,13 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Lumina.Essentials.Editor.UI;
-using Lumina.Essentials.Editor.UI.Management;
 using UnityEditor;
 using UnityEngine;
 #endregion
 
-namespace Lumina.Essentials.Editor
+namespace Lumina.Essentials.Editor.UI.Management
 {
 public class ModuleInstaller : MonoBehaviour
 {
@@ -118,7 +116,8 @@ public class ModuleInstaller : MonoBehaviour
                     // If module is 'Full Package', reinstall and return from method to prevent the loop execution for subsequent modules.
                     if (module.Key == "Full Package")
                     {
-                        ImportModulePackage(relativePath, module.Key);
+                        bool reInstallConfirmation = ModuleInstallConfirmation(module.Key);
+                        if (reInstallConfirmation) ImportModulePackage(relativePath, module.Key);
                         return;
                     }
 

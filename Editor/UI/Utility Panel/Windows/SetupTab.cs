@@ -130,16 +130,11 @@ internal sealed partial class UtilityWindow
                 {
                     if (!SafeMode && SelectedModules.Values.Any(module => module))
                     {
-                        // Popup to confirm the replacement of the old files
-                        if (EditorUtility.DisplayDialog
-                        ("Confirmation",
-                         "Are you sure you want to replace the old files? \n " + "Please backup any files from the old version that you may want to keep." +
-                         "\nIt is recommended to backup Systems.prefab in the Resources folder", "Apply", "Cancel"))
+                        if (EditorUtility.DisplayDialog("Confirmation", "Are you sure you want to install these modules? \n ", "Apply", "Cancel"))
                         {
-                            //TODO: check if the selected module(s) are already installed, and prompt the user if they want to reinstall the selected.
                             ModuleInstaller.InstallSelectedModules();
                         }
-                        else { EssentialsDebugger.LogAbort(SafeMode); }
+                        else EssentialsDebugger.LogAbort(SafeMode);
                     }
                     else { EssentialsDebugger.LogWarning("Please select at least one module to install."); }
                 }

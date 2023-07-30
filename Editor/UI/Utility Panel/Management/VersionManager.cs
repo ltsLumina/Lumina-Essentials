@@ -12,7 +12,8 @@ namespace Lumina.Essentials.Editor.UI.Management
 internal static class VersionManager
 {
     /// <summary> The current version of Lumina's Essentials. </summary>
-    internal static string CurrentVersion => "3.0.0 Beta3";
+    internal static string CurrentVersion => "3.0.0 Beta3"; 
+    
     /// <summary> The latest version of Lumina's Essentials available on GitHub. </summary>
     internal static string LatestVersion
     {
@@ -52,28 +53,6 @@ internal static class VersionManager
         EditorPrefs.SetString("LatestVersion", LatestVersion ?? "Error fetching version..");
         EditorPrefs.SetBool("UpToDate", CompareVersions(CurrentVersion, LatestVersion));
         EditorPrefs.SetBool("DebugVersion", DebugVersion);
-    }
-
-    /// <summary>
-    ///     Opens the window on startup if the version has changed.
-    ///     This method is called automatically on startup.
-    /// </summary>
-    [InitializeOnLoadMethod]
-    static void OpenWindowOnStartup()
-    {
-        string currentVersion  = CurrentVersion;
-        string lastOpenVersion = EditorPrefs.GetString("LastOpenVersion", "Unknown");
-        string latestVersion   = LatestVersion;
-
-        // If an update has occured since the last time the window was opened, open the window.
-        if (CompareVersions(currentVersion, lastOpenVersion))
-        {
-            SetupWindow.OpenSetupWindow(true);
-            EditorPrefs.SetString("LastOpenVersion", currentVersion);
-        }
-
-        // If the current version is newer than the *latest* version, perform update checks (I.e; if the user is up-to-date)
-        if (StartupChecks.IsNewVersionAvailable(currentVersion, latestVersion) || !EditorPrefs.GetBool("UpToDate")) StartupChecks.DisplayVersionAlert();
     }
 
     /// <summary>

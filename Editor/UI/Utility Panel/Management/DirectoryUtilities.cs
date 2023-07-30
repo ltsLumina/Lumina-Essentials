@@ -1,11 +1,10 @@
 #region
 using System;
 using System.IO;
-using Lumina.Essentials.Editor.UI.Management;
 using UnityEngine;
 #endregion
 
-namespace Lumina.Essentials.Editor
+namespace Lumina.Essentials.Editor.UI.Management
 {
 public class DirectoryUtilities : MonoBehaviour
 {
@@ -50,7 +49,11 @@ public class DirectoryUtilities : MonoBehaviour
             if (!Directory.Exists(fullpath))
             {
                 Directory.CreateDirectory(fullpath);
-                EssentialsDebugger.Log("Successfully created directory: " + fullpath);
+
+                if (VersionManager.DebugVersion)
+                {
+                    EssentialsDebugger.Log("Successfully created directory: " + fullpath);
+                }
             }
 
             foreach (var newDirectory in directories)
@@ -60,7 +63,11 @@ public class DirectoryUtilities : MonoBehaviour
                 if (!Directory.Exists(newFullPath))
                 {
                     Directory.CreateDirectory(newFullPath);
-                    EssentialsDebugger.Log("Successfully created directory: " + newFullPath);
+
+                    if (VersionManager.DebugVersion)
+                    {
+                        EssentialsDebugger.Log("Successfully created directory: " + newFullPath);
+                    }
                 }
             }
         }

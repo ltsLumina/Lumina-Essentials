@@ -52,9 +52,7 @@ internal sealed partial class UtilityWindow : EditorWindow
         return;
 
         void Initialization()
-        { 
-            // Set the last open version to the current version
-            LastOpenVersion = CurrentVersion;
+        {
             SafeMode        = true;
 
             // Initialize the installed modules
@@ -83,7 +81,7 @@ internal sealed partial class UtilityWindow : EditorWindow
     }
 
     // Clear the selected modules when the window is closed.
-    void OnDestroy()
+    void OnDisable()
     {
         ModuleInstaller.ClearSelectedModules(); 
         EditorApplication.playModeStateChanged -= PlayModeStateChanged;
@@ -117,8 +115,9 @@ internal sealed partial class UtilityWindow : EditorWindow
         // If the user is in play mode, displays a warning and deactivates the Utility Window.
         if (IsPlaymodeActive()) return;
 
-        // Don't show the toolbar if the user in the setup panel
-        currentPanel();
+        // Don't show the toolbar if the user in the setup panel or if the window doesn't exist.
+        var utilityWindow = GetWindow<UtilityWindow>();
+        if (utilityWindow != null) currentPanel();
     }
 
     /// <summary>
@@ -241,10 +240,11 @@ Check out the ""Utilities"" tab to access the various workflow-enhancing feature
         
         using (new GUILayout.HorizontalScope())
         {
-            if (GUILayout.Button(openDocumentationContent, GUILayout.Width(buttonSize), GUILayout.Height(40))) Application.OpenURL("https://github.com/ltsLumina/Unity-Essentials");
+            if (GUILayout.Button(openDocumentationContent, GUILayout.Width(buttonSize), GUILayout.Height(40))) 
+                Application.OpenURL("https://github.com/ltsLumina/Lumina-Essentials");
 
-            if (GUILayout.Button
-                (openChangeLogContent, GUILayout.Width(buttonSize), GUILayout.Height(40))) Application.OpenURL("https://github.com/ltsLumina/Unity-Essentials/releases/latest");
+            if (GUILayout.Button(openChangeLogContent, GUILayout.Width(buttonSize), GUILayout.Height(40))) 
+                Application.OpenURL("https://github.com/ltsLumina/Lumina-Essentials/releases/latest");
         }
 
         using (new GUILayout.HorizontalScope())
@@ -254,15 +254,21 @@ Check out the ""Utilities"" tab to access the various workflow-enhancing feature
             {
                 VersionUpdater.CheckForUpdates();
 
+                if (LatestVersion.Contains("Error"))
+                {
+                    EssentialsDebugger.LogError("Failed to fetch version! \nAre you connected to the internet?");
+                    return;
+                }
+
                 // if there is a new version available, open the GitHub repository's releases page
-                if (!EditorPrefs.GetBool("UpToDate") && !LatestVersion.Contains("Error"))
+                if (!EditorPrefs.GetBool("UpToDate"))
                 {
                     EssentialsDebugger.LogWarning("There is a new version available!" + "\nPlease update to the latest version to ensure functionality.");
-                    Application.OpenURL("https://github.com/ltsLumina/Unity-Essentials/releases/latest");
+                    Application.OpenURL("https://github.com/ltsLumina/Lumina-Essentials/releases/latest");
                 }
                 else
                 {
-                    EssentialsDebugger.LogError("Failed to fetch version! \nAre you connected to the internet?");
+                    EssentialsDebugger.Log("You are up to date!");
                 }
             }
 

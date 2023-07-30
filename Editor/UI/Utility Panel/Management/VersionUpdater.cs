@@ -8,7 +8,6 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Networking;
 using static Lumina.Essentials.Editor.UI.Management.VersionManager;
-using Object = UnityEngine.Object;
 #endregion
 
 namespace Lumina.Essentials.Editor.UI.Management
@@ -42,7 +41,7 @@ namespace Lumina.Essentials.Editor.UI.Management
 
         static IEnumerator RequestUpdateCheck()
         {
-            using UnityWebRequest webRequest = UnityWebRequest.Get("https://api.github.com/repos/ltsLumina/Unity-Essentials/releases/latest");
+            using UnityWebRequest webRequest = UnityWebRequest.Get("https://api.github.com/repos/ltsLumina/Lumina-Essentials/releases/latest");
 
             yield return webRequest.SendWebRequest();
 

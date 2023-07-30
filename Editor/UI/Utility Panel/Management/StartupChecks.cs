@@ -1,19 +1,27 @@
-﻿#region
-using UnityEditor;
-#endregion
+﻿using UnityEditor;
 
 namespace Lumina.Essentials.Editor.UI.Management
 {
 /// <summary>
 /// Runs checks upon startup to ensure the user is up-to-date and to display warnings if necessary.
 /// </summary>
+[InitializeOnLoad]
 internal static class StartupChecks
 {
-    internal static void DisplayVersionAlert()
+    static StartupChecks()
     {
-        if (!VersionManager.DebugVersion) CheckForUpdatesAfterOneWeek();
+        bool firstTime = EditorPrefs.GetBool("FirstInitialization", true);
 
-        DebugBuildWarning();
+        if (firstTime || VersionManager.CurrentVersion != VersionManager.LastOpenVersion)
+        {
+            SetupWindow.OpenSetupWindow(true);
+            EditorPrefs.SetBool("FirstInitialization", false); // Set first time to false 
+        }
+        else
+        {
+            DebugBuildWarning();
+            CheckForUpdatesAfterOneWeek();
+        }
     }
 
     /// <summary>

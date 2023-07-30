@@ -29,14 +29,24 @@ internal sealed class SetupWindow : EditorWindow
     /// </summary>
     /// <param name="updateOccured">Whether or not an update has occured since the last time the window was opened.</param>
     internal static void OpenSetupWindow(bool updateOccured = false)
-    {
+    { 
         var window = GetWindow<SetupWindow>(true, "New Version of Lumina's Essentials Imported", true);
         window.ConfigureWindow();
 
         if (updateOccured) HandleUpdateOccured();
     }
 
-    void OnGUI() => DisplayGUIElements();
+    void OnDisable()
+    {
+        VersionManager.LastOpenVersion = VersionManager.CurrentVersion;
+    }
+
+    void OnGUI()
+    {
+        SetGUIStyles();
+        
+        DisplayGUIElements();
+    }
 
     void ConfigureWindow()
     {
@@ -47,16 +57,16 @@ internal sealed class SetupWindow : EditorWindow
 
     static void HandleUpdateOccured()
     {
+        CloseUtilityWindowIfOpen();
+
         EssentialsDebugger.Log("An update has occured. Please setup the new version of Lumina's Essentials.");
         UtilityWindow.SetupRequired = !UtilityWindow.InstalledModules.Values.Any(module => module);
-
-        CloseUtilityWindowIfOpen();
     }
 
     static void CloseUtilityWindowIfOpen()
     {
         var utilityWindow = GetWindow<UtilityWindow>();
-        utilityWindow.Close();
+        if (utilityWindow != null) utilityWindow.Close();
     }
 
     void DisplayGUIElements()

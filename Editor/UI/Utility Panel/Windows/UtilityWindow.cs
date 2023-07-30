@@ -53,13 +53,15 @@ internal sealed partial class UtilityWindow : EditorWindow
 
         void Initialization()
         {
-            SafeMode        = true;
+            // Enable safe mode by default.
+            SafeMode = true;
 
             // Initialize the installed modules
             ModuleInstaller.CheckForInstalledModules();
 
             // Set SetupRequired to true if there are no modules installed.
             SetupRequired = !InstalledModules.Values.Any(module => module);
+            if (SetupRequired) EditorPrefs.SetBool("Init", true);
 
             // Display the Toolbar.
             currentPanel = DisplayToolbar;
@@ -85,6 +87,8 @@ internal sealed partial class UtilityWindow : EditorWindow
     {
         ModuleInstaller.ClearSelectedModules(); 
         EditorApplication.playModeStateChanged -= PlayModeStateChanged;
+
+        if (SetupRequired) EditorPrefs.SetBool("Init", false);
     }
 
     /// <summary> Subscribes to the play mode state changed event to repaint the window when the user enters play mode. </summary>
@@ -189,9 +193,12 @@ internal sealed partial class UtilityWindow : EditorWindow
             GUILayout.FlexibleSpace();
 
             if (GUILayout.Button("<b>Setup Essentials...</b>\n(add/remove Modules)", buttonSetup, GUILayout.Width(200)))
-
+            {
+                DeleteAutorunFiles();
+                
                 // Select Setup Panel (not main panel)
                 currentPanel = DrawModulesGUI;
+            }
 
             GUILayout.FlexibleSpace();
         }

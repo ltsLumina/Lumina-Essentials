@@ -30,8 +30,12 @@ internal sealed class SetupWindow : EditorWindow
     /// <param name="updateOccured">Whether or not an update has occured since the last time the window was opened.</param>
     internal static void OpenSetupWindow(bool updateOccured = false)
     { 
+        CloseUtilityWindowIfOpen();
+        
         var window = GetWindow<SetupWindow>(true, "New Version of Lumina's Essentials Imported", true);
-        window.ConfigureWindow();
+        window.minSize = new (400, 300);
+        window.maxSize = window.minSize;
+        window.Show();
 
         if (updateOccured) HandleUpdateOccured();
     }
@@ -46,13 +50,6 @@ internal sealed class SetupWindow : EditorWindow
         SetGUIStyles();
         
         DisplayGUIElements();
-    }
-
-    void ConfigureWindow()
-    {
-        minSize = new (400, 300);
-        maxSize = minSize;
-        Show();
     }
 
     static void HandleUpdateOccured()
@@ -80,7 +77,7 @@ internal sealed class SetupWindow : EditorWindow
 
     void DrawBackground() => EditorGUI.DrawRect(new (0, 0, maxSize.x, maxSize.y), new (0.18f, 0.18f, 0.18f));
 
-    static void DrawTitleAndInstructions()
+    void DrawTitleAndInstructions()
     {
         // Top label with the title of the window in large rose gold text
         GUILayout.Label("Lumina's Essentials", setupWindowHeaderStyle);

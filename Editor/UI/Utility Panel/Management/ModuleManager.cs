@@ -127,7 +127,20 @@ public class ModuleInstaller : MonoBehaviour
                         bool reInstallConfirmation = ModuleInstallConfirmation(module.Key);
                         if (reInstallConfirmation) ImportModulePackage(relativePath, module.Key);
                     }
-                    else { ImportModulePackage(relativePath, module.Key); }
+                    else
+                    {
+                        try
+                        {
+                            AssetDatabase.StartAssetEditing();
+                            ImportModulePackage(relativePath, module.Key);
+                            AssetDatabase.StopAssetEditing();
+                        }
+                        catch (Exception e)
+                        {
+                            EssentialsDebugger.LogError("Failed to install module: " + module.Key + "\n" + e.Message + "\n" + e.StackTrace);
+                            throw;
+                        }
+                    }
                 }
             }
         }

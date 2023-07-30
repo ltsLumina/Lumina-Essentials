@@ -25,8 +25,7 @@ internal sealed partial class UtilityWindow : EditorWindow
     int selectedTab;
 
     /// <summary> The labels of the tabs. </summary>
-    readonly string[] tabLabels =
-    { "Setup", "Settings", "Utilities" };
+    readonly string[] tabLabels = { "Setup", "Settings", "Utilities" };
 
     /// <summary> Used to invoke the setup panel when necessary. (Not the main panel) </summary>
     Action currentPanel;
@@ -47,7 +46,9 @@ internal sealed partial class UtilityWindow : EditorWindow
         // Initialize all the variables
         Initialization();
 
-        Repaint();
+        // If the window is open, repaint it every frame.
+        EditorApplication.playModeStateChanged += PlayModeStateChanged;
+        
         return;
 
         void Initialization()
@@ -82,7 +83,28 @@ internal sealed partial class UtilityWindow : EditorWindow
     }
 
     // Clear the selected modules when the window is closed.
-    void OnDestroy() => ModuleInstaller.ClearSelectedModules();
+    void OnDestroy()
+    {
+        ModuleInstaller.ClearSelectedModules(); 
+        EditorApplication.playModeStateChanged -= PlayModeStateChanged;
+    }
+
+    /// <summary> Subscribes to the play mode state changed event to repaint the window when the user enters play mode. </summary>
+    void PlayModeStateChanged(PlayModeStateChange state)
+    {
+        switch (state)
+        {
+            // Start repainting when entering play mode
+            case PlayModeStateChange.EnteredPlayMode:
+                EditorApplication.update += Repaint;
+                break;
+
+            // Stop repainting when exiting play mode
+            case PlayModeStateChange.ExitingPlayMode:
+                EditorApplication.update -= Repaint;
+                break;
+        }
+    }
 
     /// <summary>
     ///     Displays the toolbar at the top of the window that toggles between the two panels.
@@ -97,18 +119,6 @@ internal sealed partial class UtilityWindow : EditorWindow
 
         // Don't show the toolbar if the user in the setup panel
         currentPanel();
-    }
-    
-    static bool IsPlaymodeActive()
-    { // If the user is in play mode, display a message telling them that the utility panel is not available while in play mode.
-        if (!EditorApplication.isPlaying) return false;
-        GUILayout.Space(40);
-        GUILayout.BeginHorizontal();
-        GUILayout.Label("The Utility Panel \nis disabled while in play mode.", wrapCenterLabelStyle, GUILayout.ExpandWidth(true));
-        GUILayout.Space(40);
-        GUILayout.EndHorizontal();
-        return true;
-
     }
 
     /// <summary>

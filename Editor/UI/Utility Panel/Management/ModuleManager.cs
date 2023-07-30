@@ -61,8 +61,8 @@ public class ModuleInstaller : MonoBehaviour
 
         static bool CheckFullPackageInstalled()
         {
-            string mainDirectory   = Path.Combine("Lumina's Essentials", "Modules");
-            string targetDirectory = "Examples";
+            string       mainDirectory   = Path.Combine("Lumina's Essentials", "Modules");
+            const string targetDirectory = "Examples";
 
             var allDirectories = Directory.GetDirectories(Application.dataPath, "*.*", SearchOption.AllDirectories);
 
@@ -80,7 +80,10 @@ public class ModuleInstaller : MonoBehaviour
                     // Check if "Examples" directory exists within any of the subdirectories
                     if (subDirectories.Any(sub => Path.GetFileName(sub).Equals(targetDirectory, StringComparison.OrdinalIgnoreCase)))
                     {
-                        if (VersionManager.DebugVersion) { Debug.Log("Full package is installed."); }
+                        if (VersionManager.DebugVersion)
+                        {
+                            Debug.Log("Full package is installed.");
+                        }
                         return true;
                     }
                 }

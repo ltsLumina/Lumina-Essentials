@@ -112,9 +112,9 @@ internal sealed partial class UtilityWindow
 
         using (new GUILayout.HorizontalScope())
         {
-            EditorGUILayout.LabelField("Uncheck the checkbox to continue.", GUILayout.Width(210));
+            EditorGUILayout.LabelField("Click the checkbox to continue.", GUILayout.Width(210));
             GUILayout.FlexibleSpace();
-            SafeMode = EditorGUILayout.Toggle(SafeMode);
+            SafeMode = !EditorGUILayout.Toggle(!SafeMode);
         }
     }
 

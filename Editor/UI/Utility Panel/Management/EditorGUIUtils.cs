@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -74,15 +70,12 @@ namespace Lumina.Essentials.Editor.UI.Management
               fontStyle = FontStyle.Bold,
               normal = new ()
               { textColor = new (0.86f, 0.86f, 0.86f) } };
-            
-            
 
             // Button Styles
             buttonStyle         = new (GUI.skin.button);
-            buttonStyle.padding = new RectOffset(0, 0, 10, 10);
-
-            buttonSetup          = new GUIStyle(buttonStyle);
-            buttonSetup.padding  = new RectOffset(10, 10, 6, 6);
+            buttonStyle.padding = new (0, 0, 10, 10);
+            buttonSetup          = new (buttonStyle);
+            buttonSetup.padding  = new (10, 10, 6, 6);
             buttonSetup.wordWrap = true;
             buttonSetup.richText = true;
 
@@ -107,7 +100,7 @@ namespace Lumina.Essentials.Editor.UI.Management
             wrapCenterLabelStyle           = new (GUI.skin.label);
             wrapCenterLabelStyle.wordWrap  = true;
             wrapCenterLabelStyle.alignment = TextAnchor.MiddleCenter;
-
+            
             wordWrapRichTextLabelStyle          = new (GUI.skin.label);
             wordWrapRichTextLabelStyle.wordWrap = true;
             wordWrapRichTextLabelStyle.richText = true;
@@ -198,6 +191,19 @@ namespace Lumina.Essentials.Editor.UI.Management
             "Known Issues",
             "Opens the known issues page on the GitHub repository. \nPlease add any issues you encounter to the list."
             );
+        }
+
+        internal static bool IsPlaymodeActive()
+        { // If the user is in play mode, display a message telling them that the utility panel is not available while in play mode.
+            if (!EditorApplication.isPlaying) return false;
+            
+            GUILayout.Space(40);
+            using (new GUILayout.HorizontalScope())
+            {
+                GUILayout.Label("The Utility Panel \nis disabled while in play mode.", wrapCenterLabelStyle, GUILayout.ExpandWidth(true));
+            }
+            GUILayout.Space(40);
+            return true;
         }
         
         internal static void ShowAllEditorPrefs() => EditorPrefsWindow.ShowWindow();

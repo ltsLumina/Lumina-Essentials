@@ -8,21 +8,23 @@ namespace Lumina.Essentials.Editor.UI.Management
 [InitializeOnLoad]
 internal static class StartupChecks
 {
-    static StartupChecks()
-    {
-        bool firstTime = EditorPrefs.GetBool("FirstInitialization", true);
-
-        if (firstTime || VersionManager.CurrentVersion != VersionManager.LastOpenVersion)
-        {
-            SetupWindow.OpenSetupWindow(true);
-            EditorPrefs.SetBool("FirstInitialization", false); // Set first time to false 
-        }
-        else
-        {
-            DebugBuildWarning();
-            CheckForUpdatesAfterOneWeek();
-        }
-    }
+    // static StartupChecks()
+    // {
+    //     if (EditorApplication.isCompiling) return;
+    //
+    //     bool firstTime = EditorPrefs.GetBool("FirstInitialization", true);
+    //
+    //     if (firstTime || VersionManager.CurrentVersion != VersionManager.LastOpenVersion)
+    //     {
+    //         SetupWindow.OpenSetupWindow(true);
+    //         EditorPrefs.SetBool("FirstInitialization", false); // Set first time to false 
+    //     }
+    //     else
+    //     {
+    //         DebugBuildWarning();
+    //         CheckForUpdatesAfterOneWeek();
+    //     }
+    // }
 
     /// <summary>
     ///     Checks if a new version is available by comparing the current version with the latest version.

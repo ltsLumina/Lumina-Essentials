@@ -5,17 +5,29 @@ using UnityEngine;
 
 namespace Lumina.Essentials.Editor.UI.Management
 {
-[InitializeOnLoad] 
+[InitializeOnLoad]
 internal static class Autorun
 {
-    static Autorun() { EditorApplication.update += OnUpdate; }
+    static Autorun()
+    {
+        Debug.Log("Auto-Run Initialized.");
+        EditorApplication.update += OnUpdate;
+    }
 
     static void OnUpdate()
     {
-        if (!SetupWindowIsOpen() && UtilityWindow.SetupRequired && EditorPrefs.GetBool("Init")) 
+        Debug.Log("setup window open: " + SetupWindowIsOpen());
+        Debug.Log("utility window open: " + UtilityWindowIsOpen());
+        Debug.Log("setup required: " + UtilityWindow.SetupRequired);
+        
+        if (!SetupWindowIsOpen() && !UtilityWindowIsOpen() && UtilityWindow.SetupRequired)
+        {
             SetupWindow.OpenSetupWindow();
+        }
     }
 
     static bool SetupWindowIsOpen() => Resources.FindObjectsOfTypeAll<SetupWindow>().Length > 0;
+
+    static bool UtilityWindowIsOpen() => Resources.FindObjectsOfTypeAll<UtilityWindow>().Length > 0;
 }
 }

@@ -82,13 +82,14 @@ internal sealed partial class UtilityWindow
                 if (!SafeMode)
                 {
                     // Reset the EditorPrefs
-                    EditorPrefs.DeleteAll();
+                    EditorPrefs.DeleteAll(); //TODO: Make a list of EditorPrefs to delete instead of deleting all of them.
 
                     // Reset any necessary flags or variables
                     SafeMode                                  = true;
-                    imageConverterPath                        = "";
+                    SetupRequired                             = true;
                     VersionManager.DontShow_DebugBuildWarning = false;
-                    EssentialsDebugger.LogBehaviour                  = EssentialsDebugger.LogLevel.Verbose;
+                    EssentialsDebugger.LogBehaviour           = EssentialsDebugger.LogLevel.Verbose;
+                    imageConverterPath                        = "";
 
                     EssentialsDebugger.LogWarning("Settings and EditorPrefs have been reset.");
 

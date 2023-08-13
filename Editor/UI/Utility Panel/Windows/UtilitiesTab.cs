@@ -69,17 +69,10 @@ internal sealed partial class UtilityWindow
         EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
     }
 
-    [Obsolete] // Deprecated. Kept here for reference.
-    // ReSharper disable once UnusedMember.Local
-    void DrawCreateProjectStructureGUI()
-    {
-        if (GUILayout.Button("Create Default Project Structure")) CreateProjectStructure();
-    }
-
     void DrawUtilitiesButtonsGUI()
     {
         // Checkbox to enable or disable the auto save feature
-        AutoSaveConfig.Enabled = EditorGUILayout.Toggle(new GUIContent("Auto Save", "Automatically saves the scene at a set interval."), AutoSaveConfig.Enabled);
+        AutoSaveConfig.Enabled = EditorGUILayout.Toggle(autoSaveEnabledContent, AutoSaveConfig.Enabled);
 
         if (AutoSaveConfig.Enabled)
         {
@@ -91,7 +84,7 @@ internal sealed partial class UtilityWindow
 
             GUILayout.Space(1.5f);
 
-            AutoSaveConfig.Logging = EditorGUILayout.Toggle("└  Message", AutoSaveConfig.Logging);
+            AutoSaveConfig.Logging = EditorGUILayout.Toggle(autoSaveLoggingContent, AutoSaveConfig.Logging);
 
             GUILayout.Space(5.5f);
         }

@@ -37,6 +37,10 @@ namespace Lumina.Essentials.Editor.UI.Management
         internal static GUIContent enterPlaymodeOptionsContent;
         internal static GUIContent resetButtonContent;
         
+        // GUIContent for Autosave.
+        internal static GUIContent autoSaveEnabledContent;
+        internal static GUIContent autoSaveLoggingContent;
+        
         // -- GUIContent for the Setup Panel -- //
         internal static GUIContent openDocumentationContent;
         internal static GUIContent openChangeLogContent;
@@ -176,6 +180,12 @@ namespace Lumina.Essentials.Editor.UI.Management
             );
 
             resetButtonContent = new ("Reset", "Resets the settings to their default values.");
+            
+            // Auto Save
+
+            autoSaveEnabledContent = new ("Auto Save", "Automatically saves the scene at a set interval.");
+
+            autoSaveLoggingContent = new ("└  Message", "Whether a debug message is printed to the console when the scene auto-saves.");
             
             // Setup Panel
 

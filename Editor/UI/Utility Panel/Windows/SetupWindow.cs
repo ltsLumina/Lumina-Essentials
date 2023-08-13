@@ -29,15 +29,23 @@ internal sealed class SetupWindow : EditorWindow
     /// </summary>
     /// <param name="updateOccured">Whether or not an update has occured since the last time the window was opened.</param>
     internal static void OpenSetupWindow(bool updateOccured = false)
-    { 
-        CloseUtilityWindowIfOpen();
-        
+    {
         var window = GetWindow<SetupWindow>(true, "New Version of Lumina's Essentials Imported", true);
         window.minSize = new (400, 300);
         window.maxSize = window.minSize;
         window.Show();
 
         if (updateOccured) HandleUpdateOccured();
+    }
+
+    internal static void CloseSetupWindow()
+    {
+        // Get all windows of type SetupWindow
+        var windows = Resources.FindObjectsOfTypeAll<SetupWindow>();
+
+        // Iterate through the array and close each window
+        if (windows != null) 
+            foreach (var window in windows) { window.Close(); }
     }
 
     void OnDisable()

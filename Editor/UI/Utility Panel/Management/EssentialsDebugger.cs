@@ -41,7 +41,7 @@ namespace Lumina.Essentials.Editor.UI.Management
 
         // ReSharper disable Unity.PerformanceAnalysis
         internal static void LogAbort(bool safeMode = false) => 
-            Debug.LogWarning($"{ErrorMessagePrefix} The action was aborted. " + $"\n{(safeMode ? "Safe Mode is enabled." : "")}");
+            Debug.LogWarning($"{ErrorMessagePrefix} The action was aborted. " + $"{(safeMode ? "Safe Mode is enabled." : "")}" + "\n");
 
         // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>

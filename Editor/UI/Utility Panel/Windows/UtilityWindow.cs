@@ -53,6 +53,9 @@ internal sealed partial class UtilityWindow : EditorWindow
 
         void Initialization()
         {
+            // Close the setup window if it is open.
+            //if (Resources.FindObjectsOfTypeAll<SetupWindow>().Length > 0) SetupWindow.CloseSetupWindow(); 
+
             // Enable safe mode by default.
             SafeMode = true;
 

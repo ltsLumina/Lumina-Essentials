@@ -1,5 +1,5 @@
 // Creator: Tarodev
-// Modified by Lumina.
+// Modified by Lumina for Lumina's Essentials.
 
 #region
 using System;
@@ -25,7 +25,7 @@ internal class AutoSave : UnityEditor.Editor
         CancelTask();
 
         tokenSource = new ();
-        task = SaveInterval(tokenSource.Token);
+        task        = SaveInterval(tokenSource.Token);
     }
 
     static void CancelTask()

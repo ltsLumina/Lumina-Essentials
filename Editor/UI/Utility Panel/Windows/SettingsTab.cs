@@ -77,45 +77,64 @@ internal sealed partial class UtilityPanel
         GUILayout.BeginHorizontal();
 
         if (GUILayout.Button(resetButtonContent, GUILayout.Width(100), GUILayout.Height(35), GUILayout.ExpandWidth(true)))
-            if (EditorUtility.DisplayDialog("Confirmation", "Are you sure you want to reset the Utility Window?", "Yes", "No"))
+        {
+            if (!SafeMode)
             {
-                if (!SafeMode)
+                if (EditorUtility.DisplayDialog("Confirmation", "Are you sure you want to reset the Utility Window?", "Yes", "No"))
                 {
-                    // Reset the EditorPrefs
-                    foreach (var pref in VersionManager.EssentialsPrefs)
-                    {
-                        if (!EditorPrefs.HasKey(pref))
-                        {
-                            if (VersionManager.DebugVersion) EssentialsDebugger.LogWarning("Couldn't find Key: " + pref);
-                        }
-                        else { EditorPrefs.DeleteKey(pref); }
-                    }
-                    
-                    
-
-                    // Reset all Utility Panel variables.
-                    SafeMode                                  = true;
-                    SetupRequired                             = true;
-                    VersionManager.DontShow_DebugBuildWarning = false;
-                    EssentialsDebugger.LogBehaviour           = EssentialsDebugger.LogLevel.Verbose;
-                    imageConverterPath                        = "";
-
-                    EssentialsDebugger.LogWarning("Settings and EditorPrefs have been reset.");
-
-                    // Display a warning if the user is in a debug build
-                    StartupChecks.DebugBuildWarning();
-
-                    // Check for updates to set up everything again.
-                    VersionUpdater.CheckForUpdates();
-
-                    Close();
-                    UpgradeWindow.Open();
+                    Reset();
                 }
-                else { EssentialsDebugger.LogAbort(SafeMode); }
+                else
+                {
+                    SafeMode = true;
+                    EssentialsDebugger.LogAbort(SafeMode);
+                }
             }
-            else { EssentialsDebugger.LogAbort(); }
+            else
+            {
+                EditorApplication.Beep();
+                
+                if (EditorUtility.DisplayDialog("Warning!", "Safe Mode has not been disabled and is required to reset the Utility Window.", "Disable Safe Mode", "Cancel"))
+                {
+                    SafeMode = false;
+                    EssentialsDebugger.LogWarning("Safe Mode has been disabled. Please try again.");
+                }
+                else { EssentialsDebugger.LogAbort(); }
+            }
+        }
 
         GUILayout.EndHorizontal();
+        return;
+
+        void Reset()
+        { // Reset the EditorPrefs
+            foreach (var pref in VersionManager.EssentialsPrefs)
+            {
+                if (!EditorPrefs.HasKey(pref))
+                {
+                    if (VersionManager.DebugVersion) EssentialsDebugger.LogWarning("Couldn't find Key: " + pref);
+                }
+                else { EditorPrefs.DeleteKey(pref); }
+            }
+
+            // Reset all Utility Panel variables.
+            SafeMode                                  = true;
+            SetupRequired                             = true;
+            VersionManager.DontShow_DebugBuildWarning = false;
+            EssentialsDebugger.LogBehaviour           = EssentialsDebugger.LogLevel.Verbose;
+            imageConverterPath                        = "";
+
+            EssentialsDebugger.LogWarning("Settings and EditorPrefs have been reset.");
+
+            // Display a warning if the user is in a debug build
+            StartupChecks.DebugBuildWarning();
+
+            // Check for updates to set up everything again.
+            VersionUpdater.CheckForUpdates();
+
+            Close();
+            UpgradeWindow.Open();
+        }
     }
 
     /// <summary>

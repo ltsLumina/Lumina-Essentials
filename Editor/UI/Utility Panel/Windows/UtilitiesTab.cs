@@ -1,5 +1,4 @@
 #region
-using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -7,7 +6,6 @@ using Lumina.Essentials.Editor.UI.Management;
 using UnityEditor;
 using UnityEngine;
 using static Lumina.Essentials.Editor.UI.Management.EditorGUIUtils;
-using Random = UnityEngine.Random;
 #endregion
 
 namespace Lumina.Essentials.Editor.UI
@@ -73,66 +71,32 @@ internal sealed partial class UtilityPanel
 
     void DrawUtilitiesButtonsGUI()
     {
-        // Checkbox to enable or disable the auto save feature
-        AutoSaveConfig.Enabled = EditorGUILayout.Toggle(autoSaveEnabledContent, AutoSaveConfig.Enabled);
-
-        if (AutoSaveConfig.Enabled)
-        {
-            using (new GUILayout.HorizontalScope())
-            {
-                GUILayout.Label("└  Interval (Min)", GUILayout.Width(200));
-                AutoSaveConfig.Interval = EditorGUILayout.IntSlider(AutoSaveConfig.Interval, 1, 60);
-            }
-
-            GUILayout.Space(1.5f);
-
-            AutoSaveConfig.Logging = EditorGUILayout.Toggle(autoSaveLoggingContent, AutoSaveConfig.Logging);
-
-            GUILayout.Space(5.5f);
-        }
-
-        // Checkbox to enable or disable the enter playmode options
-        EditorSettings.enterPlayModeOptionsEnabled = EditorGUILayout.Toggle(enterPlaymodeOptionsContent, EditorSettings.enterPlayModeOptionsEnabled);
+        DrawUtilityOptions();
 
         // Horizontal line (separator)
         EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
 
         GUILayout.Space(10);
 
-        // Button that creates a default project directory structure
-        if (GUILayout.Button(createDefaultProjectContent, GUILayout.Height(35)))
-        {
-            configuringImages = false;
-
-            if (!SafeMode) CreateProjectStructure();
-            else EssentialsDebugger.LogAbort(SafeMode);
-        }
+        DrawCreateDefaultProjectButton();
 
         GUILayout.Space(5);
 
         GUI.backgroundColor = configuringImages ? new (0.76f, 0.76f, 0.76f) : Color.white;
 
-        if (GUILayout.Button(configureImagesContent, GUILayout.Height(35)))
-        {
-            configuringImages = !configuringImages;
-
-            // Reset the image converter path if the user stops configuring the configure images settings.
-            if (!configuringImages)
-            {
-                imageConverterPath = "";
-                isCorrectDirectory = false;
-            }
-            else { DrawConfigureImagesGUI(); }
-        }
+        DrawConfigureImagesButton();
 
         GUI.backgroundColor = Color.white;
 
         GUILayout.Space(5);
 
+        if (advancedSettings) DrawPlaceholderButton();
+    }
+
+    static void DrawPlaceholderButton()
+    {
         if (GUILayout.Button("Placeholder Button", GUILayout.Height(35)))
         {
-            EssentialsDebugger.Log("This does nothing as it's a placeholder.");
-
             // Meme button :)
             float progress = 0;
 
@@ -152,9 +116,83 @@ internal sealed partial class UtilityPanel
 
                 Thread.Sleep(Random.Range(250, 4000)); // randomly wait 1 to 2 seconds before updating again
             }
-            
+
             Application.OpenURL("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
             EditorUtility.ClearProgressBar();
+        }
+    }
+
+    static void DrawUtilityOptions()
+    { // Checkbox to enable or disable the auto save feature
+        AutoSaveConfig.Enabled = EditorGUILayout.Toggle(autoSaveEnabledContent, AutoSaveConfig.Enabled);
+
+        if (AutoSaveConfig.Enabled)
+        {
+            using (new GUILayout.HorizontalScope())
+            {
+                GUILayout.Label("└  Interval (Min)", GUILayout.Width(200));
+                AutoSaveConfig.Interval = EditorGUILayout.IntSlider(AutoSaveConfig.Interval, 1, 60);
+            }
+
+            GUILayout.Space(1.5f);
+
+            AutoSaveConfig.Logging = EditorGUILayout.Toggle(autoSaveLoggingContent, AutoSaveConfig.Logging);
+
+            GUILayout.Space(5.5f);
+        }
+
+        // Checkbox to enable or disable the enter playmode options
+        EditorSettings.enterPlayModeOptionsEnabled = EditorGUILayout.Toggle(enterPlaymodeOptionsContent, EditorSettings.enterPlayModeOptionsEnabled);
+    }
+
+    void DrawCreateDefaultProjectButton()
+    { // Button that creates a default project directory structure
+        if (GUILayout.Button(createDefaultProjectContent, GUILayout.Height(35)))
+        {
+            if (!SafeMode)
+            {
+                configuringImages = false;
+
+                if (EditorUtility.DisplayDialog("Confirmation", "Are you sure you want to create the default project structure?", "Yes", "No"))
+                {
+                    CreateProjectStructure();
+                }
+                else
+                {
+                    SafeMode = true;
+                    EssentialsDebugger.LogAbort();
+                }
+            }
+            else
+            {
+                EditorApplication.Beep();
+
+                if (EditorUtility.DisplayDialog
+                ("Warning!",
+                 "Safe Mode has not been disabled and is required to create the default project structure. \nThis is done in order to prevent you from creating folders unintentionally.",
+                 "Disable Safe Mode", "Cancel"))
+                {
+                    SafeMode = false;
+                    EssentialsDebugger.LogWarning("Safe Mode has been disabled. Please try again.");
+                }
+                else { EssentialsDebugger.LogAbort(); }
+            }
+        }
+    }
+
+    void DrawConfigureImagesButton()
+    {
+        if (GUILayout.Button(configureImagesContent, GUILayout.Height(35)))
+        {
+            configuringImages = !configuringImages;
+
+            // Reset the image converter path if the user stops configuring the configure images settings.
+            if (!configuringImages)
+            {
+                imageConverterPath = "";
+                isCorrectDirectory = false;
+            }
+            else { DrawConfigureImagesGUI(); }
         }
     }
 
@@ -162,10 +200,7 @@ internal sealed partial class UtilityPanel
     {
         const string rootName = "_Project";
 
-        // Confirmation pop-up
-        if (EditorUtility.DisplayDialog("Confirmation", "Are you sure you want to create the default project structure?", "Yes", "No"))
-        {
-            // Create the default folders in the root of the project 
+        // Create the default folders in the root of the project 
             DirectoryUtilities.CreateDirectories(rootName, "Scripts", "Art", "Audio", "Scenes", "PREFABS", "Materials", "Plugins"); // "DEL" to put it at the bottom.
             DirectoryUtilities.CreateDirectories(rootName + "/Art", "Animations");
             DirectoryUtilities.CreateDirectories(rootName + "/Audio", "SFX", "Music");
@@ -184,8 +219,6 @@ internal sealed partial class UtilityPanel
             // └ Materials
             // └ Plugins
             #endregion
-        }
-        else { EssentialsDebugger.LogAbort(); }
     }
 
     void DrawConfigureImagesGUI()
@@ -365,13 +398,11 @@ internal sealed partial class UtilityPanel
                     GUILayout.Space(5);
 
                     if (isCorrectDirectory && !SafeMode)
-                    {
                         if (GUILayout.Button("Apply Settings", GUILayout.Height(25)))
                         {
                             if (isCorrectDirectory) ConfigureImages();
                             else EssentialsDebugger.LogWarning("You haven't checked the confirmation box!");
                         }
-                    }
                 }
                 else { GUILayout.Label(noFolderSelectedMsg, middleStyle); }
 
@@ -420,7 +451,7 @@ internal sealed partial class UtilityPanel
 
                     foreach (string configuredImage in images) { EssentialsDebugger.Log($"Configured {Path.GetFileName(configuredImage)}"); }
                 }
-                
+
                 SafeMode = true;
                 AssetDatabase.Refresh();
             }

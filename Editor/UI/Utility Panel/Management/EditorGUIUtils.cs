@@ -157,7 +157,7 @@ namespace Lumina.Essentials.Editor.UI.Management
             createDefaultProjectContent = new 
             (
                 "Create Default Project Structure",
-                "Creates a project structure with the recommended default folders such as Art, Scripts, etc."
+                "Creates a project structure with the recommended default folders such as Art, Scripts, etc. \nRequires Safe Mode to be disabled in the settings."
             );
             
             configureImagesContent = new
@@ -179,7 +179,7 @@ namespace Lumina.Essentials.Editor.UI.Management
             "Enabling \"Enter Playmode Options\" improves Unity's workflow by significantly reducing the time it takes to enter play mode."
             );
 
-            resetButtonContent = new ("Reset", "Resets the settings to their default values.");
+            resetButtonContent = new ("Reset", "Resets the settings to their default values. \nRequires Safe Mode to be disabled in the settings.");
             
             // Auto Save
 

@@ -229,7 +229,7 @@ internal sealed partial class UtilityPanel : EditorWindow
             }
 
             #region Description Label
-            const string labelContent = @"Thank you for using Lumina's Essentials! 
+            const string labelContent = @"Thank you for using Lumina's Essentials!
 This window will help you get started. 
 Please press the ""Setup Essentials"" button to begin.
 

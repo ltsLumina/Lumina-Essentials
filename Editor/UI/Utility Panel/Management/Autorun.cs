@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Lumina.Essentials.Editor.UI.Management
 {
-[InitializeOnLoad]
+[InitializeOnLoad] // The entirety of this class gets deleted upon installing any module.
 internal static class Autorun
 {
     static Autorun() => EditorApplication.update += OnUpdate;

@@ -15,11 +15,23 @@ public class DirectoryUtilities : MonoBehaviour
     {
         try
         {
-            // using SearchOption.AllDirectories to recursively search the whole directory
-            string[] directories = Directory.GetDirectories(baseDirectory, targetFolderName, SearchOption.AllDirectories);
+            // Search for Lumina's Essentials in the whole directory
+            string[] luminaDirectories = Directory.GetDirectories(baseDirectory, "Lumina's Essentials", SearchOption.AllDirectories);
 
-            // If the GetDirectories method returns any directories, it means the target folder exist in the project
-            return directories.Length > 0;
+            if (!luminaDirectories.Any())
+            {
+                Console.WriteLine("Lumina's Essentials folder not found.");
+                return false;
+            }
+
+            foreach (string luminaDirectory in luminaDirectories)
+            {
+                string[] directories = Directory.GetDirectories(luminaDirectory, targetFolderName, SearchOption.AllDirectories);
+
+                if (directories.Length > 0) return true; // If target folder is found within any Lumina's Essentials folder, return true immediately
+            }
+
+            return false; // If the process finishes without finding the target folder, return false
         } catch (Exception ex)
         {
             // Handle exception, mostly due to lack of access to some directories
@@ -32,8 +44,23 @@ public class DirectoryUtilities : MonoBehaviour
     {
         try
         {
-            string[] files = Directory.GetFiles(baseDirectory, targetFileName, SearchOption.AllDirectories);
-            return files.Length > 0; // If any files are found, return true
+            // Search for Lumina's Essentials in the whole directory
+            string[] luminaDirectories = Directory.GetDirectories(baseDirectory, "Lumina's Essentials", SearchOption.AllDirectories);
+
+            if (!luminaDirectories.Any())
+            {
+                Console.WriteLine("Lumina's Essentials folder not found.");
+                return false;
+            }
+
+            foreach (string luminaDirectory in luminaDirectories)
+            {
+                string[] files = Directory.GetFiles(luminaDirectory, targetFileName, SearchOption.AllDirectories);
+
+                if (files.Length > 0) return true; // If target file is found within any Lumina's Essentials folder, return true immediately
+            }
+
+            return false; // If the process finishes without finding the target file, return false
         } catch (Exception ex)
         {
             // Handle exception, mostly due to lack of access to some directories

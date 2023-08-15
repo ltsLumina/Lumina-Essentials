@@ -17,20 +17,25 @@ namespace Lumina.Essentials.Editor.UI
 ///     It also provides a button to install the latest version of Lumina's Essentials as well as DOTween (in a future
 ///     update).
 /// </summary>
-internal sealed class SetupWindow : EditorWindow
+internal sealed class UpgradeWindow : EditorWindow
 {
 #if DEBUG_BUILD
         [MenuItem("Lumina's Essentials/Setup", false, 0)]
-        static void Debug_OpenSetupWindow() => OpenSetupWindow();
+        static void Debug_OpenUpgradeWindow() => Open();
 #endif
 
+    internal static int WindowClosedCount;
+    const string dialogMessage = "The Setup Window will not open again unless you open the Utility Panel. "                 +
+                                 "If you wish to access the Utility Panel to setup your installation of Lumina's Essential" +
+                                 ", it can be found under \"Tools\" > \"Lumina\" > \"Open Utility Panel\" in the toolbar.";
+
     /// <summary>
-    ///     Opens the setup window that instructs the user on how to get started with Lumina's Essentials.
+    ///     Opens the upgrade window that instructs the user on how to get started with Lumina's Essentials.
     /// </summary>
     /// <param name="updateOccured">Whether or not an update has occured since the last time the window was opened.</param>
-    internal static void OpenSetupWindow(bool updateOccured = false)
+    internal static void Open(bool updateOccured = false)
     {
-        var window = GetWindow<SetupWindow>(true, "New Version of Lumina's Essentials Imported", true);
+        var window = GetWindow<UpgradeWindow>(true, "New Version of Lumina's Essentials Imported", true);
         window.minSize = new (400, 300);
         window.maxSize = window.minSize;
         window.Show();
@@ -38,10 +43,10 @@ internal sealed class SetupWindow : EditorWindow
         if (updateOccured) HandleUpdateOccured();
     }
 
-    internal static void CloseSetupWindow()
+    internal static void CloseUpgradeWindows()
     {
-        // Get all windows of type SetupWindow
-        var windows = Resources.FindObjectsOfTypeAll<SetupWindow>();
+        // Get all windows of type UpgradeWindow
+        var windows = Resources.FindObjectsOfTypeAll<UpgradeWindow>();
 
         // Iterate through the array and close each window
         if (windows != null) 
@@ -51,6 +56,11 @@ internal sealed class SetupWindow : EditorWindow
     void OnDisable()
     {
         VersionManager.LastOpenVersion = VersionManager.CurrentVersion;
+        WindowClosedCount++;
+
+        if (WindowClosedCount > 4)
+            EditorUtility.DisplayDialog
+            ("Lumina's Essentials", dialogMessage, "I understand.");
     }
 
     void OnGUI()
@@ -62,15 +72,15 @@ internal sealed class SetupWindow : EditorWindow
 
     static void HandleUpdateOccured()
     {
-        CloseUtilityWindowIfOpen();
+        CloseUtilityPanelIfOpen();
 
         EssentialsDebugger.Log("An update has occured. Please setup the new version of Lumina's Essentials.");
-        UtilityWindow.SetupRequired = !UtilityWindow.InstalledModules.Values.Any(module => module);
+        UtilityPanel.SetupRequired = !UtilityPanel.InstalledModules.Values.Any(module => module);
     }
 
-    static void CloseUtilityWindowIfOpen()
+    static void CloseUtilityPanelIfOpen()
     {
-        var utilityWindow = GetWindow<UtilityWindow>();
+        var utilityWindow = GetWindow<UtilityPanel>();
         if (utilityWindow != null) utilityWindow.Close();
     }
 
@@ -88,14 +98,14 @@ internal sealed class SetupWindow : EditorWindow
     void DrawTitleAndInstructions()
     {
         // Top label with the title of the window in large rose gold text
-        GUILayout.Label("Lumina's Essentials", setupWindowHeaderStyle);
+        GUILayout.Label("Lumina's Essentials", UpgradeWindowHeaderStyle);
 
         GUILayout.Label("Select <color=orange>\"Setup Lumina Essentials\"</color> in the Utility Panel to set it up \n and ensure functionality", middleStyle);
 
         GUILayout.Space(10);
 
         // Large header in case of upgrade
-        GUILayout.Label("IMPORTANT IN CASE OF UPGRADE", setupWindowHeaderStyle);
+        GUILayout.Label("IMPORTANT IN CASE OF UPGRADE", UpgradeWindowHeaderStyle);
 
         // Text that asks the user to press the button below in regular text with the "Setup Lumina Essentials" text in orange
         GUILayout.Label
@@ -116,7 +126,7 @@ internal sealed class SetupWindow : EditorWindow
         if (GUILayout.Button("Open Utility Panel", GUILayout.Width(buttonWidth), GUILayout.Height(buttonHeight)))
         {
             // Open the Utility Panel and close the Setup Window
-            UtilityWindow.OpenUtilityWindow();
+            UtilityPanel.OpenUtilityPanel();
             Close();
         }
 

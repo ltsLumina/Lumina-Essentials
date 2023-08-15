@@ -19,9 +19,9 @@ public class ModuleInstaller : MonoBehaviour
             if (CheckFullPackageInstalled())
             {
                 // Set all keys in InstalledModules to true
-                foreach (var module in UtilityWindow.InstalledModules.Keys.ToList())
+                foreach (var module in UtilityPanel.InstalledModules.Keys.ToList())
                 {
-                    UtilityWindow.InstalledModules[module] = true;
+                    UtilityPanel.InstalledModules[module] = true;
 
                     if (VersionManager.DebugVersion)
                     {
@@ -38,7 +38,7 @@ public class ModuleInstaller : MonoBehaviour
                 return;
             }
 
-            var keys = new List<string>(UtilityWindow.InstalledModules.Keys);
+            var keys = new List<string>(UtilityPanel.InstalledModules.Keys);
 
             foreach (var item in keys)
             {
@@ -47,12 +47,12 @@ public class ModuleInstaller : MonoBehaviour
                 if (DirectoryUtilities.IsFolderInProject(projectDirectory, item) || DirectoryUtilities.IsFileInProject(projectDirectory, itemFile))
                 {
                     if (VersionManager.DebugVersion) { Debug.Log($"Item '{item}' exists in the project."); }
-                    UtilityWindow.InstalledModules[item] = true;
+                    UtilityPanel.InstalledModules[item] = true;
                 }
                 else
                 {
                     if (VersionManager.DebugVersion) { Debug.Log($"Item '{item}' does NOT exist in the project."); }
-                    UtilityWindow.InstalledModules[item] = false;
+                    UtilityPanel.InstalledModules[item] = false;
                 }
             }
         }
@@ -108,7 +108,7 @@ public class ModuleInstaller : MonoBehaviour
             SetupImportCallbacks();
 
             // Compare selected and installed modules
-            foreach (var module in UtilityWindow.SelectedModules)
+            foreach (var module in UtilityPanel.SelectedModules)
             {
                 // If the module is selected.
                 if (module.Value)
@@ -122,7 +122,7 @@ public class ModuleInstaller : MonoBehaviour
                     }
 
                     // If installed, ask for re-installation. If not installed, install directly.
-                    if (UtilityWindow.InstalledModules.ContainsKey(module.Key) && UtilityWindow.InstalledModules[module.Key])
+                    if (UtilityPanel.InstalledModules.ContainsKey(module.Key) && UtilityPanel.InstalledModules[module.Key])
                     {
                         bool reInstallConfirmation = ModuleInstallConfirmation(module.Key);
                         if (reInstallConfirmation) ImportModulePackage(relativePath, module.Key);
@@ -182,7 +182,7 @@ public class ModuleInstaller : MonoBehaviour
 
         internal static void ClearSelectedModules()
         {
-            foreach (var module in UtilityWindow.SelectedModules.ToList()) { UtilityWindow.SelectedModules[module.Key] = false; }
+            foreach (var module in UtilityPanel.SelectedModules.ToList()) { UtilityPanel.SelectedModules[module.Key] = false; }
         }
         // -- End of Module Checks --
         #endregion

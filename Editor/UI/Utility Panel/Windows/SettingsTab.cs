@@ -8,7 +8,7 @@ using static Lumina.Essentials.Editor.UI.Management.EditorGUIUtils;
 
 namespace Lumina.Essentials.Editor.UI
 {
-internal sealed partial class UtilityWindow
+internal sealed partial class UtilityPanel
 {
     #region Settings variables
     // The variables to be shown under the settings tab.
@@ -82,7 +82,17 @@ internal sealed partial class UtilityWindow
                 if (!SafeMode)
                 {
                     // Reset the EditorPrefs
-                    EditorPrefs.DeleteAll(); //TODO: Make a list of EditorPrefs to delete instead of deleting all of them.
+                    foreach (var pref in VersionManager.EssentialsPrefs)
+                    {
+                        if (EditorPrefs.HasKey(pref))
+                        {
+                            EditorPrefs.DeleteKey(pref);
+                        }
+                        else
+                        {
+                            Debug.LogWarning("Couldn't find Key: " + pref);
+                        }
+                    }
 
                     // Reset any necessary flags or variables
                     SafeMode                                  = true;
@@ -100,7 +110,7 @@ internal sealed partial class UtilityWindow
                     VersionUpdater.CheckForUpdates();
 
                     Close();
-                    SetupWindow.OpenSetupWindow();
+                    UpgradeWindow.Open();
                 }
                 else { EssentialsDebugger.LogAbort(SafeMode); }
             }

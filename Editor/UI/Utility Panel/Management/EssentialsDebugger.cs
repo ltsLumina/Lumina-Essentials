@@ -29,14 +29,14 @@ namespace Lumina.Essentials.Editor.UI.Management
         internal static void Log(string message)
         {
             if (!DebugVersion && LogBehaviour == LogLevel.Verbose) 
-                Debug.Log($"{ErrorMessagePrefix} {message ?? DefaultErrorMessage}");
+                Debug.Log($"{ErrorMessagePrefix} {message ?? DefaultErrorMessage}" + "\n");
         }
 
         // ReSharper disable Unity.PerformanceAnalysis
         internal static void LogWarning(string message)
         {
             if (!DebugVersion && LogBehaviour == LogLevel.Verbose) 
-                Debug.LogWarning($"{ErrorMessagePrefix} {message ?? DefaultErrorMessage}");
+                Debug.LogWarning($"{ErrorMessagePrefix} {message ?? DefaultErrorMessage}" + "\n");
         }
 
         // ReSharper disable Unity.PerformanceAnalysis
@@ -51,7 +51,7 @@ namespace Lumina.Essentials.Editor.UI.Management
         internal static void LogError(string message)
         {
             if (!DebugVersion && LogBehaviour == LogLevel.Verbose) 
-                Debug.LogError($"{ErrorMessagePrefix} {message ?? DefaultErrorMessage}");
+                Debug.LogError($"{ErrorMessagePrefix} {message ?? DefaultErrorMessage}" + "\n");
         }
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace Lumina.Essentials.Editor.UI.Management
         internal static void LogError(Exception exception)
         {
             if (!DebugVersion && LogBehaviour == LogLevel.Verbose) 
-                Debug.LogError($"{ErrorMessagePrefix} {exception.Message ?? DefaultErrorMessage}");
+                Debug.LogError($"{ErrorMessagePrefix} {exception.Message ?? DefaultErrorMessage}" + "\n");
         }
     }
 }

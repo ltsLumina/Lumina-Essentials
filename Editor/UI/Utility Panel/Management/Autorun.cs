@@ -8,26 +8,19 @@ namespace Lumina.Essentials.Editor.UI.Management
 [InitializeOnLoad]
 internal static class Autorun
 {
-    static Autorun()
-    {
-        Debug.Log("Auto-Run Initialized.");
-        EditorApplication.update += OnUpdate;
-    }
+    static Autorun() => EditorApplication.update += OnUpdate;
 
     static void OnUpdate()
     {
-        Debug.Log("setup window open: " + SetupWindowIsOpen());
-        Debug.Log("utility window open: " + UtilityWindowIsOpen());
-        Debug.Log("setup required: " + UtilityWindow.SetupRequired);
-        
-        if (!SetupWindowIsOpen() && !UtilityWindowIsOpen() && UtilityWindow.SetupRequired)
+        if (!UpgradeWindowIsOpen() && !UtilityPanelIsOpen() && UtilityPanel.SetupRequired && UpgradeWindow.WindowClosedCount <= 4)
         {
-            SetupWindow.OpenSetupWindow();
+            UpgradeWindow.Open();
+            VersionUpdater.CheckForUpdates();
         }
     }
 
-    static bool SetupWindowIsOpen() => Resources.FindObjectsOfTypeAll<SetupWindow>().Length > 0;
+    static bool UpgradeWindowIsOpen() => Resources.FindObjectsOfTypeAll<UpgradeWindow>().Length > 0;
 
-    static bool UtilityWindowIsOpen() => Resources.FindObjectsOfTypeAll<UtilityWindow>().Length > 0;
+    static bool UtilityPanelIsOpen() => Resources.FindObjectsOfTypeAll<UtilityPanel>().Length > 0;
 }
 }

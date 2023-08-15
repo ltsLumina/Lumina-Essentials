@@ -11,6 +11,19 @@ namespace Lumina.Essentials.Editor.UI.Management
 /// </summary>
 internal static class VersionManager
 {
+    internal readonly static string[] EssentialsPrefs =
+    { "CurrentVersion",
+      "LatestVersion",
+      "LastOpenVersion",
+      "UpToDate",
+      "DebugVersion",
+      "DontShow_DebugBuildWarning",
+      "SetupRequired",
+      "SafeMode",
+      "AutoSaveEnabled",
+      "AutoSaveInterval",
+      "Logging" };
+    
     /// <summary> The current version of Lumina's Essentials. </summary>
     internal static string CurrentVersion => "3.3.0 Beta3";
     

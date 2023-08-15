@@ -25,6 +25,10 @@ namespace Lumina.Essentials.Editor.UI.Management
         /// <summary>
         /// Log a message every time the scene is auto saved
         /// </summary>
-        internal static bool Logging = true;
+        internal static bool Logging
+        {
+            get => EditorPrefs.GetBool("Logging", false);
+            set => EditorPrefs.SetBool("Logging", value);
+        }
     }
 }

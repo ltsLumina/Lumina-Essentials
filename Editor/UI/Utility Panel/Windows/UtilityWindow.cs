@@ -15,7 +15,7 @@ namespace Lumina.Essentials.Editor.UI
 ///     Includes the Setup Window, Settings Window, and Utilities Window.
 ///     This class is split into three partials, one for each panel.
 /// </summary>
-internal sealed partial class UtilityWindow : EditorWindow
+internal sealed partial class UtilityPanel : EditorWindow
 {
     readonly static Vector2 winSize = new (370, 650);
     readonly static float buttonSize = winSize.x * 0.5f - 6;
@@ -32,10 +32,10 @@ internal sealed partial class UtilityWindow : EditorWindow
     #endregion
 
     [MenuItem("Tools/Lumina/Open Utility Panel")]
-    internal static void OpenUtilityWindow()
+    internal static void OpenUtilityPanel()
     {
         // Get existing open window or if none, make a new one:
-        var window = (UtilityWindow) GetWindow(typeof(UtilityWindow), true, "Lumina's Essentials Utility Panel");
+        var window = (UtilityPanel) GetWindow(typeof(UtilityPanel), true, "Lumina's Essentials Utility Panel");
         window.minSize = winSize;
         window.maxSize = window.minSize;
         window.Show();
@@ -53,9 +53,6 @@ internal sealed partial class UtilityWindow : EditorWindow
 
         void Initialization()
         {
-            // Close the setup window if it is open.
-            //if (Resources.FindObjectsOfTypeAll<SetupWindow>().Length > 0) SetupWindow.CloseSetupWindow(); 
-
             // Enable safe mode by default.
             SafeMode = true;
 
@@ -82,6 +79,9 @@ internal sealed partial class UtilityWindow : EditorWindow
             // If the user is not up-to-date, display a warning.
             if (!EditorPrefs.GetBool("UpToDate")) 
                 EssentialsDebugger.LogWarning("There is a new version available!" + "\nPlease update to the latest version for the latest features.");
+
+            // Reset the window closed count.
+            UpgradeWindow.WindowClosedCount = 0;
         }
     }
 
@@ -90,8 +90,6 @@ internal sealed partial class UtilityWindow : EditorWindow
     {
         ModuleInstaller.ClearSelectedModules(); 
         EditorApplication.playModeStateChanged -= PlayModeStateChanged;
-
-        if (SetupRequired) EditorPrefs.SetBool("Init", false);
     }
 
     /// <summary> Subscribes to the play mode state changed event to repaint the window when the user enters play mode. </summary>
@@ -123,7 +121,7 @@ internal sealed partial class UtilityWindow : EditorWindow
         if (IsPlaymodeActive()) return;
 
         // Don't show the toolbar if the user in the setup panel or if the window doesn't exist.
-        var utilityWindow = GetWindow<UtilityWindow>();
+        var utilityWindow = GetWindow<UtilityPanel>();
         if (utilityWindow != null) currentPanel();
     }
 
@@ -197,7 +195,7 @@ internal sealed partial class UtilityWindow : EditorWindow
 
             if (GUILayout.Button("<b>Setup Essentials...</b>\n(add/remove Modules)", buttonSetup, GUILayout.Width(200)))
             {
-                DeleteAutorunFiles();
+                DeleteAutorunFiles(); //TODO: Potentially move to after installation of modules
                 
                 // Select Setup Panel (not main panel)
                 currentPanel = DrawModulesGUI;

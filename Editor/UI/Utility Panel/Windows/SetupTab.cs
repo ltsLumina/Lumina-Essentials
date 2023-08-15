@@ -10,7 +10,7 @@ using static Lumina.Essentials.Editor.UI.Management.EditorGUIUtils;
 
 namespace Lumina.Essentials.Editor.UI
 {
-internal sealed partial class UtilityWindow
+internal sealed partial class UtilityPanel
 {
     #region Modules
     /// <summary> Toggle to enable or disable the installation of Alex' Essentials. (Half the package) </summary>

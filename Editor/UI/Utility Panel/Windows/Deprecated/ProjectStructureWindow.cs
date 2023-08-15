@@ -36,7 +36,7 @@ internal class ProjectStructureWindow : EditorWindow
             // Drag and drop for folder to use
 
             // From the Utilities Window
-            //UtilityWindow.DrawDragAndDropConfig(createProjectEnum);
+            //UtilityPanel.DrawDragAndDropConfig(createProjectEnum);
         }
 
         ProjectStructureGUI.Create();

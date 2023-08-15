@@ -5,7 +5,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using static Lumina.Essentials.Editor.UI.Management.EditorGUIUtils;
-using static Lumina.Essentials.Editor.UI.UtilityWindow;
+using static Lumina.Essentials.Editor.UI.UtilityPanel;
 #endregion
 
 namespace Lumina.Essentials.Editor.UI.Management

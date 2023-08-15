@@ -25,9 +25,9 @@ namespace Lumina.Essentials.Editor.UI.Management
         internal static GUIStyle btImgStyle;
         internal static GUIStyle boldLabelStyle;
         internal static GUIStyle setupLabelStyle;
-        internal static GUIStyle setupWindowStyle;
+        internal static GUIStyle upgradeWindowStyle;
         internal static GUIStyle dropAreaStyle;
-        internal static GUIStyle setupWindowHeaderStyle;
+        internal static GUIStyle UpgradeWindowHeaderStyle;
 
         // -- GUIContent -- //
         internal static GUIContent safeModeWarningContent;
@@ -124,7 +124,7 @@ namespace Lumina.Essentials.Editor.UI.Management
             setupLabelStyle           = new (boldLabelStyle);
             setupLabelStyle.alignment = TextAnchor.MiddleCenter;
 
-            setupWindowStyle = new()
+            upgradeWindowStyle = new()
             { richText  = true,
               alignment = TextAnchor.MiddleLeft,
               fontSize  = 20,
@@ -132,7 +132,7 @@ namespace Lumina.Essentials.Editor.UI.Management
               normal = new ()
               { textColor = new (0.86f, 0.86f, 0.86f) } };
 
-            setupWindowHeaderStyle = new()
+            UpgradeWindowHeaderStyle = new()
             { fontSize  = 20,
               fontStyle = FontStyle.Bold,
               normal = new()
@@ -247,10 +247,21 @@ namespace Lumina.Essentials.Editor.UI.Management
                         // If Autorun.cs file exits
                         if (File.Exists(autoRunFilePath))
                         {
-                            // Delete the file
-                            //File.Delete(autoRunFilePath);
+                            if (EditorUtility.DisplayDialog("Delete Autorun.cs", "Autorun.cs was found in " + autoRunFilePath + ".\n\n" + "Do you want to delete it?", "Yes", "No"))
+                            {
+                                // Delete the file
+                                if (!VersionManager.DebugVersion) AssetDatabase.DeleteAsset(autoRunFilePath);
+                                else EssentialsDebugger.LogWarning("Can't delete Autorun.cs in debug mode.");
 
-                            Debug.Log("Autorun.cs deleted from " + autoRunFilePath);
+                                AssetDatabase.Refresh();
+                            }
+
+                            if (VersionManager.DebugVersion) EssentialsDebugger.Log("Autorun.cs deleted from " + autoRunFilePath);
+                        }
+                        else if (VersionManager.DebugVersion)
+                        {
+                            EssentialsDebugger.LogError
+                                ($"Autorun.cs not found in {autoRunFilePath}" + "\n └ <i>(This is not an error. It just means that the file does not exist.)</i>");
                         }
                     }
                 }

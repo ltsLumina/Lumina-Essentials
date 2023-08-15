@@ -2,17 +2,19 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using Lumina.Essentials.Editor.UI.Management;
 using UnityEditor;
 using UnityEngine;
 using static Lumina.Essentials.Editor.UI.Management.EditorGUIUtils;
+using Random = UnityEngine.Random;
 #endregion
 
 namespace Lumina.Essentials.Editor.UI
 {
 // One of the three tabs in the Utility Window.
 // Includes all the functions for the Utilities tab.
-internal sealed partial class UtilityWindow
+internal sealed partial class UtilityPanel
 {
     #region Utilities variables
     enum DragAndDropType // Only the ConvertImagesUtility enum is being used. The rest are deprecated.
@@ -127,9 +129,33 @@ internal sealed partial class UtilityWindow
 
         GUILayout.Space(5);
 
-        if (GUILayout.Button("Placeholder Button", GUILayout.Height(35))) EssentialsDebugger.Log("This does nothing as it's a placeholder.");
+        if (GUILayout.Button("Placeholder Button", GUILayout.Height(35)))
+        {
+            EssentialsDebugger.Log("This does nothing as it's a placeholder.");
 
-        //TODO: This could be similar to configure images, but for audio instead. (.wav, .mp3, .ogg, etc.)
+            // Meme button :)
+            float progress = 0;
+
+            while (progress < 1)
+            {
+                progress += Random.Range(-0.1f, 0.3f); // randomly increment progress
+
+                if (progress > 1) // clamp the progress to maximum of 1
+                    progress = 1;
+
+                // if the user presses cancel while the progress bar is updating, stop the process
+                if (EditorUtility.DisplayCancelableProgressBar("Processing...", $"Loading... {progress * 100:F0} / 100", progress))
+                {
+                    EditorUtility.ClearProgressBar();
+                    return;
+                }
+
+                Thread.Sleep(Random.Range(250, 4000)); // randomly wait 1 to 2 seconds before updating again
+            }
+            
+            Application.OpenURL("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+            EditorUtility.ClearProgressBar();
+        }
     }
 
     static void CreateProjectStructure()

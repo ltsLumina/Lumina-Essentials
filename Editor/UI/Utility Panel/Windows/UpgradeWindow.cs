@@ -26,7 +26,7 @@ internal sealed class UpgradeWindow : EditorWindow
 
     internal static int WindowClosedCount;
     const string dialogMessage = "The Setup Window will not open again unless you open the Utility Panel. "                 +
-                                 "If you wish to access the Utility Panel to setup your installation of Lumina's Essential" +
+                                 "If you wish to access the Utility Panel to setup your installation of Lumina's Essentials" +
                                  ", it can be found under \"Tools\" > \"Lumina\" > \"Open Utility Panel\" in the toolbar.";
 
     /// <summary>
@@ -43,24 +43,16 @@ internal sealed class UpgradeWindow : EditorWindow
         if (updateOccured) HandleUpdateOccured();
     }
 
-    internal static void CloseUpgradeWindows()
-    {
-        // Get all windows of type UpgradeWindow
-        var windows = Resources.FindObjectsOfTypeAll<UpgradeWindow>();
-
-        // Iterate through the array and close each window
-        if (windows != null) 
-            foreach (var window in windows) { window.Close(); }
-    }
-
     void OnDisable()
     {
         VersionManager.LastOpenVersion = VersionManager.CurrentVersion;
         WindowClosedCount++;
 
         if (WindowClosedCount > 4)
-            EditorUtility.DisplayDialog
-            ("Lumina's Essentials", dialogMessage, "I understand.");
+        {
+            EditorApplication.Beep();
+            EditorUtility.DisplayDialog("Lumina's Essentials", dialogMessage, "I understand.");
+        }
     }
 
     void OnGUI()

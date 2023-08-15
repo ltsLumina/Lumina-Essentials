@@ -90,8 +90,10 @@ internal sealed partial class UtilityPanel
                         }
                         else { EditorPrefs.DeleteKey(pref); }
                     }
+                    
+                    
 
-                    // Reset any necessary flags or variables
+                    // Reset all Utility Panel variables.
                     SafeMode                                  = true;
                     SetupRequired                             = true;
                     VersionManager.DontShow_DebugBuildWarning = false;
@@ -204,9 +206,6 @@ internal sealed partial class UtilityPanel
 
         // Displays if this is a debug build or not
         EditorGUILayout.LabelField("Debug Version", VersionManager.DebugVersion.ToString());
-
-        // Displays if the Auto-Save feature is enabled or not
-        EditorGUILayout.LabelField("Auto-Save", AutoSaveConfig.Enabled.ToString());
 
         // Draw a horizontal line (separator)
         EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);

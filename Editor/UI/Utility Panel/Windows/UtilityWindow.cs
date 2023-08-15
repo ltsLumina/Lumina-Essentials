@@ -278,8 +278,8 @@ Check out the ""Utilities"" tab to access the various workflow-enhancing feature
                 }
             }
 
-            if (GUILayout.Button
-                (openKnownIssuesContent, GUILayout.Width(buttonSize), GUILayout.Height(40))) Application.OpenURL("https://github.com/ltsLumina/Lumina-Essentials/issues");
+            if (GUILayout.Button(openKnownIssuesContent, GUILayout.Width(buttonSize), GUILayout.Height(40))) 
+                Application.OpenURL("https://github.com/ltsLumina/Lumina-Essentials/issues");
         }
         #endregion
         GUILayout.Space(3);

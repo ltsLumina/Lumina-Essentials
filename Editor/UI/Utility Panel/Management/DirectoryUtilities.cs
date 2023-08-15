@@ -106,44 +106,42 @@ public class DirectoryUtilities : MonoBehaviour
 
     internal static void DeleteAutorunFiles()
     {
-        string       mainDirectory   = Path.Combine("Lumina's Essentials", "Editor");
-        const string targetDirectory = "Management";
-        const string targetFile      = "Autorun.cs";
+        string       baseDirectory    = Application.dataPath;
+        const string targetFolderName = "Lumina's Essentials";
+        const string targetFileName   = "Autorun.cs";
 
-        string[] allDirectories = Directory.GetDirectories(Application.dataPath, "*.*", SearchOption.AllDirectories);
+        // Search for Lumina's Essentials in the whole directory
+        string[] luminaDirectories = Directory.GetDirectories(baseDirectory, targetFolderName, SearchOption.AllDirectories);
 
-        foreach (string directory in allDirectories)
+        foreach (string luminaDirectory in luminaDirectories)
         {
-            // Get the relative path from Assets
-            string relativePath = $"Assets{directory[Application.dataPath.Length..]}";
+            // Get all files in the Lumina's Essentials directory and its subdirectories
+            string[] files = Directory.GetFiles(luminaDirectory, targetFileName, SearchOption.AllDirectories);
 
-            // If directory is within "Lumina's Essentials/Modules"
-            if (!Path.GetFullPath(relativePath).EndsWith(mainDirectory)) continue;
-
-            // Get all subdirectories within the main directory.
-            string[] subDirectories = Directory.GetDirectories(directory, "*.*", SearchOption.AllDirectories);
-
-            // For each "Management" directory among the subdirectories
-            foreach (string sub in subDirectories.Where(sub => Path.GetFileName(sub).Equals(targetDirectory, StringComparison.OrdinalIgnoreCase)))
+            foreach (string file in files)
             {
-                // Formulate the path for the Autorun.cs file in the Unity's asset path format
-                string autoRunFilePath  = Path.Combine(sub, targetFile).Replace("\\", "/");
-                string autoRunAssetPath = $"Assets{autoRunFilePath[Application.dataPath.Length..]}";
+                // Get the relative path from Assets
+                string relativePath = $"Assets{file[baseDirectory.Length..]}";
 
                 // If Autorun.cs file exists
-                if (File.Exists(autoRunFilePath))
+                if (File.Exists(file))
                 {
                     // Delete the file
-                    if (!VersionManager.DebugVersion) AssetDatabase.DeleteAsset(autoRunAssetPath);
-                    else EssentialsDebugger.LogWarning("Can't delete Autorun.cs in debug mode.");
+                    if (!VersionManager.DebugVersion)
+                    {
+                        AssetDatabase.DeleteAsset(relativePath);
+                        EssentialsDebugger.Log($"DEBUG: Autorun.cs deleted from {file}"); //TODO: remove
+                    }
+                    else
+                    {
+                        EssentialsDebugger.LogWarning("Can't delete Autorun.cs in debug mode.");
+                    }
 
                     AssetDatabase.Refresh();
-
-                    if (VersionManager.DebugVersion) EssentialsDebugger.Log($"Autorun.cs deleted from {autoRunFilePath}");
                 }
                 else if (VersionManager.DebugVersion)
                 {
-                    EssentialsDebugger.LogError($"Autorun.cs not found in {autoRunFilePath}\n └ <i>(This is not an error. It just means that the file does not exist.)</i>");
+                    EssentialsDebugger.LogError($"Autorun.cs not found in {file}\n └ <i>(This is not an error. It just means that the file does not exist.)</i>");
                 }
             }
         }

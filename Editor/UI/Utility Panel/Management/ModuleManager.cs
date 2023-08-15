@@ -127,7 +127,6 @@ public class ModuleInstaller : MonoBehaviour
                 else // Full Package is selected but not installed, install directly.
                 {
                     ImportModulePackage(relativePath, module.Key);
-                    DirectoryUtilities.DeleteAutorunFiles();
                 }
                 return; // Stop further processing once Full Package is handled
             }
@@ -136,12 +135,15 @@ public class ModuleInstaller : MonoBehaviour
             if (UtilityPanel.InstalledModules.ContainsKey(module.Key) && UtilityPanel.InstalledModules[module.Key])
             {
                 bool reInstallConfirmation = ModuleInstallConfirmation(module.Key);
-                if (reInstallConfirmation) ImportModulePackage(relativePath, module.Key);
+
+                if (reInstallConfirmation)
+                {
+                    ImportModulePackage(relativePath, module.Key);
+                }
             }
             else // If not installed, install directly.
             {
                 ImportModulePackage(relativePath, module.Key);
-                DirectoryUtilities.DeleteAutorunFiles();
             }
         }
     }
@@ -183,6 +185,9 @@ public class ModuleInstaller : MonoBehaviour
         {
             string modulePath = Path.Combine(relativePath, moduleName) + ".unitypackage";
             AssetDatabase.ImportPackage(modulePath, false);
+
+            // Delete the Autorun.cs file from the project
+            DirectoryUtilities.DeleteAutorunFiles();
         }
 
         static void SetupImportCallbacks()

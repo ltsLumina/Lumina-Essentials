@@ -20,7 +20,7 @@ internal static class Autorun
 
             if (alreadyCheckedForUpdate)
                 return; // Only run the update check once. This is to prevent a GitHub API call every time the user opens the Utility Panel, eventually leading to a rate limit.
-            
+
             VersionUpdater.CheckForUpdates();
             alreadyCheckedForUpdate = true;
         }

@@ -11,7 +11,7 @@ namespace Lumina.Essentials.Editor.UI.Management
 public class DirectoryUtilities : MonoBehaviour
 {
     #region Check for Folder/File
-    internal static bool IsFolderInProject(string baseDirectory, string targetFolderName)
+    internal static bool IsFolderInEssentials(string baseDirectory, string targetFolderName)
     {
         try
         {
@@ -20,7 +20,7 @@ public class DirectoryUtilities : MonoBehaviour
 
             if (!luminaDirectories.Any())
             {
-                Console.WriteLine("Lumina's Essentials folder not found.");
+                EssentialsDebugger.LogWarning("Lumina's Essentials folder not found." + "\nPlease contact Lumina about this error or create an issue on the GitHub page.");
                 return false;
             }
 
@@ -35,12 +35,12 @@ public class DirectoryUtilities : MonoBehaviour
         } catch (Exception ex)
         {
             // Handle exception, mostly due to lack of access to some directories
-            Console.WriteLine($"An error occurred: {ex.Message}");
+            EssentialsDebugger.LogError($"An error occurred: {ex.Message}");
             return false;
         }
     }
 
-    internal static bool IsFileInProject(string baseDirectory, string targetFileName)
+    internal static bool IsFileInEssentials(string baseDirectory, string targetFileName)
     {
         try
         {

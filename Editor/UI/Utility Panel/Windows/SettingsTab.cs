@@ -84,14 +84,11 @@ internal sealed partial class UtilityPanel
                     // Reset the EditorPrefs
                     foreach (var pref in VersionManager.EssentialsPrefs)
                     {
-                        if (EditorPrefs.HasKey(pref))
+                        if (!EditorPrefs.HasKey(pref))
                         {
-                            EditorPrefs.DeleteKey(pref);
+                            if (VersionManager.DebugVersion) EssentialsDebugger.LogWarning("Couldn't find Key: " + pref);
                         }
-                        else
-                        {
-                            Debug.LogWarning("Couldn't find Key: " + pref);
-                        }
+                        else { EditorPrefs.DeleteKey(pref); }
                     }
 
                     // Reset any necessary flags or variables

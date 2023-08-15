@@ -50,24 +50,34 @@ namespace Lumina.Essentials.Editor.UI.Management
                 yield return null; // Wait for the request to complete
             }
 
-            if (webRequest.result == UnityWebRequest.Result.Success)
+            switch (webRequest.result)
             {
-                string jsonResult = Encoding.UTF8.GetString(webRequest.downloadHandler.data);
-                string tag        = JsonUtility.FromJson<Release>(jsonResult).tag_name;
+                case UnityWebRequest.Result.Success: {
+                    string jsonResult = Encoding.UTF8.GetString(webRequest.downloadHandler.data);
+                    string tag        = JsonUtility.FromJson<Release>(jsonResult).tag_name;
 
-                // Update LatestVersion, UpToDate, LastUpdateCheck accordingly.
-                EditorPrefs.SetString("LastUpdateCheck", DateTime.Now.ToString(CultureInfo.InvariantCulture));
+                    // Update LatestVersion, UpToDate, LastUpdateCheck accordingly.
+                    EditorPrefs.SetString("LastUpdateCheck", DateTime.Now.ToString(CultureInfo.InvariantCulture));
                 
-                // Set the Editor Prefs to their updated values.
-                LatestVersion = tag;
-                UpdatePrefs();
-            }
-            else // Web Request failed, log errors and set LatestVersion to null.
-            {
-                Debug.LogError($"UnityWebRequest failed with result: {webRequest.result} \nAre you connected to the internet?");
-                Debug.LogError($"Error message: {webRequest.error} \nAre you connected to the internet?");
+                    // Set the Editor Prefs to their updated values.
+                    LatestVersion = tag;
+                    UpdatePrefs();
+                    break;
+                }
 
-                LatestVersion = null;
+                case UnityWebRequest.Result.ProtocolError:
+                    Debug.LogError("UnityWebRequest failed with result: ProtocolError" + "\nYou have probably been rate limited by GitHub.");
+
+                    LatestVersion = null;
+                    break;
+
+                // Web Request failed, log errors and set LatestVersion to null.
+                default:
+                    Debug.LogError($"UnityWebRequest failed with result: {webRequest.result} \nAre you connected to the internet?");
+                    Debug.LogError($"Error message: {webRequest.error}");
+
+                    LatestVersion = null;
+                    break;
             }
         }
 

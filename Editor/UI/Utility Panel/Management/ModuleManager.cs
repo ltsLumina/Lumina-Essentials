@@ -44,7 +44,7 @@ public class ModuleInstaller : MonoBehaviour
             {
                 string itemFile = item + ".cs";
 
-                if (DirectoryUtilities.IsFolderInProject(projectDirectory, item) || DirectoryUtilities.IsFileInProject(projectDirectory, itemFile))
+                if (DirectoryUtilities.IsFolderInEssentials(projectDirectory, item) || DirectoryUtilities.IsFileInEssentials(projectDirectory, itemFile))
                 {
                     if (VersionManager.DebugVersion) { Debug.Log($"Item '{item}' exists in the project."); }
                     UtilityPanel.InstalledModules[item] = true;
@@ -92,62 +92,70 @@ public class ModuleInstaller : MonoBehaviour
         }
 
         internal static void InstallSelectedModules()
+{
+    // Before doing anything, check which modules are installed.
+    CheckForInstalledModules();
+
+    const string targetDirectory = "Lumina's Essentials/Editor/Packages";
+    string       relativePath    = GetRelativePath(targetDirectory);
+
+    if (string.IsNullOrEmpty(relativePath))
+    {
+        Debug.LogError(targetDirectory + " not found.");
+        return;
+    }
+
+    SetupImportCallbacks();
+
+    AssetDatabase.StartAssetEditing(); // Start the AssetEditing here.
+    try
+    {
+        // Compare selected and installed modules
+        foreach (var module in UtilityPanel.SelectedModules)
         {
-            // Before doing anything, check which modules are installed.
-            CheckForInstalledModules();
+            // If the module is selected.
+            if (!module.Value) continue;
 
-            const string targetDirectory = "Lumina's Essentials/Editor/Packages";
-            string       relativePath    = GetRelativePath(targetDirectory);
-
-            if (string.IsNullOrEmpty(relativePath))
+            // Handle "Full Package" separately
+            if (module.Key == "Full Package")
             {
-                Debug.LogError(targetDirectory + " not found.");
-                return;
+                if (UtilityPanel.InstalledModules.ContainsKey(module.Key) && UtilityPanel.InstalledModules[module.Key])
+                {
+                    bool reInstallConfirmation = ModuleInstallConfirmation(module.Key);
+                    if (reInstallConfirmation) ImportModulePackage(relativePath, module.Key);
+                }
+                else // Full Package is selected but not installed, install directly.
+                {
+                    ImportModulePackage(relativePath, module.Key);
+                    DirectoryUtilities.DeleteAutorunFiles();
+                }
+                return; // Stop further processing once Full Package is handled
             }
 
-            SetupImportCallbacks();
-
-            // Compare selected and installed modules
-            foreach (var module in UtilityPanel.SelectedModules)
+            // For other modules
+            if (UtilityPanel.InstalledModules.ContainsKey(module.Key) && UtilityPanel.InstalledModules[module.Key])
             {
-                // If the module is selected.
-                if (module.Value)
-                {
-                    // If module is 'Full Package', reinstall and return from method to prevent the loop execution for subsequent modules.
-                    if (module.Key == "Full Package")
-                    {
-                        bool reInstallConfirmation = ModuleInstallConfirmation(module.Key);
-                        if (reInstallConfirmation) ImportModulePackage(relativePath, module.Key);
-                        return;
-                    }
-
-                    // If installed, ask for re-installation. If not installed, install directly.
-                    if (UtilityPanel.InstalledModules.ContainsKey(module.Key) && UtilityPanel.InstalledModules[module.Key])
-                    {
-                        bool reInstallConfirmation = ModuleInstallConfirmation(module.Key);
-                        if (reInstallConfirmation) ImportModulePackage(relativePath, module.Key);
-                    }
-                    else
-                    {
-                        try
-                        {
-                            AssetDatabase.StartAssetEditing();
-                            ImportModulePackage(relativePath, module.Key);
-
-                            // Delete the autorun files if they exist so that the upgrade window doesn't show up again.
-                            DirectoryUtilities.DeleteAutorunFiles();
-                            
-                            AssetDatabase.StopAssetEditing();
-                        }
-                        catch (Exception e)
-                        {
-                            EssentialsDebugger.LogError("Failed to install module: " + module.Key + "\n" + e.Message + "\n" + e.StackTrace);
-                            throw;
-                        }
-                    }
-                }
+                bool reInstallConfirmation = ModuleInstallConfirmation(module.Key);
+                if (reInstallConfirmation) ImportModulePackage(relativePath, module.Key);
+            }
+            else // If not installed, install directly.
+            {
+                ImportModulePackage(relativePath, module.Key);
+                DirectoryUtilities.DeleteAutorunFiles();
             }
         }
+    }
+    catch (Exception e)
+    {
+        EssentialsDebugger.LogError("Failed to install module(s)" + "\n" + e.Message + "\n" + e.StackTrace);
+        throw;
+    }
+    finally
+    {
+        // Stop the AssetEditing at the end, even if some error was thrown.
+        AssetDatabase.StopAssetEditing();
+    }
+}
 
 
         static bool ModuleInstallConfirmation(string moduleName) => 

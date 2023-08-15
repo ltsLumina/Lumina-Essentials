@@ -133,6 +133,10 @@ public class ModuleInstaller : MonoBehaviour
                         {
                             AssetDatabase.StartAssetEditing();
                             ImportModulePackage(relativePath, module.Key);
+
+                            // Delete the autorun files if they exist so that the upgrade window doesn't show up again.
+                            DirectoryUtilities.DeleteAutorunFiles();
+                            
                             AssetDatabase.StopAssetEditing();
                         }
                         catch (Exception e)

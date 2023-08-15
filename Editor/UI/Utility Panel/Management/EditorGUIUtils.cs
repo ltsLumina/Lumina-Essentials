@@ -219,55 +219,6 @@ namespace Lumina.Essentials.Editor.UI.Management
             return true;
         }
 
-        internal static void DeleteAutorunFiles()
-        {
-            string       mainDirectory   = Path.Combine("Lumina's Essentials", "Editor");
-            const string targetDirectory = "Management";
-            const string targetFile      = "Autorun.cs";
-
-            var allDirectories = Directory.GetDirectories(Application.dataPath, "*.*", SearchOption.AllDirectories);
-
-            foreach (var directory in allDirectories)
-            {
-                // Get the relative path from Assets
-                var relativePath = directory[(Application.dataPath.Length - "Assets".Length)..];
-
-                // If directory is within "Lumina's Essentials/Modules"
-                if (Path.GetFullPath(relativePath).EndsWith(mainDirectory))
-                {
-                    // Get all subdirectories within the main directory.
-                    var subDirectories = Directory.GetDirectories(directory, "*.*", SearchOption.AllDirectories);
-
-                    // For each "Management" directory among the subdirectories
-                    foreach (var sub in subDirectories.Where(sub => Path.GetFileName(sub).Equals(targetDirectory, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        // Formulate the path for the Autorun.cs file
-                        var autoRunFilePath = Path.Combine(sub, targetFile);
-
-                        // If Autorun.cs file exits
-                        if (File.Exists(autoRunFilePath))
-                        {
-                            if (EditorUtility.DisplayDialog("Delete Autorun.cs", "Autorun.cs was found in " + autoRunFilePath + ".\n\n" + "Do you want to delete it?", "Yes", "No"))
-                            {
-                                // Delete the file
-                                if (!VersionManager.DebugVersion) AssetDatabase.DeleteAsset(autoRunFilePath);
-                                else EssentialsDebugger.LogWarning("Can't delete Autorun.cs in debug mode.");
-
-                                AssetDatabase.Refresh();
-                            }
-
-                            if (VersionManager.DebugVersion) EssentialsDebugger.Log("Autorun.cs deleted from " + autoRunFilePath);
-                        }
-                        else if (VersionManager.DebugVersion)
-                        {
-                            EssentialsDebugger.LogError
-                                ($"Autorun.cs not found in {autoRunFilePath}" + "\n └ <i>(This is not an error. It just means that the file does not exist.)</i>");
-                        }
-                    }
-                }
-            }
-        }
-
         internal static void ShowAllEditorPrefs() => EditorPrefsWindow.ShowWindow();
     }
 }

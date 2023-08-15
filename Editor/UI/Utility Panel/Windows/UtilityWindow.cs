@@ -195,8 +195,6 @@ internal sealed partial class UtilityPanel : EditorWindow
 
             if (GUILayout.Button("<b>Setup Essentials...</b>\n(add/remove Modules)", buttonSetup, GUILayout.Width(200)))
             {
-                DeleteAutorunFiles(); //TODO: Potentially move to after installation of modules
-                
                 // Select Setup Panel (not main panel)
                 currentPanel = DrawModulesGUI;
             }

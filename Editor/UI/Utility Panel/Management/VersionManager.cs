@@ -25,7 +25,7 @@ internal static class VersionManager
       "Logging" };
     
     /// <summary> The current version of Lumina's Essentials. </summary>
-    internal static string CurrentVersion => "3.0.0 Beta4";
+    internal static string CurrentVersion => "3.0.0";
     
     /// <summary> The latest version of Lumina's Essentials available on GitHub. </summary>
     internal static string LatestVersion

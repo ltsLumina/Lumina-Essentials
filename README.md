@@ -40,10 +40,11 @@ The package also features contributions from Joel's Essentials, providing additi
    - Or from the Package Manager under "Add Package from git URL" and enter `https://github.com/ltsLumina/Lumina-Essentials.git`
 3. Download the latest release of the package as a .unitypackage.
 4. In Unity, either open the package or drag and drop it in from wherever you saved it.
-6. Ensure that **all** files are selected and click "Import."
+5. Ensure that **all** files are selected and click "Import."
+6. You're done! You can now access the Utility Panel and start using the features provided by the package.
 
 ## Getting Started
-To access the utility window, go to "Tools" -> "Lumina" -> "Open Utility Window" in the Unity editor. From there, you can explore and utilize various features, including project initialization, enter play mode options, and auto-save.
+To access the Utility Panel, go to "Tools" -> "Lumina" -> "Open Utility Panel" in the Unity editor. From there, you can explore and utilize various features, including the auto-save feature, enter play mode options, and auto-save.
 
 All the Essentials are under the `Lumina.Essentials` namespace, with the Sequencer and Attributes being sub-namespaces.
 Simply add the namespace(s) to any script you are writing and start using the methods provided!
@@ -93,14 +94,11 @@ These methods can also be used as normal in your code, they aren't limited as ho
 > Joel's Essentials is a set of additional handy tools that complement Lumina's Unity Essentials Package. It includes the following features:
 
 - **Singleton Class:** Lets you turn any MonoBehaviour into a singleton, ensuring that only one instance of the script exists in the scene.
-
 - **Object Pooling System:** Allows you to easily create object pools for your Unity game, improving performance by reusing objects instead of instantiating and destroying them frequently.
-
 - **SceneManagerExtended:** Extends the SceneManager class with various methods to easily load scenes, reload the current scene, load the next or previous scene, or even load a scene asynchronously.
-
 - **Music System:** Streamlines the process of adding music to your game and includes a MusicTrigger system to play music upon touching a collider.
 
-> Note: The Joel's Essentials part of the package is only available when selecting "Full Package" in the Utility Window's Setup menu.
+> Note: The Joel's Essentials part of the package is only available when selecting "Full Package" in the Utility Panel's Setup menu.
 
 ## Contribution and Bug Reporting
 This essentials package has been tested on various projects, but if you encounter any issues or have suggestions for improvements, please don't hesitate to [submit an issue](https://github.com/ltsLumina/Lumina-Essentials/issues). Your feedback is valuable and helps in making this package even better!

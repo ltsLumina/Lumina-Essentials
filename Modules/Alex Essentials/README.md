@@ -12,7 +12,7 @@ inspector.*
 > for creating the RangedFloat attribute and the drawers. I simply added them to my essentials package for easy access.
 
 **Attributes:**
-![attribute example.gif](..%2F..%2FEditor%2FImgs%2Fattribute%20example.gif)
+![attribute example.gif](..%2F..%2FEditor%2FUI%2FImgs%2Fattribute%20example.gif)
 
 ## General Notes
 
@@ -54,7 +54,7 @@ If any doubt on how to use the attributes arises, please see the provided exampl
 *The Sequencer is a tool that allows you to create a sequence of actions that can be triggered by a single call.*
 
 **Sequencer:**
-![sequencing example.gif](..%2F..%2FEditor%2FImgs%2Fsequencing%20example.gif)
+![sequencing example.gif](..%2F..%2FEditor%2FUI%2FImgs%2Fsequencing%20example.gif)
 
 ## General Notes
 
@@ -88,9 +88,6 @@ If any doubt on how to use the attributes arises, please see the provided exampl
 # Helpers
 *The Helpers class is a set of tools aimed at giving developers easy access to common methods.*
 
-**Helpers Class:**
-![helpers example.gif](..%2F..%2FEditor%2FImgs%2Fhelpers%20example.gif)
-
 ## General Notes
 
 - The Helpers class includes a variety of methods that are commonly used in Unity projects.
@@ -122,8 +119,7 @@ If any doubt on how to use the attributes arises, please see the provided exampl
 *The Shortcuts class consists of a couple of useful shortcuts for performing common tasks more efficiently through hotkeys.*
 
 **Shortcuts Class:**
-
-![shortcuts example.gif](..%2F..%2FEditor%2FImgs%2Fshortcuts%20example.gif)
+![shortcuts example.gif](..%2F..%2FEditor%2FUI%2FImgs%2Fshortcuts%20example.gif)
 
 ## General Notes
 

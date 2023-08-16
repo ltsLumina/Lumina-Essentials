@@ -87,7 +87,7 @@ internal sealed partial class UtilityPanel
                 else
                 {
                     SafeMode = true;
-                    EssentialsDebugger.LogAbort(SafeMode);
+                    EssentialsDebugger.LogAbort();
                 }
             }
             else

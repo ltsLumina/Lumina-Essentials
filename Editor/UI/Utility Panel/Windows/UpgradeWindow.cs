@@ -1,5 +1,5 @@
 // ONLY UNCOMMENT THIS IF DEBUG BUILD IS TRUE IN VERSION-MANAGER.
-//#define DEBUG_BUILD
+#define DEBUG_BUILD
 
 #region
 using System.Linq;
@@ -24,11 +24,16 @@ internal sealed class UpgradeWindow : EditorWindow
         static void Debug_OpenUpgradeWindow() => Open();
 #endif
 
+    readonly static Vector2 PC_WinSize = new (400,300);
+    readonly static Vector2 Laptop_WinSize = new (200, 150);
+    
     internal static int WindowClosedCount;
     const string dialogMessage = "The Setup Window will not open again unless you open the Utility Panel. "                 +
                                  "If you wish to access the Utility Panel to setup your installation of Lumina's Essentials" +
                                  ", it can be found under \"Tools\" > \"Lumina\" > \"Open Utility Panel\" in the toolbar.";
 
+    readonly static bool isPossibleLaptop = SystemInfo.batteryStatus != BatteryStatus.Unknown;
+    
     /// <summary>
     ///     Opens the upgrade window that instructs the user on how to get started with Lumina's Essentials.
     /// </summary>
@@ -36,7 +41,8 @@ internal sealed class UpgradeWindow : EditorWindow
     internal static void Open(bool updateOccured = false)
     {
         var window = GetWindow<UpgradeWindow>(true, "New Version of Lumina's Essentials Imported", true);
-        window.minSize = new (400, 300);
+
+        window.minSize = Laptop_WinSize;
         window.maxSize = window.minSize;
         window.Show();
 

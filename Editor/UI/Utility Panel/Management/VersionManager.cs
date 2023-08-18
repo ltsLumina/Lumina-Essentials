@@ -64,7 +64,7 @@ internal static class VersionManager
     {
         EditorPrefs.SetString("CurrentVersion", CurrentVersion);
         EditorPrefs.SetString("LatestVersion", LatestVersion ?? "Error fetching version..");
-        EditorPrefs.SetBool("UpToDate", CompareVersions(CurrentVersion, LatestVersion));
+        EditorPrefs.SetBool("UpToDate", CurrentVersion == LatestVersion);
         EditorPrefs.SetBool("DebugVersion", DebugVersion);
     }
 

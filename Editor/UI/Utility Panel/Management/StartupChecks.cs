@@ -5,7 +5,6 @@ namespace Lumina.Essentials.Editor.UI.Management
 /// <summary>
 /// Runs checks upon startup to ensure the user is up-to-date and to display warnings if necessary.
 /// </summary>
-[InitializeOnLoad]
 internal static class StartupChecks
 {
     /// <summary>
@@ -15,7 +14,7 @@ internal static class StartupChecks
     /// <param name="comparisonVersion"> The version to compare the current version with. </param>
     /// <returns> True if the current version is older than the comparison version. </returns>
     internal static bool IsNewVersionAvailable(string currentVersion, string comparisonVersion) => !VersionManager.CompareVersions(currentVersion, comparisonVersion);
-
+    
     static void CheckForUpdatesAfterOneWeek()
     {
         if (TimeManager.TimeSinceLastUpdateInDays() > 7)

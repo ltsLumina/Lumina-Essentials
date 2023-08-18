@@ -53,6 +53,8 @@ internal sealed partial class UtilityPanel : EditorWindow
 
         void Initialization()
         {
+            // -- Initialize the Utility Panel --
+            
             // Enable safe mode by default.
             SafeMode = true;
 
@@ -61,8 +63,9 @@ internal sealed partial class UtilityPanel : EditorWindow
 
             // Set SetupRequired to true if there are no modules installed.
             SetupRequired = !InstalledModules.Values.Any(module => module);
-            if (SetupRequired) EditorPrefs.SetBool("Init", true);
-
+            
+            // -- Panel related variables --
+            
             // Display the Toolbar.
             currentPanel = DisplayToolbar;
 

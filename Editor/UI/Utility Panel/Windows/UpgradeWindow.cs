@@ -24,15 +24,12 @@ internal sealed class UpgradeWindow : EditorWindow
         static void Debug_OpenUpgradeWindow() => Open();
 #endif
 
-    readonly static Vector2 PC_WinSize = new (400,300);
-    readonly static Vector2 Laptop_WinSize = new (200, 150);
+    readonly static Vector2 winSize = new (400,300);
     
     internal static int WindowClosedCount;
     const string dialogMessage = "The Setup Window will not open again unless you open the Utility Panel. "                 +
                                  "If you wish to access the Utility Panel to setup your installation of Lumina's Essentials" +
                                  ", it can be found under \"Tools\" > \"Lumina\" > \"Open Utility Panel\" in the toolbar.";
-
-    readonly static bool isPossibleLaptop = SystemInfo.batteryStatus != BatteryStatus.Unknown;
     
     /// <summary>
     ///     Opens the upgrade window that instructs the user on how to get started with Lumina's Essentials.
@@ -42,7 +39,7 @@ internal sealed class UpgradeWindow : EditorWindow
     {
         var window = GetWindow<UpgradeWindow>(true, "New Version of Lumina's Essentials Imported", true);
 
-        window.minSize = Laptop_WinSize;
+        window.minSize = winSize;
         window.maxSize = window.minSize;
         window.Show();
 
@@ -119,16 +116,27 @@ internal sealed class UpgradeWindow : EditorWindow
         // Button to open the Utility Panel
         const int buttonWidth  = 200;
         const int buttonHeight = 35;
-        GUILayout.BeginArea(new (Screen.width / 2f - buttonWidth / 2f, Screen.height - buttonHeight - 30, buttonWidth, buttonHeight));
 
-        if (GUILayout.Button("Open Utility Panel", GUILayout.Width(buttonWidth), GUILayout.Height(buttonHeight)))
+        using (new GUILayout.VerticalScope())
         {
-            // Open the Utility Panel and close the Setup Window
-            UtilityPanel.OpenUtilityPanel();
-            Close();
-        }
+            GUILayout.FlexibleSpace();
 
-        GUILayout.EndArea();
+            using (new GUILayout.HorizontalScope())
+            {
+                GUILayout.FlexibleSpace();
+
+                if (GUILayout.Button("Open Utility Panel", GUILayout.Width(buttonWidth), GUILayout.Height(buttonHeight)))
+                {
+                    // Open the Utility Panel and close the Setup Window
+                    UtilityPanel.OpenUtilityPanel();
+                    Close();
+                }
+                
+                GUILayout.FlexibleSpace();
+            }
+            
+            GUILayout.FlexibleSpace();
+        }
     }
 }
 }

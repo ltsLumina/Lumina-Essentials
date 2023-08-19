@@ -1,5 +1,5 @@
 // ONLY UNCOMMENT THIS IF DEBUG BUILD IS TRUE IN VERSION-MANAGER.
-#define DEBUG_BUILD
+//#define DEBUG_BUILD
 
 #region
 using System.Linq;
@@ -81,8 +81,6 @@ internal sealed class UpgradeWindow : EditorWindow
 
     void DisplayGUIElements()
     {
-        SetGUIStyles();
-
         DrawBackground();
         DrawTitleAndInstructions();
         DrawUtilityPanelButton();

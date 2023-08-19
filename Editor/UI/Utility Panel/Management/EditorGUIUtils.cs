@@ -185,7 +185,7 @@ namespace Lumina.Essentials.Editor.UI.Management
 
             autoSaveEnabledContent = new ("Auto Save", "Automatically saves the scene at a set interval.");
 
-            autoSaveLoggingContent = new ("└  Message", "Whether a debug message is printed to the console when the scene auto-saves.");
+            autoSaveLoggingContent = new (" └  Message", "Whether a debug message is printed to the console when the scene auto-saves.");
             
             // Setup Panel
 

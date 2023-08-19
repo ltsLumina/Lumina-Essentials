@@ -15,6 +15,10 @@ namespace Lumina.Essentials.Editor.UI
 internal sealed partial class UtilityPanel
 {
     #region Utilities variables
+
+    /// <summary> The position of the scroll view. </summary>
+    Vector2 utilities_scrollPos;
+    
     enum DragAndDropType // Only the ConvertImagesUtility enum is being used. The rest are deprecated.
     {
         CreateProjectUtility,
@@ -382,7 +386,7 @@ internal sealed partial class UtilityPanel
                 GUILayout.Space(8);
 
                 folderSelectedMsg   = $"The folder: \"{DirectoryUtilities.GetFolderNameFromString(imageConverterPath)}\" will be used to convert all images.";
-                noFolderSelectedMsg = "No folder selected. \nPlease drag and drop a folder to use.";
+                noFolderSelectedMsg = "No folder selected.\nPlease drag and drop a folder to use.";
 
                 if (!string.IsNullOrEmpty(imageConverterPath))
                 {
@@ -393,6 +397,7 @@ internal sealed partial class UtilityPanel
                     var correctDirectoryContent = new GUIContent("Is this directory correct?", "This will disable safe mode. \nPlease proceed with caution.");
                     isCorrectDirectory = EditorGUILayout.Toggle(correctDirectoryContent, isCorrectDirectory);
 
+                    // Unnecessary, but I like it.
                     if (isCorrectDirectory) SafeMode = false;
 
                     GUILayout.Space(5);
@@ -400,7 +405,10 @@ internal sealed partial class UtilityPanel
                     if (isCorrectDirectory && !SafeMode)
                         if (GUILayout.Button("Apply Settings", GUILayout.Height(25)))
                         {
-                            if (isCorrectDirectory) ConfigureImages();
+                            if (isCorrectDirectory)
+                            {
+                                ConfigureImages();
+                            }
                             else EssentialsDebugger.LogWarning("You haven't checked the confirmation box!");
                         }
                 }

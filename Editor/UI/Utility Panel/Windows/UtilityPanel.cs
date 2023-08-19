@@ -17,7 +17,7 @@ namespace Lumina.Essentials.Editor.UI
 /// </summary>
 internal sealed partial class UtilityPanel : EditorWindow
 {
-    readonly static Vector2 winSize = new (370, 600);
+    readonly static Vector2 winSize = new (370, 630);
     readonly static float buttonSize = winSize.x * 0.5f - 6;
 
     #region Panels
@@ -307,8 +307,8 @@ Check out the ""Utilities"" tab to access the various workflow-enhancing feature
     /// </summary>
     void DrawSettingsGUI()
     {
-        // Begin scroll view
-        scrollPos = EditorGUILayout.BeginScrollView(scrollPos, false, false, GUILayout.Width(winSize.x), GUILayout.Height(winSize.y));
+        // Allow for scrolling in the Settings tab.
+        settings_scrollPos = EditorGUILayout.BeginScrollView(settings_scrollPos, false, false, GUILayout.Width(winSize.x), GUILayout.Height(winSize.y));
 
         DrawSettingsHeader();
         DrawResetSettingsButton();
@@ -324,9 +324,15 @@ Check out the ""Utilities"" tab to access the various workflow-enhancing feature
     /// </summary>
     void DrawUtilitiesGUI()
     {
+        // Allow for scrolling in the Utilities tab.
+        utilities_scrollPos = EditorGUILayout.BeginScrollView(utilities_scrollPos, false, false, GUILayout.Width(winSize.x), GUILayout.Height(winSize.y));
+        
         DrawUtilitiesHeader();
         DrawUtilitiesButtonsGUI();
         DrawConfigureImagesGUI();
+        
+        // End scroll view
+        EditorGUILayout.EndScrollView();
     }
 }
 }

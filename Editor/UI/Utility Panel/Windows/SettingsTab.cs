@@ -17,7 +17,7 @@ internal sealed partial class UtilityPanel
     bool advancedSettings;
 
     /// <summary> The position of the scroll view. </summary>
-    Vector2 scrollPos;
+    Vector2 settings_scrollPos;
 
     /// <summary> Whether or not the user has to set up Lumina's Essentials to the latest version. </summary>
     internal static bool SetupRequired

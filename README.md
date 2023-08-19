@@ -35,10 +35,8 @@ The package also features contributions from Joel's Essentials, providing additi
 
 ## Installation
 1. Open your Unity project.
-2. Choose whether to install the package from GitHub, or directly from Unity's package manager (UPM).
-   - Install the package from the [Releases page](github.com/ltsLumina/Lumina-Essentials/releases/latest) on GitHub.
-   - Or from the Package Manager under "Add Package from git URL" and enter `https://github.com/ltsLumina/Lumina-Essentials.git`
-3. Download the latest release of the package as a .unitypackage.
+2. Install the package from the [Releases page](https://github.com/ltsLumina/Lumina-Essentials/releases/latest) on GitHub.
+3. Download the latest release of the package.
 4. In Unity, either open the package or drag and drop it in from wherever you saved it.
 5. Ensure that **all** files are selected and click "Import."
 6. You're done! You can now access the Utility Panel and start using the features provided by the package.

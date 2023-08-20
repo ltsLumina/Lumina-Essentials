@@ -1,4 +1,4 @@
-![Header.png](Editor%2FUI%2FImgs%2FHeader.png)
+
 
 # Lumina's Unity Essentials Package
 

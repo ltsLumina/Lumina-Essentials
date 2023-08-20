@@ -22,10 +22,10 @@ internal static class VersionManager
       "SafeMode",
       "AutoSaveEnabled",
       "AutoSaveInterval",
-      "Logging" };
+      "AutoSaveLogging" };
     
     /// <summary> The current version of Lumina's Essentials. </summary>
-    internal static string CurrentVersion => "3.0.3";
+    internal static string CurrentVersion => "3.0.4";
     
     /// <summary> The latest version of Lumina's Essentials available on GitHub. </summary>
     internal static string LatestVersion
@@ -64,7 +64,7 @@ internal static class VersionManager
     {
         EditorPrefs.SetString("CurrentVersion", CurrentVersion);
         EditorPrefs.SetString("LatestVersion", LatestVersion ?? "Error fetching version..");
-        EditorPrefs.SetBool("UpToDate", CurrentVersion == LatestVersion);
+        EditorPrefs.SetBool("UpToDate", CompareVersions(CurrentVersion, LatestVersion));
         EditorPrefs.SetBool("DebugVersion", DebugVersion);
     }
 
@@ -74,9 +74,8 @@ internal static class VersionManager
     /// </summary>
     /// <param name="v1"> The first version to compare. </param>
     /// <param name="v2"> The second version to compare. </param>
-    /// <param name="action"> The action to perform if the current version is newer than the last opened version. </param>
     /// <returns> Whether or not the current version is newer than the last opened version. </returns>
-    internal static bool CompareVersions(string v1, string v2, Action action = default)
+    internal static bool CompareVersions(string v1, string v2)
     {
         // extract the numeric parts of the versions
         var   regex   = new Regex(@"(\d+(\.\d+){0,3})");
@@ -91,11 +90,10 @@ internal static class VersionManager
         var version2 = new Version(matchV2.Value);
 
         // compare the versions
-        bool versionsDifferent = version1.CompareTo(version2) > 0;
+        int comparisonResult = version1.CompareTo(version2);
 
-        if (versionsDifferent) action?.Invoke();
-
-        return versionsDifferent;
+        // return true if v1 is newer or equal to v2
+        return comparisonResult >= 0;
     }
 }
 }

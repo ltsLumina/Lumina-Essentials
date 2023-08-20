@@ -13,17 +13,6 @@ namespace Lumina.Essentials.Editor.UI
 internal sealed partial class UtilityPanel
 {
     #region Modules
-    /// <summary> Toggle to enable or disable the installation of Alex' Essentials. (Half the package) </summary>
-    static bool attributes;
-    /// <summary> Toggle to enable or disable the installation of the Sequencer module of Lumina's Essentials. </summary>
-    static bool sequencer;
-    /// <summary> Toggle to enable or disable the installation of the Helpers module of Lumina's Essentials. </summary>
-    static bool helpers;
-    /// <summary> Toggle to enable or disable the installation of the Editor module of Lumina's Essentials. </summary>
-    static bool shortcuts;
-    /// <summary> Toggle to enable or disable the installation of the Misc module of Lumina's Essentials. </summary>
-    static bool misc;
-
     // List of all modules.
     internal readonly static List<string> AvailableModules = new ()
     { "Full Package",

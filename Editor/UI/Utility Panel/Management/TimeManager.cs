@@ -45,7 +45,7 @@ internal static class TimeManager
         if (deltaTime.TotalMinutes < 60) return string.Format(pluralMessage, (int) deltaTime.TotalMinutes);
 
         // Convert minutes to hours in delta time_totalMinutes is more than 60 but less than 120
-        if (deltaTime.TotalMinutes >= 60 && deltaTime.TotalMinutes < 120) return string.Format(singularMessage, 1);
+        if (deltaTime.TotalMinutes is >= 60 and < 120) return string.Format(singularMessage, 1);
 
         if (deltaTime.TotalHours < 2) return string.Format(singularMessage, (int) deltaTime.TotalHours);
         if (deltaTime.TotalHours < 24) return string.Format(pluralMessage, (int) deltaTime.TotalHours);

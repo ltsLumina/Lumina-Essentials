@@ -4,7 +4,7 @@ using static UnityEngine.Object;
 using Random = UnityEngine.Random;
 #endregion
 
-namespace Lumina.Essentials
+namespace Lumina.Essentials.Modules
 {
     /// <summary>
     ///     General helper methods that don't fit into any other category.

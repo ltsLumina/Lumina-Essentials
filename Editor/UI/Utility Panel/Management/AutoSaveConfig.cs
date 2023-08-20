@@ -27,8 +27,8 @@ namespace Lumina.Essentials.Editor.UI.Management
         /// </summary>
         internal static bool Logging
         {
-            get => EditorPrefs.GetBool("Logging", false);
-            set => EditorPrefs.SetBool("Logging", value);
+            get => EditorPrefs.GetBool("AutoSaveLogging", false);
+            set => EditorPrefs.SetBool("AutoSaveLogging", value);
         }
     }
 }

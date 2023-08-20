@@ -2,7 +2,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
-using Lumina.Essentials;
+using Lumina.Essentials.Modules;
 using Lumina.Essentials.Sequencer;
 using Lumina.Essentials.Attributes;
 using Sequence = Lumina.Essentials.Sequencer.Sequence;

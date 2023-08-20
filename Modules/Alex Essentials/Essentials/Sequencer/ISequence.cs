@@ -1,28 +1,34 @@
+#region
 using System;
 using System.Collections;
+#endregion
 
 namespace Lumina.Essentials.Sequencer
 {
-    public interface ISequence
-    {
-        ISequence Execute(Action action);
+/// <summary>
+/// Interface for the various sequence types.
+/// Please refer to <see cref="Sequence"/> for implementation.
+/// </summary>
+public interface ISequence
+{
+    ISequence Execute(Action action);
 
-        ISequence ExecuteCoroutine(IEnumerator routine);
+    ISequence ExecuteCoroutine(IEnumerator routine);
 
-        ISequence WaitThenExecute(float duration, Action action);
+    ISequence WaitThenExecute(float duration, Action action);
 
-        ISequence WaitForSeconds(float duration);
+    ISequence WaitForSeconds(float duration);
 
-        ISequence ContinueWith(Action action);
+    ISequence ContinueWith(Action action);
 
-        ISequence ContinueWithIf(Action action, bool condition);
+    ISequence ContinueWithIf(Action action, bool condition);
 
-        ISequence ContinueWithIf(Action action, Func<bool> condition);
+    ISequence ContinueWithIf(Action action, Func<bool> condition);
 
-        ISequence OnComplete(string message);
+    ISequence OnComplete(string message);
 
-        ISequence OnFail(Action<Exception> action);
+    ISequence OnFail(Action<Exception> action);
 
-        ISequence RepeatExecute(int times, Action action);
-    }
+    ISequence RepeatExecute(int times, Action action);
+}
 }

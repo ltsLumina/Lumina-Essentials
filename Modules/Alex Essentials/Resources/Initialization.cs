@@ -15,7 +15,7 @@ using static UnityEngine.Object;
 /// HOWEVER, if you are not using the provided Systems prefab, you should DELETE the 'Systems' folder from the package.
 /// 
 /// Check GitHub for more information:
-/// https://github.com/ltsLumina/Unity-Essentials
+/// https://github.com/ltsLumina/Lumina-Essentials
 /// or watch this video:
 /// https://www.youtube.com/watch?v=zJOxWmVveXU
 /// </summary>

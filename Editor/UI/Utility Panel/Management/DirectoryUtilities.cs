@@ -127,15 +127,8 @@ public class DirectoryUtilities : MonoBehaviour
                 if (File.Exists(file))
                 {
                     // Delete the file
-                    if (!VersionManager.DebugVersion)
-                    {
-                        AssetDatabase.DeleteAsset(relativePath);
-                        EssentialsDebugger.Log($"DEBUG: Autorun.cs deleted from {file}"); //TODO: remove
-                    }
-                    else
-                    {
-                        EssentialsDebugger.LogWarning("Can't delete Autorun.cs in debug mode.");
-                    }
+                    if (!VersionManager.DebugVersion) AssetDatabase.DeleteAsset(relativePath);
+                    else EssentialsDebugger.LogWarning("Can't delete Autorun.cs in debug mode.");
 
                     AssetDatabase.Refresh();
                 }

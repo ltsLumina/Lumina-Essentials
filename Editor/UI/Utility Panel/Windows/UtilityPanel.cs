@@ -29,6 +29,41 @@ internal sealed partial class UtilityPanel : EditorWindow
 
     /// <summary> Used to invoke the setup panel when necessary. (Not the main panel) </summary>
     Action currentPanel;
+
+    /// <summary> Shows the various tooltip messages. </summary>
+    static string Tooltip
+    {
+        get
+        {
+            string message;
+
+            switch (showTooltip)
+            {
+                case true when ModuleManager.FinishedImporting:
+                    message = ModuleManager.ImportStatus 
+                        ? "Import was successful!" 
+                        : "Import was unsuccessful. Please try again.";
+                    break;
+
+                default: {
+                    if (checkedForUpdates)
+                        message = EditorPrefs.GetBool("UpToDate") 
+                            ? "You are up to date!" 
+                            : "There is a new version available!";
+                    else message 
+                            = "Welcome to Lumina's Essentials!";
+
+                    break;
+                }
+            }
+
+            return message;
+        }
+    }
+    
+    /// <summary> Used to determine the tooltip message. </summary>
+    static bool showTooltip;
+    static bool checkedForUpdates;
     #endregion
 
     [MenuItem("Tools/Lumina/Open Utility Panel")]
@@ -59,7 +94,10 @@ internal sealed partial class UtilityPanel : EditorWindow
             SafeMode = true;
 
             // Initialize the installed modules
-            ModuleInstaller.CheckForInstalledModules();
+            ModuleManager.CheckForInstalledModules();
+            SetupRequired = !InstalledModules.Values.Any(module => module);
+            
+            showTooltip = true;
             
             // -- Panel related variables --
             
@@ -75,12 +113,12 @@ internal sealed partial class UtilityPanel : EditorWindow
             if (headerPath == null || footerPath == null) return;
             headerImg = AssetDatabase.LoadAssetAtPath<Texture2D>(headerPath);
             footerImg = AssetDatabase.LoadAssetAtPath<Texture2D>(footerPath);
-            
+
             // If the user is not up-to-date, display a warning.
             if (!EditorPrefs.GetBool("UpToDate")) 
                 EssentialsDebugger.LogWarning("There is a new version available!" + "\nPlease update to the latest version for the latest features.");
 
-            // Reset the window closed count.
+            // ResetUtilityPanel the window closed count.
             UpgradeWindow.WindowClosedCount = 0;
         }
     }
@@ -88,8 +126,17 @@ internal sealed partial class UtilityPanel : EditorWindow
     // Clear the selected modules when the window is closed.
     void OnDisable()
     {
-        ModuleInstaller.ClearSelectedModules(); 
-        EditorApplication.playModeStateChanged -= PlayModeStateChanged;
+        Terminate();
+        return;
+        
+        void Terminate() // Resets all the necessary variables.
+        {
+            EditorApplication.playModeStateChanged -= PlayModeStateChanged;
+            
+            showTooltip                     = false;
+            ModuleManager.FinishedImporting = false;
+            checkedForUpdates               = false;
+        }
     }
 
     /// <summary> Subscribes to the play mode state changed event to repaint the window when the user enters play mode. </summary>
@@ -161,13 +208,8 @@ internal sealed partial class UtilityPanel : EditorWindow
         GUILayout.Space(areaRect.y + 90);
 
         #region Main Labels (Version, Update Check, etc.)
-        // Display current version in bold
         GUILayout.Label($"  Essentials Version:    {CurrentVersion}", mainLabelStyle);
-
-        // Display the latest version in bold
         GUILayout.Label($"  Latest Version:           {LatestVersion}", mainLabelStyle);
-
-        // Display the time since the last update check
         GUILayout.Label($"  Last Update Check:  {VersionUpdater.LastUpdateCheck}", mainLabelStyle);
 
         // End of Main Labels
@@ -180,9 +222,10 @@ internal sealed partial class UtilityPanel : EditorWindow
         if (SetupRequired)
         {
             GUI.backgroundColor = Color.red;
-            GUILayout.BeginVertical(GUI.skin.box);
-            GUILayout.Label("SETUP REQUIRED", setupLabelStyle);
-            GUILayout.EndVertical();
+            using (new GUILayout.VerticalScope(GUI.skin.box))
+            {
+                GUILayout.Label("SETUP REQUIRED", setupLabelStyle);
+            }
             GUI.backgroundColor = Color.white;
         }
         else { GUILayout.Space(8); }
@@ -219,10 +262,7 @@ internal sealed partial class UtilityPanel : EditorWindow
                 GUILayout.FlexibleSpace();
                 GUI.color = new (1f, 0.75f, 0.55f);
 
-                if (GUILayout.Button("Something!", buttonSetup, GUILayout.Width(200)))
-                {
-                    EssentialsDebugger.Log("Placeholder button. Doesn't do anything yet.");
-                }
+                GUILayout.Label(Tooltip, buttonStyle, GUILayout.Width(200));
 
                 GUI.color = Color.white;
                 GUILayout.FlexibleSpace();
@@ -258,8 +298,9 @@ Check out the ""Utilities"" tab to access the various workflow-enhancing feature
             // Display the button to check for updates
             if (GUILayout.Button(checkForUpdatesContent, GUILayout.Width(buttonSize), GUILayout.Height(40)))
             {
+                checkedForUpdates = true;
                 VersionUpdater.CheckForUpdates();
-
+                
                 if (LatestVersion.Contains("Error"))
                 {
                     EssentialsDebugger.LogError("Failed to fetch version! \nAre you connected to the internet?");

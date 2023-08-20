@@ -90,7 +90,7 @@ internal sealed partial class UtilityPanel
     /// <summary>
     ///     Draws the help box that explains what the user should do.
     /// </summary>
-    void DrawModulesHelpBox()
+    static void DrawModulesHelpBox()
     {
         string spacer = Environment.NewLine;
 
@@ -113,36 +113,54 @@ internal sealed partial class UtilityPanel
     void DrawModulesButtons()
     {
         using (new GUILayout.HorizontalScope())
-        { // Only install the modules if the user is not in Safe Mode and if there are modules to install.
-            if (!SafeMode)
-                if (GUILayout.Button("Install Selected", GUILayout.Height(25)))
-                {
-                    if (!SafeMode && SelectedModules.Values.Any(module => module))
-                    {
-                        if (EditorUtility.DisplayDialog("Confirmation", "Are you sure you want to install these modules? \n ", "Apply", "Cancel"))
-                        {
-                            ModuleInstaller.InstallSelectedModules();
-                        }
-                        else EssentialsDebugger.LogAbort(SafeMode);
-                    }
-                    else { EssentialsDebugger.LogWarning("Please select at least one module to install."); }
-                }
-
-            // "Cancel" button
-            if (GUILayout.Button("Cancel Setup", GUILayout.Height(25)))
-            {
-                // Close the setup panel
-                currentPanel = DisplayToolbar;
-
-                // Reset the checkboxes
-                ModuleInstaller.ClearSelectedModules();
-
-                // Check which modules are still installed
-                ModuleInstaller.CheckForInstalledModules();
-
-                SafeMode = true;
-            }
+        {
+            DrawInstallSelectedButton();
+            DrawCancelSetupButton();
         }
     }
+
+    void DrawInstallSelectedButton()
+    {
+        if (SafeMode) return;
+
+        if (!GUILayout.Button("Install Selected", GUILayout.Height(25))) return;
+
+        if (!SelectedModules.Values.Any(module => module))
+        {
+            EssentialsDebugger.LogWarning("Please select at least one module to install.");
+            return;
+        }
+
+        if (!EditorUtility.DisplayDialog("Confirmation", "Are you sure you want to install these modules? \n ", "Apply", "Cancel"))
+        {
+            EssentialsDebugger.LogAbort(SafeMode);
+            return;
+        }
+
+        CloseSetupPanel();
+        
+        // Install the selected modules and update the SetupRequired bool.
+        ModuleManager.InstallSelectedModules();
+        SetupRequired = !InstalledModules.Values.Any(module => module);
+        
+        // Clear the selected modules and check for installed modules again.
+        ModuleManager.ClearSelectedModules();
+        ModuleManager.CheckForInstalledModules();
+        SafeMode = true;
+    }
+
+    void DrawCancelSetupButton()
+    {
+        if (!GUILayout.Button("Cancel Setup", GUILayout.Height(25))) return;
+
+        CloseSetupPanel();
+
+        // Clear the selected modules and check for installed modules again.
+        ModuleManager.ClearSelectedModules();
+        ModuleManager.CheckForInstalledModules();
+        SafeMode           = true;
+    }
+
+    void CloseSetupPanel() => currentPanel = DisplayToolbar;
 }
 }

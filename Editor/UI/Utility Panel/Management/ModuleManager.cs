@@ -9,10 +9,17 @@ using UnityEngine;
 
 namespace Lumina.Essentials.Editor.UI.Management
 {
-public class ModuleInstaller : MonoBehaviour
+public class ModuleManager : MonoBehaviour
 {
     static string relativePath;
-    
+
+    /// <summary> Whether or not the import of the module package was successful. </summary>
+    internal static bool ImportStatus { get; private set; }
+    /// <summary> Whether or not a module is currently being imported. </summary>
+    internal static bool Importing { get; private set; }
+    /// <summary> Whether or not the import of the module package has finished. </summary>
+    internal static bool FinishedImporting { get; set; }
+
     #region Checks for Modules
     internal static void CheckForInstalledModules()
     {
@@ -106,8 +113,6 @@ public class ModuleInstaller : MonoBehaviour
             return;
         }
 
-        SetupImportCallbacks();
-
         AssetDatabase.StartAssetEditing();
 
         try
@@ -123,6 +128,9 @@ public class ModuleInstaller : MonoBehaviour
         {
             // Stop the AssetEditing at the end, even if some error was thrown.
             AssetDatabase.StopAssetEditing();
+
+            // Check for installed modules again.
+            CheckForInstalledModules();
         }
     }
 
@@ -185,18 +193,46 @@ public class ModuleInstaller : MonoBehaviour
 
     static void ImportModulePackage(string relativePath, string moduleName)
     {
+        // Begin importing the packages.
+        Importing = true;
+        
         string modulePath = Path.Combine(relativePath, moduleName) + ".unitypackage";
+
+        // Subscribe to events before importing the package.
+        AssetDatabase.importPackageCompleted += packageName =>
+        {
+            ImportStatus = true;
+            Debug.Log("Imported: " + packageName);
+        };
+
+        AssetDatabase.importPackageFailed += (packageName, errorMessage) =>
+        {
+            ImportStatus = false;
+            Debug.LogError("Failed to import: " + packageName + "\n" + errorMessage);
+        };
+
         AssetDatabase.ImportPackage(modulePath, false);
+        Importing                = false;
+        FinishedImporting        = true;
+
+        AssetDatabase.importPackageCompleted -= AssetDatabaseOnImportPackageCompleted;
+        AssetDatabase.importPackageFailed -= AssetDatabaseOnImportPackageFailed;
 
         // Delete the Autorun.cs file from the project
         DirectoryUtilities.DeleteAutorunFiles();
-    }
+        return;
 
-    static void SetupImportCallbacks()
-    {
-        AssetDatabase.importPackageCompleted += packageName => { Debug.Log("Imported: "                              + packageName); };
-        AssetDatabase.importPackageFailed    += (packageName, errorMessage) => { Debug.LogError("Failed to import: " + packageName + "\n" + errorMessage); };
-        AssetDatabase.importPackageCancelled += packageName => { Debug.Log("Cancelled importing: "                   + packageName); };
+        void AssetDatabaseOnImportPackageCompleted(string packageName)
+        {
+            ImportStatus = true;
+            Debug.Log("Imported: " + packageName);
+        }
+        
+        void AssetDatabaseOnImportPackageFailed(string packageName, string errorMessage)
+        {
+            ImportStatus = false;
+            Debug.LogError("Failed to import: " + packageName + "\n" + errorMessage);
+        }
     }
 
     internal static void ClearSelectedModules()

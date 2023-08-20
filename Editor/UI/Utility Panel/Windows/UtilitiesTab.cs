@@ -44,11 +44,15 @@ internal sealed partial class UtilityPanel
 
     /// <summary> Opens the configure images options. </summary>
     bool configuringImages;
+    
+    #region Image Settings
     TextureImporter importer;
     static SpriteImportMode spriteImportMode = SpriteImportMode.Single;
     static float pixelsPerUnit;
     static FilterMode filterMode = FilterMode.Point;
     static TextureImporterCompression compression = TextureImporterCompression.Uncompressed;
+    #endregion
+    
     /// <summary> Quick toggle to set the sprite import mode to the recommended settings for importing sprites. </summary>
     bool isSpriteSheet;
     bool dragAndDropFolder;
@@ -190,7 +194,7 @@ internal sealed partial class UtilityPanel
         {
             configuringImages = !configuringImages;
 
-            // Reset the image converter path if the user stops configuring the configure images settings.
+            // ResetUtilityPanel the image converter path if the user stops configuring the configure images settings.
             if (!configuringImages)
             {
                 imageConverterPath = "";
@@ -237,7 +241,7 @@ internal sealed partial class UtilityPanel
         }
         else
         {
-            // Reset the enums to the default values
+            // ResetUtilityPanel the enums to the default values
             spriteImportMode = SpriteImportMode.Single;
             pixelsPerUnit    = 100;
             filterMode       = FilterMode.Bilinear;

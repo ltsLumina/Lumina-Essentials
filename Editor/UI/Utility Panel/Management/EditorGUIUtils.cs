@@ -14,6 +14,8 @@ namespace Lumina.Essentials.Editor.UI.Management
         internal static GUIStyle mainLabelStyle;
         internal static GUIStyle buttonStyle;
         internal static GUIStyle buttonSetup;
+        internal static GUIStyle tooltipStyle;
+        internal static GUIStyle tooltipSetup;
         internal static GUIStyle centerLabelStyle;
         internal static GUIStyle subLabelStyle;
         internal static GUIStyle buttonBigStyle; 
@@ -148,7 +150,7 @@ namespace Lumina.Essentials.Editor.UI.Management
             safeModeWarningContent = new
             (
             "Safe Mode",
-            "If disabled, the user is not able to perform certain operations that could potentially be dangerous or cause unintended behaviour."
+            "If disabled, the user is able to perform certain operations that could potentially be dangerous or cause unintended behaviour."
              );
             
             createDefaultProjectContent = new 
@@ -214,6 +216,11 @@ namespace Lumina.Essentials.Editor.UI.Management
             }
             GUILayout.Space(40);
             return true;
+        }
+
+        internal static string Tooltip(string message = default)
+        {
+            return message;
         }
 
         internal static void ShowAllEditorPrefs() => EditorPrefsWindow.ShowWindow();

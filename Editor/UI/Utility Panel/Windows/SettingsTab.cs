@@ -32,7 +32,7 @@ internal sealed partial class UtilityPanel
     }
 
     /// <summary> Enabled by default. Prevents the user from accidentally doing something they didn't intend to do. </summary>
-    bool SafeMode
+    static bool SafeMode
     {
         get => EditorPrefs.GetBool("SafeMode", true);
         set => EditorPrefs.SetBool("SafeMode", value);
@@ -69,7 +69,7 @@ internal sealed partial class UtilityPanel
 
     // ReSharper disable Unity.PerformanceAnalysis
     /// <summary>
-    ///     Draws the Reset button onto the Utility Window.
+    ///     Draws the ResetUtilityPanel button onto the Utility Window.
     /// </summary>
     void DrawResetSettingsButton()
     {
@@ -86,18 +86,18 @@ internal sealed partial class UtilityPanel
 
     void ProcessButtonAction()
     {
-        if (!SafeMode) ConfirmAndResetUtilityWindow();
+        if (!SafeMode) ConfirmAndResetUtilityPanel();
         else DisplaySafeModeWarning();
     }
 
-    void ConfirmAndResetUtilityWindow()
+    void ConfirmAndResetUtilityPanel()
     {
         bool userConfirmed = EditorUtility.DisplayDialog("Confirmation", "Are you sure you want to reset the Utility Window?", "Yes", "No");
 
         switch (userConfirmed)
         {
             case true:
-                Reset();
+                ResetUtilityPanel();
                 break;
 
             default:
@@ -121,20 +121,20 @@ internal sealed partial class UtilityPanel
         }
         else { EssentialsDebugger.LogAbort(); }
     }
-
-    void Reset()
-    { // Reset the EditorPrefs
+    
+    void ResetUtilityPanel()
+    { // ResetUtilityPanel the EditorPrefs
         foreach (string pref in VersionManager.EssentialsPrefs)
         {
             if (EditorPrefs.HasKey(pref)) EditorPrefs.DeleteKey(pref);
             else if (VersionManager.DebugVersion) EssentialsDebugger.LogWarning($"Couldn't find Key: {pref}");
         }
 
-        // Reset all Utility Panel variables.
+        // ResetUtilityPanel all Utility Panel variables.
         SafeMode                                  = true;
-        SetupRequired                             = true;
-        VersionManager.DontShow_DebugBuildWarning = false;
         EssentialsDebugger.LogBehaviour           = EssentialsDebugger.LogLevel.Verbose;
+        SetupRequired                             = !InstalledModules.Values.Any(module => module);
+        VersionManager.DontShow_DebugBuildWarning = false;
         imageConverterPath                        = string.Empty;
 
         EssentialsDebugger.LogWarning("Settings and EditorPrefs have been reset.");

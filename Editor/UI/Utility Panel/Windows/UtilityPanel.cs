@@ -60,9 +60,6 @@ internal sealed partial class UtilityPanel : EditorWindow
 
             // Initialize the installed modules
             ModuleInstaller.CheckForInstalledModules();
-
-            // Set SetupRequired to true if there are no modules installed.
-            SetupRequired = !InstalledModules.Values.Any(module => module);
             
             // -- Panel related variables --
             

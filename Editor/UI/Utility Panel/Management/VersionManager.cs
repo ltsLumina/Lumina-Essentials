@@ -31,18 +31,9 @@ internal static class VersionManager
     internal static string LatestVersion
     {
         get => EditorPrefs.GetString("LatestVersion", null);
-        set
-        {
-            if (string.IsNullOrEmpty(value))
-            {
-                EditorPrefs.SetString("LatestVersion", "Error fetching version..." +
-                "\n  └ <i>(Are you connected to the internet?)</i>");
-            }
-            else
-            {
-                EditorPrefs.SetString("LatestVersion", value);
-            }
-        }
+        set => EditorPrefs.SetString("LatestVersion", string.IsNullOrEmpty(value) 
+                                         ? "Error fetching version... \n  └ <i>(Are you connected to the internet?)</i>" 
+                                         : value);
     }
     
     /// <summary> The version of the package that was last opened. </summary>

@@ -1,4 +1,5 @@
 #region
+using System.Collections.Generic;
 using System.Linq;
 using Lumina.Essentials.Editor.UI.Management;
 using UnityEditor;
@@ -74,67 +75,78 @@ internal sealed partial class UtilityPanel
     {
         GUILayout.Space(6);
 
-        GUILayout.BeginHorizontal();
-
-        if (GUILayout.Button(resetButtonContent, GUILayout.Width(100), GUILayout.Height(35), GUILayout.ExpandWidth(true)))
+        using (new GUILayout.HorizontalScope())
         {
-            if (!SafeMode)
+            if (GUILayout.Button(resetButtonContent, GUILayout.Width(100), GUILayout.Height(35), GUILayout.ExpandWidth(true)))
             {
-                if (EditorUtility.DisplayDialog("Confirmation", "Are you sure you want to reset the Utility Window?", "Yes", "No"))
-                {
-                    Reset();
-                }
-                else
-                {
-                    SafeMode = true;
-                    EssentialsDebugger.LogAbort();
-                }
-            }
-            else
-            {
-                EditorApplication.Beep();
-                
-                if (EditorUtility.DisplayDialog("Warning!", "Safe Mode has not been disabled and is required to reset the Utility Window.", "Disable Safe Mode", "Cancel"))
-                {
-                    SafeMode = false;
-                    EssentialsDebugger.LogWarning("Safe Mode has been disabled. Please try again.");
-                }
-                else { EssentialsDebugger.LogAbort(); }
+                ProcessButtonAction();
             }
         }
+    }
 
-        GUILayout.EndHorizontal();
-        return;
+    void ProcessButtonAction()
+    {
+        if (!SafeMode) ConfirmAndResetUtilityWindow();
+        else DisplaySafeModeWarning();
+    }
 
-        void Reset()
-        { // Reset the EditorPrefs
-            foreach (var pref in VersionManager.EssentialsPrefs)
-            {
-                if (!EditorPrefs.HasKey(pref))
-                {
-                    if (VersionManager.DebugVersion) EssentialsDebugger.LogWarning("Couldn't find Key: " + pref);
-                }
-                else { EditorPrefs.DeleteKey(pref); }
-            }
+    void ConfirmAndResetUtilityWindow()
+    {
+        bool userConfirmed = EditorUtility.DisplayDialog("Confirmation", "Are you sure you want to reset the Utility Window?", "Yes", "No");
 
-            // Reset all Utility Panel variables.
-            SafeMode                                  = true;
-            SetupRequired                             = true;
-            VersionManager.DontShow_DebugBuildWarning = false;
-            EssentialsDebugger.LogBehaviour           = EssentialsDebugger.LogLevel.Verbose;
-            imageConverterPath                        = "";
+        switch (userConfirmed)
+        {
+            case true:
+                Reset();
+                break;
 
-            EssentialsDebugger.LogWarning("Settings and EditorPrefs have been reset.");
-
-            // Display a warning if the user is in a debug build
-            StartupChecks.DebugBuildWarning();
-
-            // Check for updates to set up everything again.
-            VersionUpdater.CheckForUpdates();
-
-            Close();
-            UpgradeWindow.Open();
+            default:
+                SafeMode = true;
+                EssentialsDebugger.LogAbort();
+                break;
         }
+    }
+
+    void DisplaySafeModeWarning()
+    {
+        EditorApplication.Beep();
+
+        bool userDisabledSafeMode = EditorUtility.DisplayDialog
+            ("Warning!", "Safe Mode has not been disabled and is required to reset the Utility Window.", "Disable Safe Mode", "Cancel");
+
+        if (userDisabledSafeMode)
+        {
+            SafeMode = false;
+            EssentialsDebugger.LogWarning("Safe Mode has been disabled. Please try again.");
+        }
+        else { EssentialsDebugger.LogAbort(); }
+    }
+
+    void Reset()
+    { // Reset the EditorPrefs
+        foreach (string pref in VersionManager.EssentialsPrefs)
+        {
+            if (EditorPrefs.HasKey(pref)) EditorPrefs.DeleteKey(pref);
+            else if (VersionManager.DebugVersion) EssentialsDebugger.LogWarning($"Couldn't find Key: {pref}");
+        }
+
+        // Reset all Utility Panel variables.
+        SafeMode                                  = true;
+        SetupRequired                             = true;
+        VersionManager.DontShow_DebugBuildWarning = false;
+        EssentialsDebugger.LogBehaviour           = EssentialsDebugger.LogLevel.Verbose;
+        imageConverterPath                        = string.Empty;
+
+        EssentialsDebugger.LogWarning("Settings and EditorPrefs have been reset.");
+
+        // Display a warning if the user is in a debug build
+        StartupChecks.DebugBuildWarning();
+
+        // Check for updates to set up everything again.
+        VersionUpdater.CheckForUpdates();
+
+        Close();
+        UpgradeWindow.Open();
     }
 
     /// <summary>
@@ -183,7 +195,7 @@ internal sealed partial class UtilityPanel
             GUILayout.Space(5);
 
             // Display the installed modules from the dictionary
-            foreach (var module in InstalledModules)
+            foreach (KeyValuePair<string, bool> module in InstalledModules)
             {
                 EditorGUILayout.Toggle(module.Key, module.Value);
 

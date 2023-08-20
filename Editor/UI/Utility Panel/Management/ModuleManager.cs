@@ -17,13 +17,13 @@ public class ModuleInstaller : MonoBehaviour
     internal static void CheckForInstalledModules()
     {
         bool isDebugVersion = VersionManager.DebugVersion;
-
+        
         if (FullPackageIsInstalled())
         {
             SetAllModulesTo(true, isDebugVersion);
             return;
         }
-
+        
         CheckIndividualModules(isDebugVersion);
     }
 
@@ -32,14 +32,7 @@ public class ModuleInstaller : MonoBehaviour
         foreach (string module in UtilityPanel.InstalledModules.Keys.ToList())
         {
             UtilityPanel.InstalledModules[module] = state;
-
-            if (!debugVersion) return;
-
-            EssentialsDebugger.LogWarning
-            ("Full Package is installed. This means that all modules are installed and any changes to the folders for debugging purposes will be ignored. " +
-             "\nTo test the module installation, please remove the Full Package (Examples folder) from the project.");
-
-            if (module != "Full Package") DebugLogState(debugVersion, state, module);
+            DebugLogState(debugVersion, state, module);
         }
     }
 

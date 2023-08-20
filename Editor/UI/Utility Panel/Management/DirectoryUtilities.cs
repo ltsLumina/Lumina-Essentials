@@ -69,8 +69,7 @@ public class DirectoryUtilities : MonoBehaviour
         }
     }
     #endregion
-
-    // ReSharper disable Unity.PerformanceAnalysis
+    
     internal static void CreateDirectories(string root, params string[] directories)
     {
         string fullpath = Path.Combine(Application.dataPath, root);

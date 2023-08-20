@@ -38,7 +38,8 @@ internal sealed class UpgradeWindow : EditorWindow
     internal static void Open(bool updateOccured = false)
     {
         var window = GetWindow<UpgradeWindow>(true, "New Version of Lumina's Essentials Imported", true);
-
+        if (window == null) return;
+        
         window.minSize = winSize;
         window.maxSize = window.minSize;
         window.Show();
@@ -67,16 +68,8 @@ internal sealed class UpgradeWindow : EditorWindow
 
     static void HandleUpdateOccured()
     {
-        CloseUtilityPanelIfOpen();
-
-        EssentialsDebugger.Log("An update has occured. Please setup the new version of Lumina's Essentials.");
+        EditorUtility.DisplayDialog("Update Occured", "An update has occured. Please setup the new version of Lumina's Essentials.", "OK");
         UtilityPanel.SetupRequired = !UtilityPanel.InstalledModules.Values.Any(module => module);
-    }
-
-    static void CloseUtilityPanelIfOpen()
-    {
-        var utilityWindow = GetWindow<UtilityPanel>();
-        if (utilityWindow != null) utilityWindow.Close();
     }
 
     void DisplayGUIElements()

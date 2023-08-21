@@ -210,7 +210,7 @@ internal sealed partial class UtilityPanel : EditorWindow
         #region Main Labels (Version, Update Check, etc.)
         GUILayout.Label($"  Essentials Version:    {CurrentVersion}", mainLabelStyle);
         GUILayout.Label($"  Latest Version:           {LatestVersion}", mainLabelStyle);
-        GUILayout.Label($"  Last Update Check:  {VersionUpdater.LastUpdateCheck}", mainLabelStyle);
+        GUILayout.Label($"  Last Update Check:   {VersionUpdater.LastUpdateCheck}", mainLabelStyle);
 
         // End of Main Labels
         #endregion

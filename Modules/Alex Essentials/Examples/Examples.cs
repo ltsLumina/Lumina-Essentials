@@ -95,7 +95,7 @@ public sealed class Examples : MonoBehaviour
     void CachedCameraMain()
     {
         // Rather than making a call to Camera.main or caching the camera in every script you need to reference it, you can use this cached version.
-        // Helpers.Camera
+        // Helpers.CameraMain
         
         // Example of how to use it.
         Helpers.CameraMain.transform.position = Vector3.zero;

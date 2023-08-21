@@ -122,7 +122,7 @@ internal sealed partial class UtilityPanel
                     return;
                 }
 
-                Thread.Sleep(Random.Range(250, 4000)); // randomly wait 1 to 2 seconds before updating again
+                Thread.Sleep(Random.Range(250, 4000)); // randomly wait for some time before updating
             }
 
             Application.OpenURL("https://www.youtube.com/watch?v=dQw4w9WgXcQ");

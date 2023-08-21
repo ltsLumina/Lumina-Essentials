@@ -201,14 +201,14 @@ public class ModuleManager : MonoBehaviour
         // Subscribe to events before importing the package.
         AssetDatabase.importPackageCompleted += packageName =>
         {
+            if (VersionManager.DebugVersion) EssentialsDebugger.Log("Imported: " + packageName);
             ImportStatus = true;
-            Debug.Log("Imported: " + packageName);
         };
 
         AssetDatabase.importPackageFailed += (packageName, errorMessage) =>
         {
+            if (VersionManager.DebugVersion) EssentialsDebugger.LogError("Failed to import: " + packageName + "\n" + errorMessage);
             ImportStatus = false;
-            Debug.LogError("Failed to import: " + packageName + "\n" + errorMessage);
         };
 
         AssetDatabase.ImportPackage(modulePath, false);

@@ -1,4 +1,4 @@
-
+![Luminas Essentials Logo.png](Editor%2FUI%2FImgs%2FLuminas%20Essentials%20Logo.png)
 
 # Lumina's Unity Essentials Package
 

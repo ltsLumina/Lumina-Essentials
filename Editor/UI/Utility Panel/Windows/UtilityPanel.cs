@@ -30,6 +30,11 @@ internal sealed partial class UtilityPanel : EditorWindow
     /// <summary> Used to invoke the setup panel when necessary. (Not the main panel) </summary>
     Action currentPanel;
 
+    /// <summary> Used to determine the tooltip message. </summary>
+    static bool showTooltip;
+    /// <summary> Used to determine if the user has checked for updates. Used for the tooltip. </summary>
+    static bool checkedForUpdates;
+    
     /// <summary> Shows the various tooltip messages. </summary>
     static string Tooltip
     {
@@ -60,10 +65,6 @@ internal sealed partial class UtilityPanel : EditorWindow
             return message;
         }
     }
-    
-    /// <summary> Used to determine the tooltip message. </summary>
-    static bool showTooltip;
-    static bool checkedForUpdates;
     #endregion
 
     [MenuItem("Tools/Lumina/Open Utility Panel")]
@@ -105,8 +106,8 @@ internal sealed partial class UtilityPanel : EditorWindow
             currentPanel = DisplayToolbar;
 
             // Displays the header and footer images.
-            const string headerGUID = "7a1204763dac9b142b9cd974c88fdc8d";
-            const string footerGUID = "22cbfe0e1e5aa9a46a9bd08709fdcac6";
+            const string headerGUID = "7a1204763dac9b142b9cd974c88fdc8d"; // grabbed from .meta file in project folder.
+            const string footerGUID = "22cbfe0e1e5aa9a46a9bd08709fdcac6"; // grabbed from .meta file in project folder.
             string       headerPath = AssetDatabase.GUIDToAssetPath(headerGUID);
             string       footerPath = AssetDatabase.GUIDToAssetPath(footerGUID);
 
@@ -210,7 +211,7 @@ internal sealed partial class UtilityPanel : EditorWindow
         #region Main Labels (Version, Update Check, etc.)
         GUILayout.Label($"  Essentials Version:    {CurrentVersion}", mainLabelStyle);
         GUILayout.Label($"  Latest Version:           {LatestVersion}", mainLabelStyle);
-        GUILayout.Label($"  Last Update Check:   {VersionUpdater.LastUpdateCheck}", mainLabelStyle);
+        GUILayout.Label($"  Last Update Check:  {VersionUpdater.LastUpdateCheck}", mainLabelStyle);
 
         // End of Main Labels
         #endregion

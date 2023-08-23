@@ -29,12 +29,12 @@ internal static class StartupChecks
 
     internal static void DebugBuildWarning()
     {
-        if (!VersionManager.DontShow_DebugBuildWarning && VersionManager.DebugVersion)
+        if (!VersionManager.SuppressDebugBuildAlert && VersionManager.DebugVersion)
             if (EditorUtility.DisplayDialog
                 ("Debug Version", "You are currently using a Debug Version of Lumina's Essentials. " + "\nThis means the application might not work as intended.", "OK"))
             {
-                VersionManager.DontShow_DebugBuildWarning = true;
-                EditorPrefs.SetBool("DontShowAgain", VersionManager.DontShow_DebugBuildWarning);
+                VersionManager.SuppressDebugBuildAlert = true;
+                EditorPrefs.SetBool("DontShowAgain", VersionManager.SuppressDebugBuildAlert);
             }
     }
 }

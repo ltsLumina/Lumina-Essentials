@@ -66,8 +66,7 @@ internal sealed partial class UtilityPanel
         // Draw a horizontal line (separator)
         EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
     }
-
-    // ReSharper disable Unity.PerformanceAnalysis
+    
     /// <summary>
     ///     Draws the ResetUtilityPanel button onto the Utility Window.
     /// </summary>
@@ -80,14 +79,15 @@ internal sealed partial class UtilityPanel
             if (GUILayout.Button(resetButtonContent, GUILayout.Width(100), GUILayout.Height(35), GUILayout.ExpandWidth(true)))
             {
                 ProcessButtonAction();
+                return;
+
+                void ProcessButtonAction()
+                {
+                    if (!SafeMode) ConfirmAndResetUtilityPanel();
+                    else DisplaySafeModeWarning();
+                }
             }
         }
-    }
-
-    void ProcessButtonAction()
-    {
-        if (!SafeMode) ConfirmAndResetUtilityPanel();
-        else DisplaySafeModeWarning();
     }
 
     void ConfirmAndResetUtilityPanel()
@@ -123,7 +123,7 @@ internal sealed partial class UtilityPanel
     }
     
     void ResetUtilityPanel()
-    { // ResetUtilityPanel the EditorPrefs
+    {
         foreach (string pref in VersionManager.EssentialsPrefs)
         {
             if (EditorPrefs.HasKey(pref)) EditorPrefs.DeleteKey(pref);
@@ -131,11 +131,11 @@ internal sealed partial class UtilityPanel
         }
 
         // ResetUtilityPanel all Utility Panel variables.
-        SafeMode                                  = true;
-        EssentialsDebugger.LogBehaviour           = EssentialsDebugger.LogLevel.Verbose;
-        SetupRequired                             = !InstalledModules.Values.Any(module => module);
-        VersionManager.DontShow_DebugBuildWarning = false;
-        imageConverterPath                        = string.Empty;
+        SafeMode                               = true;
+        EssentialsDebugger.LogBehaviour        = EssentialsDebugger.LogLevel.Verbose;
+        SetupRequired                          = !InstalledModules.Values.Any(module => module);
+        VersionManager.SuppressDebugBuildAlert = false;
+        imageConverterPath                     = string.Empty;
 
         EssentialsDebugger.LogWarning("Settings and EditorPrefs have been reset.");
 
@@ -154,62 +154,59 @@ internal sealed partial class UtilityPanel
     /// </summary>
     void DrawAdvancedSettingsGUI()
     { // Displays all the advanced settings.
-        if (advancedSettings)
+        if (!advancedSettings) return;
+        
+        GUILayout.Label("Debug Options", centerLabelStyle);
+        GUILayout.Label("Various buttons and settings for debugging.", subLabelStyle);
+        GUILayout.Space(5);
+
+        if (GUILayout.Button("Show All EditorPrefs", GUILayout.Height(30))) ShowAllEditorPrefs();
+
+        #region Deprecated
+        if (GUILayout.Button("Update Module Packages", GUILayout.Height(30)) && advancedSettings && !SafeMode)
+            EssentialsDebugger.LogWarning("This feature is deprecated and will be removed in a future update. \n It was once used to update the modules individually.");
+        #endregion
+
+        // Draw a horizontal line (separator)
+        EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+
+        // Display the image configuration options
+        GUILayout.Label("Read-only values", centerLabelStyle);
+        GUILayout.Label("These are only here for debugging purposes.", subLabelStyle);
+        GUILayout.Space(5);
+
+        // Group of view only fields
+        EditorGUI.BeginDisabledGroup(true);
+
+        // Box view the SetupRequired bool
+        SetupRequired                          = EditorGUILayout.Toggle("Setup Required", SetupRequired);
+        VersionManager.SuppressDebugBuildAlert = EditorGUILayout.Toggle("SuppressDebugBuildAlert", VersionManager.SuppressDebugBuildAlert);
+
+        // Draw a horizontal line (separator)
+        EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+
+        GUILayout.Space(3);
+
+        GUILayout.Label("Installed Modules", centerLabelStyle);
+        GUILayout.Label("These are the modules that are installed.", subLabelStyle);
+
+        GUILayout.Space(5);
+
+        // Display the installed modules from the dictionary
+        foreach (KeyValuePair<string, bool> module in InstalledModules)
         {
-            GUILayout.Label("Debug Options", centerLabelStyle);
-            GUILayout.Label("Various buttons and settings for debugging.", subLabelStyle);
-            GUILayout.Space(5);
+            EditorGUILayout.Toggle(module.Key, module.Value);
 
-            if (GUILayout.Button("Show All EditorPrefs", GUILayout.Height(30))) ShowAllEditorPrefs();
-
-            #region Deprecated
-            if (GUILayout.Button("Update Module Packages", GUILayout.Height(30)) && advancedSettings && !SafeMode)
-                EssentialsDebugger.LogWarning("This feature is deprecated and will be removed in a future update. \n It was once used to update the modules individually.");
-
-            //UpdateModulePackages(); // Kept for reference.
-            #endregion
-
-            // Draw a horizontal line (separator)
-            EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
-
-            // Display the image configuration options
-            GUILayout.Label("Read-only values", centerLabelStyle);
-            GUILayout.Label("These are only here for debugging purposes.", subLabelStyle);
-            GUILayout.Space(5);
-
-            // Group of view only fields
-            EditorGUI.BeginDisabledGroup(true);
-
-            // Box view the SetupRequired bool
-            SetupRequired                             = EditorGUILayout.Toggle("Setup Required", SetupRequired);
-            VersionManager.DontShow_DebugBuildWarning = EditorGUILayout.Toggle("Don't Show Debug Alert", VersionManager.DontShow_DebugBuildWarning);
-
-            // Draw a horizontal line (separator)
-            EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
-
-            GUILayout.Space(3);
-
-            GUILayout.Label("Installed Modules", centerLabelStyle);
-            GUILayout.Label("These are the modules that are installed.", subLabelStyle);
-
-            GUILayout.Space(5);
-
-            // Display the installed modules from the dictionary
-            foreach (KeyValuePair<string, bool> module in InstalledModules)
-            {
-                EditorGUILayout.Toggle(module.Key, module.Value);
-
-                if (module.Key == "Full Package")
-                    using (new EditorGUI.DisabledScope(true)) { EditorGUILayout.LabelField("└ Extras"); }
-            }
-
-            EditorGUI.EndDisabledGroup();
-
-            GUILayout.Space(10);
-
-            // Draw a horizontal line (separator)
-            EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+            if (module.Key != "Full Package") continue;
+            using (new EditorGUI.DisabledScope(true)) { EditorGUILayout.LabelField("└ Extras"); }
         }
+
+        EditorGUI.EndDisabledGroup();
+
+        GUILayout.Space(10);
+
+        // Draw a horizontal line (separator)
+        EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
     }
 
     /// <summary>
@@ -229,11 +226,12 @@ internal sealed partial class UtilityPanel
 
         GUILayout.Space(3);
 
+        // Displays whether the user is up to date or not
+        EditorGUILayout.LabelField("Up To Date", EditorPrefs.GetBool("UpToDate").ToString());
+        
         // Displays the last version of the Essentials package that was opened
         EditorGUILayout.LabelField("Last Open Version", VersionManager.LastOpenVersion);
 
-        // Displays whether the user is up to date or not
-        EditorGUILayout.LabelField("Up To Date", EditorPrefs.GetBool("UpToDate").ToString());
 
         // Displays if this is a debug build or not
         EditorGUILayout.LabelField("Debug Version", VersionManager.DebugVersion.ToString());

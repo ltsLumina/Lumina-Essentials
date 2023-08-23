@@ -17,7 +17,7 @@ internal static class VersionManager
       "LastOpenVersion",
       "UpToDate",
       "DebugVersion",
-      "DontShow_DebugBuildWarning",
+      "SuppressDebugBuildAlert",
       "SetupRequired",
       "SafeMode",
       "AutoSaveEnabled",
@@ -45,10 +45,10 @@ internal static class VersionManager
     
     /// <summary> Whether or not the current version is a debug version. </summary>
     internal static bool DebugVersion => CurrentVersion.Contains("Debug", StringComparison.OrdinalIgnoreCase);
-    internal static bool DontShow_DebugBuildWarning
+    internal static bool SuppressDebugBuildAlert
     {
-        get => EditorPrefs.GetBool("DontShow_DebugBuildWarning");
-        set => EditorPrefs.SetBool("DontShow_DebugBuildWarning", value);
+        get => EditorPrefs.GetBool("SuppressDebugBuildAlert");
+        set => EditorPrefs.SetBool("SuppressDebugBuildAlert", value);
     }
 
     internal static void UpdatePrefs()

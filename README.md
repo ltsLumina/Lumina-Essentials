@@ -51,6 +51,8 @@ Simply add the namespace(s) to any script you are writing and start using the me
 
 For details on the available methods, attributes, and shortcuts provided by the package, check out the [documentation](Documentation.md).
 
+**NOTE: If you are using a VCS, make sure that ".unitypackage" is not being ignored in the .gitignore file!**
+
 ## Essentials Overview
 
 ### Sequencer

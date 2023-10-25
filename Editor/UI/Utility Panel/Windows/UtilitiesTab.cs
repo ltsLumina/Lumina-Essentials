@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Lumina.Debugging;
 using Lumina.Essentials.Editor.UI.Management;
 using UnityEditor;
 using UnityEngine;
@@ -90,13 +91,13 @@ internal sealed partial class UtilityPanel
 
         GUILayout.Space(5);
 
-        GUI.backgroundColor = configuringImages ? new (0.76f, 0.76f, 0.76f) : Color.white;
-
         DrawConfigureImagesButton();
 
-        GUI.backgroundColor = Color.white;
-
         GUILayout.Space(5);
+
+        DrawQuickAccessWindowButton();
+        
+        // Quick Access Window button
 
         if (advancedSettings) DrawPlaceholderButton();
     }
@@ -202,6 +203,11 @@ internal sealed partial class UtilityPanel
             }
             else { DrawConfigureImagesGUI(); }
         }
+    }
+
+    void DrawQuickAccessWindowButton()
+    {
+        if (GUILayout.Button(quickAccessWindowContent, GUILayout.Height(35))) { QuickAccessWindow.ShowWindow(); }
     }
 
     static void CreateProjectStructure()

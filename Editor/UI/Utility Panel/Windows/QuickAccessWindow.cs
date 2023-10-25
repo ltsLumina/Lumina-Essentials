@@ -2,7 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Lumina.Essentials.Editor.UI;
+using Lumina.Essentials.Editor.UI.Management;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEditor.UIElements;
@@ -32,7 +34,9 @@ public class QuickAccessWindow : EditorWindow
     public static void ShowWindow()
     {
         // Dock next to inspector. Find the inspector window using reflection
-        var window = GetWindow<QuickAccessWindow>("Quick Access", true, typeof(EditorWindow).Assembly.GetType("UnityEditor.InspectorWindow"));
+        Type inspectorWindow = typeof(EditorWindow).Assembly.GetType("UnityEditor.InspectorWindow");
+        
+        var window   = GetWindow<QuickAccessWindow>("Quick Access", true, inspectorWindow);
         window.titleContent = new ("Quick Access");
         window.minSize      = new (350, 200);
         window.maxSize      = window.minSize;
@@ -117,7 +121,6 @@ public class QuickAccessWindow : EditorWindow
     static void DrawSceneButtons()
     {
         DrawBasicSceneButtons();
-        DrawCustomSceneButtons();
     }
 
     static void DrawBasicSceneButtons()
@@ -135,49 +138,20 @@ public class QuickAccessWindow : EditorWindow
         Space(10);
     }
 
-    static void DrawCustomSceneButtons()
-    {
-        using (new VerticalScope("box"))
-        {
-            Label("Custom Scenes", EditorStyles.boldLabel);
-
-            // Button to add a custom scene
-            if (Button("Add Scene", Height(25)))
-            {
-                // Open Windows Explorer to select a scene
-                string path = EditorUtility.OpenFilePanel("Select a scene", Application.dataPath, "unity");
-
-                if (!string.IsNullOrEmpty(path))
-                {
-                    // Add the button
-                    addedScenes.Add(path);
-                    addedScenesFoldout = true;
-                }
-            }
-
-            DrawAddedScenesFoldout();
-        }
-    }
-
-    static void DrawAddedScenesFoldout()
-    {
-        addedScenesFoldout = EditorGUILayout.Foldout(addedScenesFoldout, "Added Scenes", true, EditorStyles.foldoutHeader);
-        
-        if (addedScenesFoldout && addedScenes.Count == 0)
-
-            // Warning that there are no added scenes.
-            EditorGUILayout.HelpBox("No scenes have been added.", MessageType.Warning, true);
-
-        // Add a button for each added scene
-        AddCustomScenes();
-    }
-
+    /// <summary>
+    /// Show a button for each scene in the build settings.
+    /// </summary>
+    /// <param name="sceneAction"></param>
     static void DrawSceneLoadButtons(Action<int> sceneAction)
     {
-        if (Button("Intro", Height(30))) sceneAction(0);
-        if (Button("Main Menu", Height(30))) sceneAction(1);
-        if (Button("Character Select", Height(30))) sceneAction(2);
-        if (Button("Game", Height(30))) sceneAction(3);
+        int sceneCount = SceneManager.sceneCountInBuildSettings;
+
+        // Get the name of all scenes in the build settings.
+        foreach (int scene in Enumerable.Range(0, sceneCount))
+        {
+            string sceneName = Path.GetFileNameWithoutExtension(SceneUtility.GetScenePathByBuildIndex(scene));
+            if (Button(sceneName, Height(30))) sceneAction(scene);
+        }
     }
     
     static void DrawMidBanner()
@@ -326,26 +300,6 @@ public class QuickAccessWindow : EditorWindow
         
         EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
         Debug.LogWarning("Loaded a scene using the debug menu! \nThe scene might not behave as expected.");
-    }
-
-    static void AddCustomScenes()
-    {
-        foreach (string scenePath in addedScenes)
-        {
-            // derive sceneName from path
-            string sceneName = scenePath[(scenePath.LastIndexOf('/') + 1)..];
-            sceneName = sceneName[..^6];
-
-            if (Button(sceneName, Height(30)) && addedScenesFoldout)
-            {
-                if (!Application.isPlaying)
-                {
-                    EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
-                    Debug.LogWarning("Loaded a scene using the debug menu!\nThe scene might not behave as expected.");
-                }
-                else { Debug.LogWarning("Can't load a scene that isn't in the build settings."); }
-            }
-        }
     }
 
     // -- Asset Database --

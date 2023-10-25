@@ -25,7 +25,7 @@ internal static class VersionManager
       "AutoSaveLogging" };
     
     /// <summary> The current version of Lumina's Essentials. </summary>
-    internal static string CurrentVersion => "3.0.4";
+    internal static string CurrentVersion => "3.0.5";
     
     /// <summary> The latest version of Lumina's Essentials available on GitHub. </summary>
     internal static string LatestVersion
